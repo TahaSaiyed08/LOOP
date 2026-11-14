@@ -1,0 +1,600 @@
+{
+  "runDate": "2026-11-15",
+  "stocks": [
+    {
+      "ticker": "VOO",
+      "companyName": "Vanguard S&P 500 ETF",
+      "category": "index_etf",
+      "price": 512.4,
+      "beta": 1,
+      "dividendYieldPct": 1.3,
+      "usListed": true,
+      "merPct": 0.03,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Fed holds rates steady",
+          "source": "Reuters",
+          "url": "https://example.com/fed-holds-rates-steady",
+          "sentiment": 0.2,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "S&P 500 earnings growth tops forecasts",
+          "source": "Reuters",
+          "url": "https://example.com/s-p-500-earnings-growth-tops-forecasts",
+          "sentiment": 0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "VTI",
+      "companyName": "Vanguard Total Stock Market ETF",
+      "category": "index_etf",
+      "price": 284.1,
+      "beta": 1.02,
+      "dividendYieldPct": 1.3,
+      "usListed": true,
+      "merPct": 0.03,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Small-cap stocks rebound on lower yields",
+          "source": "Reuters",
+          "url": "https://example.com/small-cap-stocks-rebound-on-lower-yields",
+          "sentiment": 0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "QQQ",
+      "companyName": "Invesco QQQ Trust",
+      "category": "index_etf",
+      "price": 531.7,
+      "beta": 1.18,
+      "dividendYieldPct": 0.6,
+      "usListed": true,
+      "merPct": 0.2,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Chip stocks lead Nasdaq higher",
+          "source": "Reuters",
+          "url": "https://example.com/chip-stocks-lead-nasdaq-higher",
+          "sentiment": 0.5,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "BND",
+      "companyName": "Vanguard Total Bond Market ETF",
+      "category": "bond_etf",
+      "price": 72.8,
+      "beta": 0.08,
+      "dividendYieldPct": 3.6,
+      "usListed": true,
+      "merPct": 0.03,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Fed signals rate cuts are not imminent",
+          "source": "Reuters",
+          "url": "https://example.com/fed-signals-rate-cuts-are-not-imminent",
+          "sentiment": -0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "Treasury yields ease from monthly highs",
+          "source": "Reuters",
+          "url": "https://example.com/treasury-yields-ease-from-monthly-highs",
+          "sentiment": 0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "SCHD",
+      "companyName": "Schwab U.S. Dividend Equity ETF",
+      "category": "dividend_etf",
+      "price": 28.65,
+      "beta": 0.76,
+      "dividendYieldPct": 3.5,
+      "usListed": true,
+      "merPct": 0.06,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Dividend stocks draw inflows as rates level off",
+          "source": "Reuters",
+          "url": "https://example.com/dividend-stocks-draw-inflows-as-rates-level-off",
+          "sentiment": 0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "VYM",
+      "companyName": "Vanguard High Dividend Yield ETF",
+      "category": "dividend_etf",
+      "price": 128.9,
+      "beta": 0.8,
+      "dividendYieldPct": 2.9,
+      "usListed": true,
+      "merPct": 0.06,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Bank earnings support higher payouts",
+          "source": "Reuters",
+          "url": "https://example.com/bank-earnings-support-higher-payouts",
+          "sentiment": 0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "VIG",
+      "companyName": "Vanguard Dividend Appreciation ETF",
+      "category": "dividend_etf",
+      "price": 204.6,
+      "beta": 0.86,
+      "dividendYieldPct": 1.7,
+      "usListed": true,
+      "merPct": 0.05,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Dividend growth slows across large caps",
+          "source": "Reuters",
+          "url": "https://example.com/dividend-growth-slows-across-large-caps",
+          "sentiment": -0.1,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "JNJ",
+      "companyName": "Johnson & Johnson",
+      "category": "large_cap",
+      "price": 158.4,
+      "beta": 0.55,
+      "dividendYieldPct": 3.2,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 16.2,
+      "marketCapB": 380,
+      "insider": {
+        "count": 1,
+        "execBuyer": false,
+        "totalUsd": 120000
+      },
+      "news": [
+        {
+          "headline": "J&J raises full-year earnings outlook",
+          "source": "Reuters",
+          "url": "https://example.com/j-j-raises-full-year-earnings-outlook",
+          "sentiment": 0.5,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "Court ruling revives talc claims",
+          "source": "Reuters",
+          "url": "https://example.com/court-ruling-revives-talc-claims",
+          "sentiment": -0.6,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "PG",
+      "companyName": "Procter & Gamble",
+      "category": "large_cap",
+      "price": 167.2,
+      "beta": 0.42,
+      "dividendYieldPct": 2.4,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 25.1,
+      "marketCapB": 392,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "P&G cuts costs as input prices rise",
+          "source": "Reuters",
+          "url": "https://example.com/p-g-cuts-costs-as-input-prices-rise",
+          "sentiment": 0,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "MSFT",
+      "companyName": "Microsoft",
+      "category": "large_cap",
+      "price": 428.3,
+      "beta": 1.05,
+      "dividendYieldPct": 0.7,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 34.5,
+      "marketCapB": 3180,
+      "insider": {
+        "count": 1,
+        "execBuyer": false,
+        "totalUsd": 250000
+      },
+      "news": [
+        {
+          "headline": "Microsoft cloud revenue grows faster than expected",
+          "source": "Reuters",
+          "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected",
+          "sentiment": 0.6,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "NVDA",
+      "companyName": "NVIDIA",
+      "category": "large_cap",
+      "price": 141.2,
+      "beta": 1.75,
+      "dividendYieldPct": 0.03,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 46,
+      "marketCapB": 3450,
+      "insider": {
+        "count": 3,
+        "execBuyer": true,
+        "totalUsd": 900000
+      },
+      "news": [
+        {
+          "headline": "NVIDIA data-center demand stays strong",
+          "source": "Reuters",
+          "url": "https://example.com/nvidia-data-center-demand-stays-strong",
+          "sentiment": 0.6,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "Export limits could trim chip sales",
+          "source": "Reuters",
+          "url": "https://example.com/export-limits-could-trim-chip-sales",
+          "sentiment": -0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "O",
+      "companyName": "Realty Income",
+      "category": "reit",
+      "price": 57.9,
+      "beta": 0.9,
+      "dividendYieldPct": 5.6,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 52,
+      "marketCapB": 52,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Fed signals rate cuts are not imminent",
+          "source": "Reuters",
+          "url": "https://example.com/fed-signals-rate-cuts-are-not-imminent",
+          "sentiment": -0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "Realty Income acquires retail portfolio",
+          "source": "Reuters",
+          "url": "https://example.com/realty-income-acquires-retail-portfolio",
+          "sentiment": 0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "XLE",
+      "companyName": "Energy Select Sector SPDR Fund",
+      "category": "sector_etf",
+      "price": 91.35,
+      "beta": 0.95,
+      "dividendYieldPct": 3.3,
+      "usListed": true,
+      "merPct": 0.09,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Oil slips as supply outlook improves",
+          "source": "Reuters",
+          "url": "https://example.com/oil-slips-as-supply-outlook-improves",
+          "sentiment": -0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "XLK",
+      "companyName": "Technology Select Sector SPDR Fund",
+      "category": "sector_etf",
+      "price": 232,
+      "beta": 1.2,
+      "dividendYieldPct": 0.6,
+      "usListed": true,
+      "merPct": 0.09,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Tech earnings beat on AI spending",
+          "source": "Reuters",
+          "url": "https://example.com/tech-earnings-beat-on-ai-spending",
+          "sentiment": 0.5,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "ARKK",
+      "companyName": "ARK Innovation ETF",
+      "category": "thematic_etf",
+      "price": 57.8,
+      "beta": 1.95,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": 0.75,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Innovation funds see outflows",
+          "source": "Reuters",
+          "url": "https://example.com/innovation-funds-see-outflows",
+          "sentiment": -0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "Genomics firms report early trial gains",
+          "source": "Reuters",
+          "url": "https://example.com/genomics-firms-report-early-trial-gains",
+          "sentiment": 0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "ETSY",
+      "companyName": "Etsy",
+      "category": "mid_cap",
+      "price": 64.2,
+      "beta": 1.6,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 28,
+      "marketCapB": 6.4,
+      "insider": {
+        "count": 3,
+        "execBuyer": true,
+        "totalUsd": 450000
+      },
+      "news": [
+        {
+          "headline": "Etsy marketplace sales stabilize",
+          "source": "Reuters",
+          "url": "https://example.com/etsy-marketplace-sales-stabilize",
+          "sentiment": 0.3,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "PINS",
+      "companyName": "Pinterest",
+      "category": "mid_cap",
+      "price": 37.8,
+      "beta": 1.3,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": 30.5,
+      "marketCapB": 25,
+      "insider": {
+        "count": 2,
+        "execBuyer": false,
+        "totalUsd": 310000
+      },
+      "news": [
+        {
+          "headline": "Pinterest ad revenue grows, users rise",
+          "source": "Reuters",
+          "url": "https://example.com/pinterest-ad-revenue-grows-users-rise",
+          "sentiment": 0.5,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "PLUG",
+      "companyName": "Plug Power",
+      "category": "small_cap",
+      "price": 2.1,
+      "beta": 1.95,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": null,
+      "marketCapB": 1.9,
+      "insider": {
+        "count": 2,
+        "execBuyer": false,
+        "totalUsd": 60000
+      },
+      "news": [
+        {
+          "headline": "Plug Power narrows quarterly loss",
+          "source": "Reuters",
+          "url": "https://example.com/plug-power-narrows-quarterly-loss",
+          "sentiment": 0.2,
+          "datetime": "2026-11-15T13:00:00Z"
+        },
+        {
+          "headline": "Hydrogen project delays weigh on shares",
+          "source": "Reuters",
+          "url": "https://example.com/hydrogen-project-delays-weigh-on-shares",
+          "sentiment": -0.5,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "OPEN",
+      "companyName": "Opendoor Technologies",
+      "category": "small_cap",
+      "price": 3.4,
+      "beta": 2.3,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": null,
+      "marketCapB": 2.4,
+      "insider": {
+        "count": 1,
+        "execBuyer": false,
+        "totalUsd": 20000
+      },
+      "news": [
+        {
+          "headline": "Home sales slow as mortgage rates stay high",
+          "source": "Reuters",
+          "url": "https://example.com/home-sales-slow-as-mortgage-rates-stay-high",
+          "sentiment": -0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "BTC/USD",
+      "companyName": "Bitcoin",
+      "category": "crypto",
+      "price": 98500,
+      "beta": 2.2,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Spot Bitcoin funds see steady inflows",
+          "source": "Reuters",
+          "url": "https://example.com/spot-bitcoin-funds-see-steady-inflows",
+          "sentiment": 0.4,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    },
+    {
+      "ticker": "ETH/USD",
+      "companyName": "Ethereum",
+      "category": "crypto",
+      "price": 3650,
+      "beta": 2.8,
+      "dividendYieldPct": 0,
+      "usListed": true,
+      "merPct": null,
+      "peRatio": null,
+      "marketCapB": null,
+      "insider": {
+        "count": 0,
+        "execBuyer": false,
+        "totalUsd": 0
+      },
+      "news": [
+        {
+          "headline": "Ethereum fees fall as network usage dips",
+          "source": "Reuters",
+          "url": "https://example.com/ethereum-fees-fall-as-network-usage-dips",
+          "sentiment": -0.2,
+          "datetime": "2026-11-15T13:00:00Z"
+        }
+      ]
+    }
+  ]
+}
