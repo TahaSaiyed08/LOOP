@@ -90,7 +90,7 @@ Env vars: `GEMINI_API_KEY`, `GEMINI_BASE_URL=https://generativelanguage.googleap
 ]
 ```
 
-The five breakdown parts are each 0 to 20 and sum to `matchScore`. `bullCase`, `bearCase`, `verdict` can be null below rank 10. `stance`: `supports`, `challenges`, `neutral`.
+The five breakdown parts are each 0 to 20 and sum to `matchScore`. The feed is the top 10 or fewer, never padded. `bullCase`, `bearCase`, `verdict` can be null as graceful degradation when the council failed or has not run on a row; null is not a statement about rank. *(Reinterpreted by Taha, Nov 14; no shape change.)* `stance`: `supports`, `challenges`, `neutral`.
 
 ### C: thesis (Vamsi's functions, your endpoints)
 

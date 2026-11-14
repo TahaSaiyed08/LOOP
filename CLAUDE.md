@@ -30,6 +30,7 @@ If code cannot satisfy a contract below, STOP and tell Taha. Never change a cont
 - **News sentiment is not built yet (planned for step 6):** one batched LLM call per day (all headlines in, -1..1 per headline out) via `callLLM`, in its own `server/` file, NOT in `thesis.js` (Vamsi's `matchNews` is thesis-relative stance, a different job). Until then sentiment is null and the server logs a startup/seed warning when it is null for every ticker (also `sentimentMissing` in `/api/health`).
 - Feed rule: lists are "top 10 or fewer", never padded. `riskFit == 0` means ineligible for that tier.
 - `server/thesis.js` is a STUB until Vamsi's file arrives. `server/council.js` has not been delivered yet; feed `bullCase/bearCase/verdict` are null until it is wired.
+- **Per-user email recipients are post-hackathon work.** The demo has one user, so the Contract E recipient is the `NOTIFY_TO_EMAIL` env var and Contract C stays unchanged.
 - Extra env vars (not in the task file): `DEMO_SEED`, `NOTIFY_TO_EMAIL` (Contract E recipient), `PUBLIC_URL` (email link base).
 
 ## Env vars
@@ -98,7 +99,7 @@ If code cannot satisfy a contract below, STOP and tell Taha. Never change a cont
 ]
 ```
 
-The five breakdown parts are each 0 to 20 and sum to `matchScore`. `bullCase`, `bearCase`, `verdict` can be null below rank 10. `stance`: `supports`, `challenges`, `neutral`.
+The five breakdown parts are each 0 to 20 and sum to `matchScore`. The feed is the top 10 or fewer, never padded. `bullCase`, `bearCase`, `verdict` can be null as graceful degradation when the council failed or has not run on a row; null is not a statement about rank. *(Reinterpreted by Taha, Nov 14; no shape change.)* `stance`: `supports`, `challenges`, `neutral`.
 
 ### C: thesis (Vamsi's functions, Taha's endpoints)
 

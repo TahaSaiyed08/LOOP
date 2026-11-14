@@ -1,0 +1,661 @@
+{
+  "name": "LOOP daily seed",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "n01-manual-trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "n02-daily-schedule",
+      "name": "Daily Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        160
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node \"Universe\" (Run Once for All Items). __UNIVERSE__ is filled in by scripts/build-n8n-workflow.js\n// from scripts/universe.js, so the list lives in one place.\nconst UNIVERSE = [{\"ticker\":\"VOO\",\"companyName\":\"Vanguard S&P 500 ETF\",\"category\":\"index_etf\",\"merPct\":0.03},{\"ticker\":\"VTI\",\"companyName\":\"Vanguard Total Stock Market ETF\",\"category\":\"index_etf\",\"merPct\":0.03},{\"ticker\":\"QQQ\",\"companyName\":\"Invesco QQQ Trust\",\"category\":\"index_etf\",\"merPct\":0.2},{\"ticker\":\"IVV\",\"companyName\":\"iShares Core S&P 500 ETF\",\"category\":\"index_etf\",\"merPct\":0.03},{\"ticker\":\"SCHB\",\"companyName\":\"Schwab U.S. Broad Market ETF\",\"category\":\"index_etf\",\"merPct\":0.03},{\"ticker\":\"ITOT\",\"companyName\":\"iShares Core S&P Total U.S. Stock Market ETF\",\"category\":\"index_etf\",\"merPct\":0.03},{\"ticker\":\"DIA\",\"companyName\":\"SPDR Dow Jones Industrial Average ETF\",\"category\":\"index_etf\",\"merPct\":0.16},{\"ticker\":\"BND\",\"companyName\":\"Vanguard Total Bond Market ETF\",\"category\":\"bond_etf\",\"merPct\":0.03},{\"ticker\":\"AGG\",\"companyName\":\"iShares Core U.S. Aggregate Bond ETF\",\"category\":\"bond_etf\",\"merPct\":0.03},{\"ticker\":\"TLT\",\"companyName\":\"iShares 20+ Year Treasury Bond ETF\",\"category\":\"bond_etf\",\"merPct\":0.15},{\"ticker\":\"LQD\",\"companyName\":\"iShares iBoxx Investment Grade Corporate Bond ETF\",\"category\":\"bond_etf\",\"merPct\":0.14},{\"ticker\":\"SHY\",\"companyName\":\"iShares 1-3 Year Treasury Bond ETF\",\"category\":\"bond_etf\",\"merPct\":0.15},{\"ticker\":\"SCHD\",\"companyName\":\"Schwab U.S. Dividend Equity ETF\",\"category\":\"dividend_etf\",\"merPct\":0.06},{\"ticker\":\"VYM\",\"companyName\":\"Vanguard High Dividend Yield ETF\",\"category\":\"dividend_etf\",\"merPct\":0.06},{\"ticker\":\"VIG\",\"companyName\":\"Vanguard Dividend Appreciation ETF\",\"category\":\"dividend_etf\",\"merPct\":0.05},{\"ticker\":\"DGRO\",\"companyName\":\"iShares Core Dividend Growth ETF\",\"category\":\"dividend_etf\",\"merPct\":0.08},{\"ticker\":\"HDV\",\"companyName\":\"iShares Core High Dividend ETF\",\"category\":\"dividend_etf\",\"merPct\":0.08},{\"ticker\":\"XLK\",\"companyName\":\"Technology Select Sector SPDR Fund\",\"category\":\"sector_etf\",\"merPct\":0.09},{\"ticker\":\"XLE\",\"companyName\":\"Energy Select Sector SPDR Fund\",\"category\":\"sector_etf\",\"merPct\":0.09},{\"ticker\":\"XLV\",\"companyName\":\"Health Care Select Sector SPDR Fund\",\"category\":\"sector_etf\",\"merPct\":0.09},{\"ticker\":\"XLF\",\"companyName\":\"Financial Select Sector SPDR Fund\",\"category\":\"sector_etf\",\"merPct\":0.09},{\"ticker\":\"XLY\",\"companyName\":\"Consumer Discretionary Select Sector SPDR Fund\",\"category\":\"sector_etf\",\"merPct\":0.09},{\"ticker\":\"XLU\",\"companyName\":\"Utilities Select Sector SPDR Fund\",\"category\":\"sector_etf\",\"merPct\":0.09},{\"ticker\":\"O\",\"companyName\":\"Realty Income\",\"category\":\"reit\",\"merPct\":null},{\"ticker\":\"PLD\",\"companyName\":\"Prologis\",\"category\":\"reit\",\"merPct\":null},{\"ticker\":\"AMT\",\"companyName\":\"American Tower\",\"category\":\"reit\",\"merPct\":null},{\"ticker\":\"AAPL\",\"companyName\":\"Apple\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"MSFT\",\"companyName\":\"Microsoft\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"GOOGL\",\"companyName\":\"Alphabet\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"AMZN\",\"companyName\":\"Amazon\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"NVDA\",\"companyName\":\"NVIDIA\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"JNJ\",\"companyName\":\"Johnson & Johnson\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"PG\",\"companyName\":\"Procter & Gamble\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"KO\",\"companyName\":\"Coca-Cola\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"PEP\",\"companyName\":\"PepsiCo\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"JPM\",\"companyName\":\"JPMorgan Chase\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"V\",\"companyName\":\"Visa\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"WMT\",\"companyName\":\"Walmart\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"COST\",\"companyName\":\"Costco\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"UNH\",\"companyName\":\"UnitedHealth Group\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"HD\",\"companyName\":\"Home Depot\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"MRK\",\"companyName\":\"Merck\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"ABBV\",\"companyName\":\"AbbVie\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"MCD\",\"companyName\":\"McDonald's\",\"category\":\"large_cap\",\"merPct\":null},{\"ticker\":\"ETSY\",\"companyName\":\"Etsy\",\"category\":\"mid_cap\",\"merPct\":null},{\"ticker\":\"PINS\",\"companyName\":\"Pinterest\",\"category\":\"mid_cap\",\"merPct\":null},{\"ticker\":\"ROKU\",\"companyName\":\"Roku\",\"category\":\"mid_cap\",\"merPct\":null},{\"ticker\":\"DKNG\",\"companyName\":\"DraftKings\",\"category\":\"mid_cap\",\"merPct\":null},{\"ticker\":\"FIVE\",\"companyName\":\"Five Below\",\"category\":\"mid_cap\",\"merPct\":null},{\"ticker\":\"PLUG\",\"companyName\":\"Plug Power\",\"category\":\"small_cap\",\"merPct\":null},{\"ticker\":\"OPEN\",\"companyName\":\"Opendoor Technologies\",\"category\":\"small_cap\",\"merPct\":null},{\"ticker\":\"CLOV\",\"companyName\":\"Clover Health\",\"category\":\"small_cap\",\"merPct\":null},{\"ticker\":\"RIOT\",\"companyName\":\"Riot Platforms\",\"category\":\"small_cap\",\"merPct\":null},{\"ticker\":\"ARKK\",\"companyName\":\"ARK Innovation ETF\",\"category\":\"thematic_etf\",\"merPct\":0.75},{\"ticker\":\"ICLN\",\"companyName\":\"iShares Global Clean Energy ETF\",\"category\":\"thematic_etf\",\"merPct\":0.4},{\"ticker\":\"SOXX\",\"companyName\":\"iShares Semiconductor ETF\",\"category\":\"thematic_etf\",\"merPct\":0.35},{\"ticker\":\"BOTZ\",\"companyName\":\"Global X Robotics & Artificial Intelligence ETF\",\"category\":\"thematic_etf\",\"merPct\":0.68},{\"ticker\":\"BTC/USD\",\"companyName\":\"Bitcoin\",\"category\":\"crypto\",\"merPct\":null},{\"ticker\":\"ETH/USD\",\"companyName\":\"Ethereum\",\"category\":\"crypto\",\"merPct\":null},{\"ticker\":\"SOL/USD\",\"companyName\":\"Solana\",\"category\":\"crypto\",\"merPct\":null}];\nreturn UNIVERSE.map((u) => ({ json: u }));\n"
+      },
+      "id": "n03-universe",
+      "name": "Universe",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://data.alpaca.markets/v2/stocks/bars",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "APCA-API-KEY-ID",
+              "value": "={{ $vars.ALPACA_KEY_ID }}"
+            },
+            {
+              "name": "APCA-API-SECRET-KEY",
+              "value": "={{ $vars.ALPACA_SECRET_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbols",
+              "value": "={{ $('Universe').all().filter(i => i.json.category !== 'crypto').map(i => i.json.ticker).join(',') }}"
+            },
+            {
+              "name": "timeframe",
+              "value": "1Day"
+            },
+            {
+              "name": "start",
+              "value": "={{ $now.minus({ days: 45 }).toISODate() }}"
+            },
+            {
+              "name": "limit",
+              "value": "10000"
+            },
+            {
+              "name": "feed",
+              "value": "iex"
+            },
+            {
+              "name": "adjustment",
+              "value": "split"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n04-alpaca-stock-bars",
+      "name": "Alpaca stock bars",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        520,
+        80
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://data.alpaca.markets/v1beta3/crypto/us/bars",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "APCA-API-KEY-ID",
+              "value": "={{ $vars.ALPACA_KEY_ID }}"
+            },
+            {
+              "name": "APCA-API-SECRET-KEY",
+              "value": "={{ $vars.ALPACA_SECRET_KEY }}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "symbols",
+              "value": "={{ $('Universe').all().filter(i => i.json.category === 'crypto').map(i => i.json.ticker).join(',') }}"
+            },
+            {
+              "name": "timeframe",
+              "value": "1Day"
+            },
+            {
+              "name": "start",
+              "value": "={{ $now.minus({ days: 45 }).toISODate() }}"
+            },
+            {
+              "name": "limit",
+              "value": "10000"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n05-alpaca-crypto-bars",
+      "name": "Alpaca crypto bars",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        780,
+        80
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node \"Stock tickers\": non-crypto tickers only, for the per-ticker Finnhub calls.\nreturn $('Universe').all()\n  .filter((i) => i.json.category !== 'crypto')\n  .map((i) => ({ json: { ticker: i.json.ticker } }));\n"
+      },
+      "id": "n06-stock-tickers",
+      "name": "Stock tickers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://finnhub.io/api/v1/stock/metric?symbol={{ $json.ticker }}&metric=all&token={{ $vars.FINNHUB_KEY }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1100
+            }
+          }
+        }
+      },
+      "id": "n07-finnhub-metric",
+      "name": "Finnhub metric",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        80
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://finnhub.io/api/v1/company-news?symbol={{ $('Stock tickers').item.json.ticker }}&from={{ $now.minus({ days: 3 }).toISODate() }}&to={{ $now.toISODate() }}&token={{ $vars.FINNHUB_KEY }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1100
+            }
+          }
+        }
+      },
+      "id": "n08-finnhub-news",
+      "name": "Finnhub news",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1560,
+        80
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.sec.gov/files/company_tickers.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $vars.SEC_USER_AGENT }}"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "n09-sec-tickers",
+      "name": "SEC tickers",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        80
+      ],
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node \"EDGAR targets\": single stocks/REITs that have a CIK. ETFs and crypto have no Form 4s.\nconst STOCK_CATEGORIES = ['large_cap', 'mid_cap', 'small_cap', 'reit'];\nconst raw = $('SEC tickers').first().json || {};\nconst cikByTicker = {};\nfor (const row of Object.values(raw)) if (row && row.ticker) cikByTicker[row.ticker] = row.cik_str;\n\nconst out = [];\nfor (const i of $('Universe').all()) {\n  if (!STOCK_CATEGORIES.includes(i.json.category)) continue;\n  const cik = cikByTicker[i.json.ticker];\n  if (cik === undefined) continue;\n  out.push({ json: { ticker: i.json.ticker, cik: String(cik), cikPadded: String(cik).padStart(10, '0') } });\n}\nreturn out;\n"
+      },
+      "id": "n10-edgar-targets",
+      "name": "EDGAR targets",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2080,
+        80
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://data.sec.gov/submissions/CIK{{ $json.cikPadded }}.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $vars.SEC_USER_AGENT }}"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 150
+            }
+          }
+        }
+      },
+      "id": "n11-sec-submissions",
+      "name": "SEC submissions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2340,
+        80
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node \"Pick Form 4\": from each company's recent filings, keep Form 4s from the last 30 days\n// (newest 4) and emit one item per filing with the URL of its raw XML.\nconst targets = $('EDGAR targets').all();\nconst subs = $('SEC submissions').all(); // 1:1 with targets, same order\nconst cutoff = Date.now() - 30 * 86400000;\nconst out = [];\n\nsubs.forEach((s, idx) => {\n  const t = targets[idx] && targets[idx].json;\n  const recent = s.json && s.json.filings && s.json.filings.recent;\n  if (!t || !recent || !Array.isArray(recent.form)) return;\n  let kept = 0;\n  for (let k = 0; k < recent.form.length && kept < 4; k++) {\n    if (recent.form[k] !== '4') continue;\n    if (new Date(recent.filingDate[k]).getTime() < cutoff) continue;\n    const acc = String(recent.accessionNumber[k]).replace(/-/g, '');\n    const doc = String(recent.primaryDocument[k]).replace(/^xsl[^/]*\\//, ''); // raw XML, not the HTML rendering\n    out.push({ json: { ticker: t.ticker, filingDate: recent.filingDate[k], url: `https://www.sec.gov/Archives/edgar/data/${Number(t.cik)}/${acc}/${doc}` } });\n    kept++;\n  }\n});\nreturn out; // may be empty: the node has \"Always Output Data\" on so the run continues\n"
+      },
+      "id": "n12-pick-form-4",
+      "name": "Pick Form 4",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2600,
+        80
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "={{ $vars.SEC_USER_AGENT }}"
+            },
+            {
+              "name": "Accept-Encoding",
+              "value": "gzip, deflate"
+            }
+          ]
+        },
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 150
+            }
+          },
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
+        }
+      },
+      "id": "n13-sec-form-4-xml",
+      "name": "SEC Form 4 XML",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2860,
+        80
+      ],
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node \"Build Contract A\" (Run Once for All Items). Output: one item = the POST /api/webhook/seed body.\n// Raw metrics only, the backend does all scoring. News sentiment is left null: the backend fills it in.\n// Missing data stays null (never invented). Insider = open-market PURCHASES (Form 4 code \"P\") in the last 30 days.\nconst STOCK_CATEGORIES = ['large_cap', 'mid_cap', 'small_cap', 'reit'];\nconst round = (x, d) => Math.round(x * 10 ** d) / 10 ** d;\nconst num = (x) => (typeof x === 'number' && Number.isFinite(x) ? x : null);\n\nconst universe = $('Universe').all().map((i) => i.json);\nconst stockBars = ($('Alpaca stock bars').first().json || {}).bars || {};\nconst cryptoBars = ($('Alpaca crypto bars').first().json || {}).bars || {};\n\n// Finnhub metric: 1:1 with \"Stock tickers\" (same order)\nconst stockTickers = $('Stock tickers').all().map((i) => i.json.ticker);\nconst metrics = {};\n$('Finnhub metric').all().forEach((it, idx) => {\n  const m = it.json && it.json.metric;\n  if (m && stockTickers[idx]) metrics[stockTickers[idx]] = m;\n});\n\n// Finnhub news: arrays are flattened into items; each item names its ticker in `related`\nconst newsByTicker = {};\nfor (const it of $('Finnhub news').all()) {\n  const n = it.json;\n  if (!n || !n.headline || !n.related) continue;\n  const list = (newsByTicker[n.related] = newsByTicker[n.related] || []);\n  if (list.length < 3 && !list.some((x) => x.headline === n.headline)) {\n    list.push({ headline: n.headline, source: n.source || null, url: n.url || null, sentiment: null, datetime: new Date((n.datetime || 0) * 1000).toISOString() });\n  }\n}\n\n// EDGAR Form 4 XML: 1:1 with \"Pick Form 4\"\nconst insiderByTicker = {};\nconst picks = $('Pick Form 4').all();\n$('SEC Form 4 XML').all().forEach((it, idx) => {\n  const ticker = picks[idx] && picks[idx].json && picks[idx].json.ticker;\n  const xml = it.json && typeof it.json.data === 'string' ? it.json.data : '';\n  if (!ticker || !xml) return;\n  const isOfficer = /<isOfficer>\\s*(1|true)\\s*<\\/isOfficer>/i.test(xml);\n  const title = (xml.match(/<officerTitle>([^<]*)<\\/officerTitle>/i) || [])[1] || '';\n  const execTitle = /\\b(CEO|CFO|COO|Chief|President)\\b/i.test(title);\n  let usd = 0, buys = 0;\n  for (const block of xml.match(/<nonDerivativeTransaction>[\\s\\S]*?<\\/nonDerivativeTransaction>/gi) || []) {\n    if (!/<transactionCode>\\s*P\\s*<\\/transactionCode>/i.test(block)) continue; // open-market purchase\n    const shares = Number((block.match(/<transactionShares>\\s*<value>([\\d.]+)</i) || [])[1]);\n    const price = Number((block.match(/<transactionPricePerShare>\\s*<value>([\\d.]+)</i) || [])[1]);\n    if (Number.isFinite(shares) && Number.isFinite(price)) usd += shares * price;\n    buys++;\n  }\n  if (!buys) return;\n  const cur = (insiderByTicker[ticker] = insiderByTicker[ticker] || { count: 0, execBuyer: false, totalUsd: 0 });\n  cur.count += 1; // filings with at least one purchase\n  cur.totalUsd += Math.round(usd);\n  if (isOfficer && execTitle) cur.execBuyer = true;\n});\n\nconst summarize = (bars) => {\n  if (!Array.isArray(bars) || !bars.length) return null;\n  const last = bars[bars.length - 1];\n  const prior = bars.length >= 6 ? bars[bars.length - 6] : null;\n  const recent = bars.slice(-20);\n  return {\n    price: last.c,\n    priceChange5dPct: prior && prior.c > 0 ? round((last.c / prior.c - 1) * 100, 2) : null,\n    avgVolume: Math.round(recent.reduce((a, b) => a + (b.v || 0), 0) / recent.length),\n  };\n};\n\nconst stocks = [];\nfor (const u of universe) {\n  const b = summarize(u.category === 'crypto' ? cryptoBars[u.ticker] : stockBars[u.ticker]);\n  if (!b) continue; // no bars -> skip, never invent a price\n  const m = metrics[u.ticker] || {};\n  const isStock = STOCK_CATEGORIES.includes(u.category);\n  const cap = num(m.marketCapitalization);\n  stocks.push({\n    ticker: u.ticker,\n    companyName: u.companyName,\n    category: u.category,\n    price: b.price,\n    beta: num(m.beta),\n    dividendYieldPct: num(m.currentDividendYieldTTM) ?? num(m.dividendYieldIndicatedAnnual),\n    priceChange5dPct: b.priceChange5dPct,\n    avgVolume: b.avgVolume,\n    usListed: true,\n    merPct: u.merPct ?? null,\n    peRatio: isStock ? (num(m.peTTM) ?? num(m.peBasicExclExtraTTM)) : null,\n    marketCapB: isStock && cap !== null ? round(cap / 1000, 2) : null,\n    insider: isStock ? (insiderByTicker[u.ticker] || { count: 0, execBuyer: false, totalUsd: 0 }) : { count: 0, execBuyer: false, totalUsd: 0 },\n    news: newsByTicker[u.ticker] || [],\n  });\n}\n\nreturn [{ json: { runDate: new Date().toISOString().slice(0, 10), stocks } }];\n"
+      },
+      "id": "n14-build-contract-a",
+      "name": "Build Contract A",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3120,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.LOOP_BASE_URL }}/api/webhook/seed",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-webhook-secret",
+              "value": "={{ $vars.INBOUND_WEBHOOK_SECRET }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "n15-post-api-webhook-seed",
+      "name": "POST /api/webhook/seed",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3380,
+        80
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 20000
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "loop-notify",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "n16-notify-webhook",
+      "name": "Notify Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        520
+      ],
+      "webhookId": "6f1c1d0e-5a52-4b1e-9d36-0c7f7a8e2b11"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node \"Fill email template\": renders Contract E fields into the email HTML.\n// >>> Replace TEMPLATE with the contents of Dianne's email-template.html (it uses {{ticker}}-style placeholders). <<<\n// The one below is a TEMPORARY placeholder so the branch works before her file arrives.\nconst TEMPLATE = `<div style=\"max-width:600px;margin:0 auto;font-family:Arial,sans-serif;color:#1a1a1a\">\n<h2>A development affects your thesis</h2>\n<p><strong>{{ticker}}</strong>: {{headline}}</p>\n<p><strong>Why it matters:</strong> {{whyItMatters}}</p>\n<p>Your goal: <em>{{thesisGoal}}</em></p>\n<p><a href=\"{{link}}\" style=\"background:#1f6feb;color:#fff;padding:10px 16px;text-decoration:none;border-radius:6px\">View on your thesis</a></p>\n<p style=\"font-size:12px;color:#666\">Educational research, not investment advice.</p></div>`;\n\nconst body = $input.first().json.body || $input.first().json; // Webhook node nests the POST body under `body`\nconst esc = (v) => String(v ?? '').replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' }[c]));\nconst safeLink = /^https:\\/\\//i.test(body.link || '') ? body.link : '#';\n\nconst html = TEMPLATE.replace(/\\{\\{\\s*(\\w+)\\s*\\}\\}/g, (_, key) => (key === 'link' ? esc(safeLink) : esc(body[key])));\nreturn [{ json: { to: body.to, subject: `A development affects your thesis: ${body.ticker || ''}`.trim(), html } }];\n"
+      },
+      "id": "n17-fill-email-template",
+      "name": "Fill email template",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.to }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.html }}",
+        "options": {}
+      },
+      "id": "n18-send-gmail",
+      "name": "Send Gmail",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        520,
+        520
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "REPLACE_ME",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "width": 760,
+        "height": 300,
+        "content": "## LOOP daily seed: setup\n1. Settings > Variables (or replace with credentials): ALPACA_KEY_ID, ALPACA_SECRET_KEY, FINNHUB_KEY, LOOP_BASE_URL (https://your-app.onrender.com, no trailing slash), INBOUND_WEBHOOK_SECRET, SEC_USER_AGENT (e.g. \"LOOP Buildathon you@example.com\", SEC returns 403 without a contact).\n2. Gmail node: pick your Gmail OAuth2 credential.\n3. Notify Webhook: copy its PRODUCTION URL into the backend env N8N_NOTIFY_WEBHOOK_URL. Activate the workflow for production URLs to work.\n4. Fill email template: paste Dianne's email-template.html into TEMPLATE.\n5. Develop with the Manual Trigger. The Daily Schedule is DISABLED on purpose: enable it only after the Sunday 3 pm freeze (85 executions on the plan).\n6. Never hand-edit Code nodes here: edit n8n/code/*.js in the repo and re-run scripts/build-n8n-workflow.js."
+      },
+      "id": "n19-setup-notes",
+      "name": "Setup notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        -360
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Universe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Schedule": {
+      "main": [
+        [
+          {
+            "node": "Universe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Universe": {
+      "main": [
+        [
+          {
+            "node": "Alpaca stock bars",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alpaca stock bars": {
+      "main": [
+        [
+          {
+            "node": "Alpaca crypto bars",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alpaca crypto bars": {
+      "main": [
+        [
+          {
+            "node": "Stock tickers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stock tickers": {
+      "main": [
+        [
+          {
+            "node": "Finnhub metric",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finnhub metric": {
+      "main": [
+        [
+          {
+            "node": "Finnhub news",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finnhub news": {
+      "main": [
+        [
+          {
+            "node": "SEC tickers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEC tickers": {
+      "main": [
+        [
+          {
+            "node": "EDGAR targets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EDGAR targets": {
+      "main": [
+        [
+          {
+            "node": "SEC submissions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEC submissions": {
+      "main": [
+        [
+          {
+            "node": "Pick Form 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pick Form 4": {
+      "main": [
+        [
+          {
+            "node": "SEC Form 4 XML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SEC Form 4 XML": {
+      "main": [
+        [
+          {
+            "node": "Build Contract A",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Contract A": {
+      "main": [
+        [
+          {
+            "node": "POST /api/webhook/seed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Webhook": {
+      "main": [
+        [
+          {
+            "node": "Fill email template",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fill email template": {
+      "main": [
+        [
+          {
+            "node": "Send Gmail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Toronto"
+  },
+  "pinData": {},
+  "tags": []
+}
