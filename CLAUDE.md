@@ -27,7 +27,7 @@ If code cannot satisfy a contract below, STOP and tell Taha. Never change a cont
 - **Render's filesystem is ephemeral.** `data/db.json` (feed, saved thesis, paper ledger, notify-date) is wiped on every restart/redeploy, so live paper buys and the saved thesis also die on restart. Accepted. After a restart `GET /api/stocks` serves fixtures until n8n seeds again, and the portfolio falls back to fixture trades.
 - **`DEMO_SEED=true`** seeds 4 backdated paper trades on boot, only if the ledger is empty and Alpaca keys exist, and logs one line saying so. These are demo scaffolding, not user actions. Alpaca cannot backdate orders: seeded trades are priced from real daily bars and place no orders.
 - **MER is never displayed as a number in the UI.** It only feeds the `cost` score component. ETF expense ratios in `scripts/universe.js` are hand-entered and UNVERIFIED (`merVerified: false`); spot-check only ETFs that reach a top 10 against the issuer's page during Sunday polish.
-- **News sentiment is not built yet (planned for step 6):** one batched LLM call per day (all headlines in, -1..1 per headline out) via `callLLM`, in its own `server/` file, NOT in `thesis.js` (Vamsi's `matchNews` is thesis-relative stance, a different job). Until then sentiment is null and the server logs a startup/seed warning when it is null for every ticker (also `sentimentMissing` in `/api/health`).
+- **News sentiment is built in the backend (`server/sentiment.js`), not in n8n.** When a seed arrives, one batched `callLLM` call scores every unseen headline across all tickers (-1..1) and stores it on the news items BEFORE the feed is stored/scored. Scores are cached 7 days by ticker+headline, so reseeding during rehearsal costs no calls. Scores supplied by the sender are kept. This is market sentiment, kept separate from thesis.js (Vamsi's `matchNews` is thesis-relative stance). With no key or an LLM failure sentiment stays null, and the server logs a loud warning and `/api/health` reports `sentimentMissing` when it is null for every ticker.
 - Feed rule: lists are "top 10 or fewer", never padded. `riskFit == 0` means ineligible for that tier.
 - `server/thesis.js` is a STUB until Vamsi's file arrives. `server/council.js` has not been delivered yet; feed `bullCase/bearCase/verdict` are null until it is wired.
 - **Per-user email recipients are post-hackathon work.** The demo has one user, so the Contract E recipient is the `NOTIFY_TO_EMAIL` env var and Contract C stays unchanged.
@@ -159,3 +159,11 @@ Backend posts to `N8N_NOTIFY_WEBHOOK_URL` on any "challenges" stance (max one pe
   "link": "https://tfsa-gold-site.onrender.com/#thesis"
 }
 ```
+
+## n8n
+
+`n8n/code/*.js` are the Code node sources; `node scripts/build-n8n-workflow.js` regenerates the importable `n8n/loop-daily.workflow.json` (universe comes from `scripts/universe.js`). Never hand-edit Code nodes in n8n. The Daily Schedule trigger ships disabled: enable it only after the Sunday 3 pm freeze. Workflow variables needed: `ALPACA_KEY_ID`, `ALPACA_SECRET_KEY`, `FINNHUB_KEY`, `LOOP_BASE_URL`, `INBOUND_WEBHOOK_SECRET`, `SEC_USER_AGENT` (SEC EDGAR returns 403 without a contact in the User-Agent). Insider data = Form 4 open-market purchases (code P) in the last 30 days.
+
+## Tests
+
+`npm test` runs scoring, endpoints, n8n Code nodes and sentiment (all offline, no keys needed).

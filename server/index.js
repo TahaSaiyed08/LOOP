@@ -11,6 +11,7 @@ const store = require('./store');
 const feedLib = require('./feed');
 const thesisEngine = require('./thesis');
 const pipeline = require('./pipeline');
+const sentiment = require('./sentiment');
 const { TIERS } = require('./scoring');
 
 const app = express();
@@ -44,7 +45,7 @@ function secretOk(req) {
   return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
-app.post('/api/webhook/seed', (req, res) => {
+app.post('/api/webhook/seed', async (req, res) => {
   if (!process.env.INBOUND_WEBHOOK_SECRET) return res.status(503).json({ error: 'INBOUND_WEBHOOK_SECRET is not configured on the server' });
   if (!secretOk(req)) return res.status(401).json({ error: 'bad or missing x-webhook-secret' });
   let clean;
@@ -52,11 +53,12 @@ app.post('/api/webhook/seed', (req, res) => {
   catch (err) { return res.status(err.status || 400).json({ error: err.message }); }
   if (!clean.stocks.length) return res.status(400).json({ error: 'no valid stocks in payload', rejected: clean.rejected });
 
+  const sent = await sentiment.applySentiment(clean.stocks); // before storing, so scoring always sees it
   store.set('feed', { runDate: clean.runDate, receivedAt: new Date().toISOString(), stocks: clean.stocks });
   warnIfNoSentiment(clean, `seed ${clean.runDate}`);
-  console.log(`[seed] ${clean.runDate}: accepted ${clean.stocks.length}, rejected ${clean.rejected.length}`);
+  console.log(`[seed] ${clean.runDate}: accepted ${clean.stocks.length}, rejected ${clean.rejected.length}, sentiment scored ${sent.scored} cached ${sent.cached}${sent.failed ? ' (FAILED)' : ''}`);
   pipeline.refreshThesisMatches(); // background: match news to the saved thesis, maybe email
-  res.json({ ok: true, runDate: clean.runDate, accepted: clean.stocks.length, rejected: clean.rejected });
+  res.json({ ok: true, runDate: clean.runDate, accepted: clean.stocks.length, rejected: clean.rejected, sentiment: sent });
 });
 
 // Contract B: the ranked feed. Serves fixtures (X-Data-Source: fixture) until a seed has arrived.

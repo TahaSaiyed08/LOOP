@@ -7,8 +7,9 @@
     "start": "node server/index.js",
     "test:scoring": "node scripts/test-scoring.js",
     "test:endpoints": "node scripts/test-endpoints.js",
-    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n",
-    "test:n8n": "node scripts/test-n8n.js"
+    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment",
+    "test:n8n": "node scripts/test-n8n.js",
+    "test:sentiment": "node scripts/test-sentiment.js"
   },
   "engines": {
     "node": ">=18"
