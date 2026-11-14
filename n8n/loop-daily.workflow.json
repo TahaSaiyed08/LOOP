@@ -50,19 +50,8 @@
       "parameters": {
         "method": "GET",
         "url": "https://data.alpaca.markets/v2/stocks/bars",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "APCA-API-KEY-ID",
-              "value": "={{ $vars.ALPACA_KEY_ID }}"
-            },
-            {
-              "name": "APCA-API-SECRET-KEY",
-              "value": "={{ $vars.ALPACA_SECRET_KEY }}"
-            }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -104,25 +93,20 @@
       ],
       "executeOnce": true,
       "retryOnFail": true,
-      "maxTries": 3
+      "maxTries": 3,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP Alpaca"
+        }
+      }
     },
     {
       "parameters": {
         "method": "GET",
         "url": "https://data.alpaca.markets/v1beta3/crypto/us/bars",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "APCA-API-KEY-ID",
-              "value": "={{ $vars.ALPACA_KEY_ID }}"
-            },
-            {
-              "name": "APCA-API-SECRET-KEY",
-              "value": "={{ $vars.ALPACA_SECRET_KEY }}"
-            }
-          ]
-        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpCustomAuth",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
@@ -156,7 +140,13 @@
       ],
       "executeOnce": true,
       "retryOnFail": true,
-      "maxTries": 3
+      "maxTries": 3,
+      "credentials": {
+        "httpCustomAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP Alpaca"
+        }
+      }
     },
     {
       "parameters": {
@@ -174,7 +164,9 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://finnhub.io/api/v1/stock/metric?symbol={{ $json.ticker }}&metric=all&token={{ $vars.FINNHUB_KEY }}",
+        "url": "=https://finnhub.io/api/v1/stock/metric?symbol={{ $json.ticker }}&metric=all",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "options": {
           "batching": {
             "batch": {
@@ -192,12 +184,20 @@
         1300,
         80
       ],
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP Finnhub"
+        }
+      }
     },
     {
       "parameters": {
         "method": "GET",
-        "url": "=https://finnhub.io/api/v1/company-news?symbol={{ $('Stock tickers').item.json.ticker }}&from={{ $now.minus({ days: 3 }).toISODate() }}&to={{ $now.toISODate() }}&token={{ $vars.FINNHUB_KEY }}",
+        "url": "=https://finnhub.io/api/v1/company-news?symbol={{ $('Stock tickers').item.json.ticker }}&from={{ $now.minus({ days: 3 }).toISODate() }}&to={{ $now.toISODate() }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "options": {
           "batching": {
             "batch": {
@@ -216,19 +216,23 @@
         80
       ],
       "onError": "continueRegularOutput",
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP Finnhub"
+        }
+      }
     },
     {
       "parameters": {
         "method": "GET",
         "url": "https://www.sec.gov/files/company_tickers.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "User-Agent",
-              "value": "={{ $vars.SEC_USER_AGENT }}"
-            },
             {
               "name": "Accept-Encoding",
               "value": "gzip, deflate"
@@ -246,7 +250,13 @@
         80
       ],
       "executeOnce": true,
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP SEC User-Agent"
+        }
+      }
     },
     {
       "parameters": {
@@ -266,13 +276,11 @@
       "parameters": {
         "method": "GET",
         "url": "=https://data.sec.gov/submissions/CIK{{ $json.cikPadded }}.json",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "User-Agent",
-              "value": "={{ $vars.SEC_USER_AGENT }}"
-            },
             {
               "name": "Accept-Encoding",
               "value": "gzip, deflate"
@@ -297,7 +305,13 @@
         80
       ],
       "onError": "continueRegularOutput",
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP SEC User-Agent"
+        }
+      }
     },
     {
       "parameters": {
@@ -317,13 +331,11 @@
       "parameters": {
         "method": "GET",
         "url": "={{ $json.url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
-            {
-              "name": "User-Agent",
-              "value": "={{ $vars.SEC_USER_AGENT }}"
-            },
             {
               "name": "Accept-Encoding",
               "value": "gzip, deflate"
@@ -354,7 +366,13 @@
         80
       ],
       "onError": "continueRegularOutput",
-      "alwaysOutputData": true
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP SEC User-Agent"
+        }
+      }
     },
     {
       "parameters": {
@@ -372,16 +390,9 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "={{ $vars.LOOP_BASE_URL }}/api/webhook/seed",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "x-webhook-secret",
-              "value": "={{ $vars.INBOUND_WEBHOOK_SECRET }}"
-            }
-          ]
-        },
+        "url": "https://REPLACE-ME.onrender.com/api/webhook/seed",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "contentType": "json",
         "specifyBody": "json",
@@ -400,7 +411,13 @@
       ],
       "retryOnFail": true,
       "maxTries": 3,
-      "waitBetweenTries": 20000
+      "waitBetweenTries": 20000,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "LOOP Webhook Secret"
+        }
+      }
     },
     {
       "parameters": {
@@ -461,7 +478,7 @@
       "parameters": {
         "width": 760,
         "height": 300,
-        "content": "## LOOP daily seed: setup\n1. Settings > Variables (or replace with credentials): ALPACA_KEY_ID, ALPACA_SECRET_KEY, FINNHUB_KEY, LOOP_BASE_URL (https://your-app.onrender.com, no trailing slash), INBOUND_WEBHOOK_SECRET, SEC_USER_AGENT (e.g. \"LOOP Buildathon you@example.com\", SEC returns 403 without a contact).\n2. Gmail node: pick your Gmail OAuth2 credential.\n3. Notify Webhook: copy its PRODUCTION URL into the backend env N8N_NOTIFY_WEBHOOK_URL. Activate the workflow for production URLs to work.\n4. Fill email template: paste Dianne's email-template.html into TEMPLATE.\n5. Develop with the Manual Trigger. The Daily Schedule is DISABLED on purpose: enable it only after the Sunday 3 pm freeze (85 executions on the plan).\n6. Never hand-edit Code nodes here: edit n8n/code/*.js in the repo and re-run scripts/build-n8n-workflow.js."
+        "content": "## LOOP daily seed: setup\n1. Create 5 credentials (Credentials > Create), using these exact names:\n   - \"LOOP Alpaca\" (Custom Auth). JSON: {\"headers\": {\"APCA-API-KEY-ID\": \"<key id>\", \"APCA-API-SECRET-KEY\": \"<secret key>\"}}\n   - \"LOOP Finnhub\" (Header Auth). Name: X-Finnhub-Token, Value: <Finnhub key>\n   - \"LOOP SEC User-Agent\" (Header Auth). Name: User-Agent, Value: LOOP Buildathon <your contact email> (SEC returns 403 without a contact)\n   - \"LOOP Webhook Secret\" (Header Auth). Name: x-webhook-secret, Value: <INBOUND_WEBHOOK_SECRET from Render>\n   - Gmail OAuth2 (for the Send Gmail node)\n2. Open every HTTP Request node and Send Gmail and pick the credential above (imported ids are placeholders).\n3. Edit the URL of \"POST /api/webhook/seed\" to your Render URL.\n4. Notify Webhook: copy its PRODUCTION URL into the backend env N8N_NOTIFY_WEBHOOK_URL. Activate the workflow for production URLs to work.\n5. Fill email template: paste Dianne's email-template.html into TEMPLATE.\n6. Develop with the Manual Trigger. The Daily Schedule is DISABLED on purpose: enable it only after the Sunday 3 pm freeze (85 executions on the plan). Warm the Render URL before any live run.\n7. Never hand-edit Code nodes here: edit n8n/code/*.js in the repo and re-run scripts/build-n8n-workflow.js."
       },
       "id": "n19-setup-notes",
       "name": "Setup notes",

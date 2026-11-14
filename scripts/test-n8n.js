@@ -22,10 +22,17 @@ for (const [from, c] of Object.entries(wf.connections)) {
 assert.strictEqual(wf.active, false);
 assert.strictEqual(byName['Daily Schedule'].disabled, true, 'cron stays disabled until freeze');
 for (const n of wf.nodes.filter((x) => x.type === 'n8n-nodes-base.code')) new AsyncFunction('$', '$input', n.parameters.jsCode); // compiles
-const secNodes = wf.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest' && n.name.startsWith('SEC '));
-assert(secNodes.length === 3 && secNodes.every((n) => JSON.stringify(n.parameters.headerParameters).includes('User-Agent')), 'every SEC call sets User-Agent');
-assert(!JSON.stringify(wf).includes('@gmail.com'), 'no personal email baked in');
-assert(!/[A-Za-z0-9]{30,}/.test(JSON.stringify(wf.nodes.map((n) => n.parameters.headerParameters || ''))), 'no hardcoded secrets in headers');
+const raw = JSON.stringify(wf);
+assert(!raw.includes('$vars') && !raw.includes('$env'), 'no n8n Variables / env access (not on the Starter plan)');
+const http = wf.nodes.filter((n) => n.type === 'n8n-nodes-base.httpRequest');
+const credName = (n) => Object.values(n.credentials || {})[0] && Object.values(n.credentials)[0].name;
+const need = (re, name) => http.filter((n) => re.test(n.name)).forEach((n) => assert.strictEqual(credName(n), name, `${n.name} uses credential "${name}"`));
+need(/^Alpaca /, 'LOOP Alpaca'); need(/^Finnhub /, 'LOOP Finnhub'); need(/^SEC /, 'LOOP SEC User-Agent'); need(/^POST /, 'LOOP Webhook Secret');
+assert.strictEqual(http.filter((n) => /^SEC /.test(n.name)).length, 3, 'three SEC nodes, all carry the User-Agent credential');
+assert(http.every((n) => n.parameters.authentication === 'genericCredentialType'), 'every HTTP node authenticates via a credential');
+const httpParams = JSON.stringify(http.map((n) => n.parameters));
+assert(!/token=|APCA-API|x-webhook-secret|X-Finnhub-Token/i.test(httpParams), 'no secrets, secret header values or token query params in HTTP node parameters');
+assert(!raw.includes('@gmail.com'), 'no personal email baked in');
 console.log(`workflow structure OK (${wf.nodes.length} nodes)`);
 
 // ---- 2. run the Code nodes against mocks
