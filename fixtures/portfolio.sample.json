@@ -1,0 +1,40 @@
+{
+  "startValue": 10000,
+  "value": 10165.6,
+  "returnPct": 1.7,
+  "whatIfLine": "With real money since Oct 28 you would be up $166",
+  "positions": [
+    {
+      "ticker": "VOO",
+      "qty": 10,
+      "entryPrice": 498.1,
+      "currentPrice": 512.4,
+      "plUsd": 143,
+      "plPct": 2.9
+    },
+    {
+      "ticker": "AAPL",
+      "qty": 8,
+      "entryPrice": 226.5,
+      "currentPrice": 238.1,
+      "plUsd": 92.8,
+      "plPct": 5.1
+    },
+    {
+      "ticker": "XLE",
+      "qty": 12,
+      "entryPrice": 94.2,
+      "currentPrice": 91.35,
+      "plUsd": -34.2,
+      "plPct": -3
+    },
+    {
+      "ticker": "ARKK",
+      "qty": 10,
+      "entryPrice": 61.4,
+      "currentPrice": 57.8,
+      "plUsd": -36,
+      "plPct": -5.9
+    }
+  ]
+}

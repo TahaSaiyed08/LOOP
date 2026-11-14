@@ -1,0 +1,15 @@
+{
+  "id": "t1",
+  "goal": "Long-term growth with small recurring deposits",
+  "budget": {
+    "amount": 20,
+    "cadence": "biweekly"
+  },
+  "horizonYears": 10,
+  "tier": "low",
+  "assumptions": [
+    "Broad index funds beat stock picking at this budget",
+    "Low fees compound more than hot picks over 10 years"
+  ],
+  "createdAt": "2026-11-15T14:00:00Z"
+}
