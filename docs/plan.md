@@ -45,6 +45,8 @@ Env vars: `GEMINI_API_KEY`, `GEMINI_BASE_URL=https://generativelanguage.googleap
       "price": 512.4,
       "beta": 1.0,
       "dividendYieldPct": 1.3,
+      "priceChange5dPct": 3.2,
+      "avgVolume": 48200000,
       "usListed": true,
       "merPct": 0.03,
       "peRatio": null,
@@ -59,6 +61,8 @@ Env vars: `GEMINI_API_KEY`, `GEMINI_BASE_URL=https://generativelanguage.googleap
 ```
 
 `category`: `index_etf`, `bond_etf`, `dividend_etf`, `sector_etf`, `reit`, `large_cap`, `mid_cap`, `small_cap`, `thematic_etf`, `crypto`. Tier eligibility comes from category in the backend. `insider` is zeros for ETFs. `peRatio` and `marketCapB` are null for ETFs, `merPct` is null for stocks.
+
+`priceChange5dPct` is the 5-trading-day price change in percent and `avgVolume` is average daily volume in shares (units for crypto), both derived from Alpaca bars. *Extension (Taha, Nov 14): these two fields added to Contract A. Either may be `null` if bars are unavailable; the scorer then treats momentum as neutral and skips the liquidity check.*
 
 ### B: the feed
 

@@ -6,13 +6,13 @@
     "companyName": "NVIDIA",
     "category": "large_cap",
     "tier": "high",
-    "matchScore": 88,
+    "matchScore": 82,
     "scoreBreakdown": {
       "signal": 20,
       "riskFit": 19,
       "cost": 10,
       "quality": 20,
-      "news": 19
+      "news": 13
     },
     "why": "Notable insider activity at the company",
     "price": 141.2,
@@ -26,16 +26,74 @@
         "url": "https://example.com/nvidia-data-center-demand-stays-strong"
       },
       {
-        "headline": "NVIDIA unveils next-generation data-center chip",
+        "headline": "Export limits could trim chip sales",
+        "stance": "challenges",
+        "url": "https://example.com/export-limits-could-trim-chip-sales"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "771202",
+    "rank": 2,
+    "ticker": "MSFT",
+    "companyName": "Microsoft",
+    "category": "large_cap",
+    "tier": "high",
+    "matchScore": 75,
+    "scoreBreakdown": {
+      "signal": 18,
+      "riskFit": 8,
+      "cost": 14,
+      "quality": 20,
+      "news": 15
+    },
+    "why": "Large, established holding",
+    "price": 428.3,
+    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
+    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
+    "verdict": "Strong business quality, but it is a single stock priced for success. A moderate fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Microsoft cloud revenue grows faster than expected",
         "stance": "supports",
-        "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip"
+        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "e5f52e",
+    "rank": 3,
+    "ticker": "XLK",
+    "companyName": "Technology Select Sector SPDR Fund",
+    "category": "sector_etf",
+    "tier": "high",
+    "matchScore": 74,
+    "scoreBreakdown": {
+      "signal": 20,
+      "riskFit": 10,
+      "cost": 18,
+      "quality": 12,
+      "news": 14
+    },
+    "why": "Notable insider activity at the company",
+    "price": 232,
+    "bullCase": "One fund bundles the biggest US technology companies, including software, chips and hardware. It has benefited from the surge in AI spending.",
+    "bearCase": "The top three holdings make up a large share of the fund, so it is far less diversified than a broad index fund. Tech tends to fall hardest when interest rates rise.",
+    "verdict": "A concentrated bet on one sector, suited to those comfortable with larger swings. A moderate fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Tech earnings beat on AI spending",
+        "stance": "supports",
+        "url": "https://example.com/tech-earnings-beat-on-ai-spending"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
     "id": "f43fe1",
-    "rank": 2,
+    "rank": 4,
     "ticker": "ETSY",
     "companyName": "Etsy",
     "category": "mid_cap",
@@ -63,73 +121,15 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "e5f52e",
-    "rank": 3,
-    "ticker": "XLK",
-    "companyName": "Technology Select Sector SPDR Fund",
-    "category": "sector_etf",
-    "tier": "high",
-    "matchScore": 68,
-    "scoreBreakdown": {
-      "signal": 14,
-      "riskFit": 10,
-      "cost": 18,
-      "quality": 12,
-      "news": 14
-    },
-    "why": "Low cost to hold relative to alternatives",
-    "price": 232,
-    "bullCase": "One fund bundles the biggest US technology companies, including software, chips and hardware. It has benefited from the surge in AI spending.",
-    "bearCase": "The top three holdings make up a large share of the fund, so it is far less diversified than a broad index fund. Tech tends to fall hardest when interest rates rise.",
-    "verdict": "A concentrated bet on one sector, suited to those comfortable with larger swings. A moderate fit for the Experienced profile.",
-    "newsTags": [
-      {
-        "headline": "Tech earnings beat on AI spending",
-        "stance": "supports",
-        "url": "https://example.com/tech-earnings-beat-on-ai-spending"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "771202",
-    "rank": 4,
-    "ticker": "MSFT",
-    "companyName": "Microsoft",
-    "category": "large_cap",
-    "tier": "high",
-    "matchScore": 63,
-    "scoreBreakdown": {
-      "signal": 6,
-      "riskFit": 8,
-      "cost": 14,
-      "quality": 20,
-      "news": 15
-    },
-    "why": "Large, established holding",
-    "price": 428.3,
-    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
-    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
-    "verdict": "Strong business quality, but it is a single stock priced for success. A moderate fit for the Experienced profile.",
-    "newsTags": [
-      {
-        "headline": "Microsoft cloud revenue grows faster than expected",
-        "stance": "supports",
-        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
     "id": "46b45e",
     "rank": 5,
     "ticker": "PINS",
     "companyName": "Pinterest",
     "category": "mid_cap",
     "tier": "high",
-    "matchScore": 62,
+    "matchScore": 68,
     "scoreBreakdown": {
-      "signal": 9,
+      "signal": 15,
       "riskFit": 12,
       "cost": 16,
       "quality": 11,
@@ -150,44 +150,15 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "f2b555",
-    "rank": 6,
-    "ticker": "XLE",
-    "companyName": "Energy Select Sector SPDR Fund",
-    "category": "sector_etf",
-    "tier": "high",
-    "matchScore": 55,
-    "scoreBreakdown": {
-      "signal": 11,
-      "riskFit": 6,
-      "cost": 16,
-      "quality": 14,
-      "news": 8
-    },
-    "why": "Low cost to hold relative to alternatives",
-    "price": 91.35,
-    "bullCase": "It holds the large US oil and gas producers, which pay generous dividends and often rise when inflation does. Energy can balance a portfolio heavy in tech.",
-    "bearCase": "Energy company earnings follow oil prices, which swing widely and are hard to predict. Long-term demand worries about fossil fuels add uncertainty.",
-    "verdict": "A cyclical sector fund that can diversify a portfolio but moves with commodity prices. A loose fit for the Experienced profile because its volatility differs from that risk level.",
-    "newsTags": [
-      {
-        "headline": "Oil slips as supply outlook improves",
-        "stance": "challenges",
-        "url": "https://example.com/oil-slips-as-supply-outlook-improves"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
     "id": "8c9e2d",
-    "rank": 7,
+    "rank": 6,
     "ticker": "JNJ",
     "companyName": "Johnson & Johnson",
     "category": "large_cap",
     "tier": "high",
-    "matchScore": 54,
+    "matchScore": 58,
     "scoreBreakdown": {
-      "signal": 6,
+      "signal": 10,
       "riskFit": 0,
       "cost": 19,
       "quality": 20,
@@ -214,14 +185,14 @@
   },
   {
     "id": "02b909",
-    "rank": 8,
+    "rank": 7,
     "ticker": "PG",
     "companyName": "Procter & Gamble",
     "category": "large_cap",
     "tier": "high",
-    "matchScore": 48,
+    "matchScore": 57,
     "scoreBreakdown": {
-      "signal": 2,
+      "signal": 11,
       "riskFit": 0,
       "cost": 16,
       "quality": 20,
@@ -242,35 +213,59 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "ea0548",
-    "rank": 9,
-    "ticker": "ARKK",
-    "companyName": "ARK Innovation ETF",
-    "category": "thematic_etf",
+    "id": "0f3ce1",
+    "rank": 8,
+    "ticker": "BTC/USD",
+    "companyName": "Bitcoin",
+    "category": "crypto",
     "tier": "high",
-    "matchScore": 44,
+    "matchScore": 51,
     "scoreBreakdown": {
-      "signal": 9,
-      "riskFit": 18,
-      "cost": 0,
-      "quality": 6,
-      "news": 11
+      "signal": 20,
+      "riskFit": 13,
+      "cost": 5,
+      "quality": 0,
+      "news": 13
     },
-    "why": "Volatility is a close fit for this risk level",
-    "price": 57.8,
-    "bullCase": "The fund holds high-growth companies in genomics, robotics and fintech, which could grow quickly if their technologies take off. A concentrated, actively managed approach can pay off in strong innovation cycles.",
-    "bearCase": "It fell sharply in past downturns and has seen heavy outflows. The 0.75% fee is high, and many holdings are not yet profitable.",
-    "verdict": "A volatile theme fund that has taken large losses in down markets, for experienced investors only. A close fit for the Experienced profile.",
+    "why": "Notable insider activity at the company",
+    "price": 98500,
+    "bullCase": "Spot Bitcoin funds have drawn steady inflows, and its fixed supply appeals to people who worry about currency debasement. Trading is deep and runs around the clock.",
+    "bearCase": "Prices can fall by half or more within months and are driven by sentiment rather than earnings. Rules for crypto are still changing, and there are no cash flows to value it on.",
+    "verdict": "A very volatile asset that has taken large losses in past downturns, for experienced investors only. A moderate fit for the Experienced profile.",
     "newsTags": [
       {
-        "headline": "Innovation funds see outflows",
-        "stance": "challenges",
-        "url": "https://example.com/innovation-funds-see-outflows"
-      },
-      {
-        "headline": "Genomics firms report early trial gains",
+        "headline": "Spot Bitcoin funds see steady inflows",
         "stance": "supports",
-        "url": "https://example.com/genomics-firms-report-early-trial-gains"
+        "url": "https://example.com/spot-bitcoin-funds-see-steady-inflows"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "f2b555",
+    "rank": 9,
+    "ticker": "XLE",
+    "companyName": "Energy Select Sector SPDR Fund",
+    "category": "sector_etf",
+    "tier": "high",
+    "matchScore": 46,
+    "scoreBreakdown": {
+      "signal": 2,
+      "riskFit": 6,
+      "cost": 16,
+      "quality": 14,
+      "news": 8
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 91.35,
+    "bullCase": "It holds the large US oil and gas producers, which pay generous dividends and often rise when inflation does. Energy can balance a portfolio heavy in tech.",
+    "bearCase": "Energy company earnings follow oil prices, which swing widely and are hard to predict. Long-term demand worries about fossil fuels add uncertainty.",
+    "verdict": "A cyclical sector fund that can diversify a portfolio but moves with commodity prices. A loose fit for the Experienced profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "Oil slips as supply outlook improves",
+        "stance": "challenges",
+        "url": "https://example.com/oil-slips-as-supply-outlook-improves"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
@@ -282,9 +277,9 @@
     "companyName": "Plug Power",
     "category": "small_cap",
     "tier": "high",
-    "matchScore": 42,
+    "matchScore": 41,
     "scoreBreakdown": {
-      "signal": 8,
+      "signal": 7,
       "riskFit": 18,
       "cost": 7,
       "quality": 1,

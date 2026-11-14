@@ -6,9 +6,9 @@
     "companyName": "Schwab U.S. Dividend Equity ETF",
     "category": "dividend_etf",
     "tier": "low",
-    "matchScore": 88,
+    "matchScore": 81,
     "scoreBreakdown": {
-      "signal": 18,
+      "signal": 11,
       "riskFit": 20,
       "cost": 20,
       "quality": 20,
@@ -29,44 +29,15 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "632d43",
-    "rank": 2,
-    "ticker": "VYM",
-    "companyName": "Vanguard High Dividend Yield ETF",
-    "category": "dividend_etf",
-    "tier": "low",
-    "matchScore": 86,
-    "scoreBreakdown": {
-      "signal": 17,
-      "riskFit": 20,
-      "cost": 20,
-      "quality": 19,
-      "news": 10
-    },
-    "why": "Volatility is a close fit for this risk level",
-    "price": 128.9,
-    "bullCase": "It spreads money across about 500 large US companies paying above-average dividends. Holdings lean toward financials, healthcare and consumer staples, which tend to hold up in rough markets.",
-    "bearCase": "It has little exposure to technology, so it can trail the overall market during tech-driven rallies. A high yield can also signal a stock under pressure.",
-    "verdict": "A reasonable income-minded holding. It overlaps with SCHD, so picking one is usually enough. A close fit for the Starting out profile.",
-    "newsTags": [
-      {
-        "headline": "Bank earnings support higher payouts",
-        "stance": "supports",
-        "url": "https://example.com/bank-earnings-support-higher-payouts"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
     "id": "304fa8",
-    "rank": 3,
+    "rank": 2,
     "ticker": "VOO",
     "companyName": "Vanguard S&P 500 ETF",
     "category": "index_etf",
     "tier": "low",
-    "matchScore": 85,
+    "matchScore": 80,
     "scoreBreakdown": {
-      "signal": 17,
+      "signal": 12,
       "riskFit": 17,
       "cost": 20,
       "quality": 20,
@@ -92,15 +63,44 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
+    "id": "632d43",
+    "rank": 3,
+    "ticker": "VYM",
+    "companyName": "Vanguard High Dividend Yield ETF",
+    "category": "dividend_etf",
+    "tier": "low",
+    "matchScore": 80,
+    "scoreBreakdown": {
+      "signal": 11,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 19,
+      "news": 10
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 128.9,
+    "bullCase": "It spreads money across about 500 large US companies paying above-average dividends. Holdings lean toward financials, healthcare and consumer staples, which tend to hold up in rough markets.",
+    "bearCase": "It has little exposure to technology, so it can trail the overall market during tech-driven rallies. A high yield can also signal a stock under pressure.",
+    "verdict": "A reasonable income-minded holding. It overlaps with SCHD, so picking one is usually enough. A close fit for the Starting out profile.",
+    "newsTags": [
+      {
+        "headline": "Bank earnings support higher payouts",
+        "stance": "supports",
+        "url": "https://example.com/bank-earnings-support-higher-payouts"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
     "id": "1120c5",
     "rank": 4,
     "ticker": "VTI",
     "companyName": "Vanguard Total Stock Market ETF",
     "category": "index_etf",
     "tier": "low",
-    "matchScore": 83,
+    "matchScore": 78,
     "scoreBreakdown": {
-      "signal": 17,
+      "signal": 12,
       "riskFit": 16,
       "cost": 20,
       "quality": 20,
@@ -121,30 +121,30 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "73e7a8",
+    "id": "86276b",
     "rank": 5,
-    "ticker": "VIG",
-    "companyName": "Vanguard Dividend Appreciation ETF",
-    "category": "dividend_etf",
+    "ticker": "MSFT",
+    "companyName": "Microsoft",
+    "category": "large_cap",
     "tier": "low",
-    "matchScore": 81,
+    "matchScore": 76,
     "scoreBreakdown": {
-      "signal": 16,
-      "riskFit": 20,
-      "cost": 20,
-      "quality": 18,
-      "news": 7
+      "signal": 13,
+      "riskFit": 15,
+      "cost": 17,
+      "quality": 20,
+      "news": 11
     },
-    "why": "Volatility is a close fit for this risk level",
-    "price": 204.6,
-    "bullCase": "It holds US companies with at least ten years of rising dividends, which favors durable, well-run businesses. The 0.05% fee is low.",
-    "bearCase": "The starting yield is small, so it offers little income today. Its top holdings overlap with broad market funds, limiting extra diversification.",
-    "verdict": "A quality-focused long-term holding, with a low current yield as the main tradeoff. A close fit for the Starting out profile.",
+    "why": "Large, established holding",
+    "price": 428.3,
+    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
+    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
+    "verdict": "Strong business quality, but it is a single stock priced for success. A close fit for the Starting out profile.",
     "newsTags": [
       {
-        "headline": "Dividend growth slows across large caps",
-        "stance": "neutral",
-        "url": "https://example.com/dividend-growth-slows-across-large-caps"
+        "headline": "Microsoft cloud revenue grows faster than expected",
+        "stance": "supports",
+        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
@@ -156,9 +156,9 @@
     "companyName": "Invesco QQQ Trust",
     "category": "index_etf",
     "tier": "low",
-    "matchScore": 75,
+    "matchScore": 76,
     "scoreBreakdown": {
-      "signal": 15,
+      "signal": 16,
       "riskFit": 11,
       "cost": 18,
       "quality": 20,
@@ -179,15 +179,44 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "8be7f5",
+    "id": "73e7a8",
     "rank": 7,
+    "ticker": "VIG",
+    "companyName": "Vanguard Dividend Appreciation ETF",
+    "category": "dividend_etf",
+    "tier": "low",
+    "matchScore": 75,
+    "scoreBreakdown": {
+      "signal": 10,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 18,
+      "news": 7
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 204.6,
+    "bullCase": "It holds US companies with at least ten years of rising dividends, which favors durable, well-run businesses. The 0.05% fee is low.",
+    "bearCase": "The starting yield is small, so it offers little income today. Its top holdings overlap with broad market funds, limiting extra diversification.",
+    "verdict": "A quality-focused long-term holding, with a low current yield as the main tradeoff. A close fit for the Starting out profile.",
+    "newsTags": [
+      {
+        "headline": "Dividend growth slows across large caps",
+        "stance": "neutral",
+        "url": "https://example.com/dividend-growth-slows-across-large-caps"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "8be7f5",
+    "rank": 8,
     "ticker": "JNJ",
     "companyName": "Johnson & Johnson",
     "category": "large_cap",
     "tier": "low",
-    "matchScore": 69,
+    "matchScore": 72,
     "scoreBreakdown": {
-      "signal": 4,
+      "signal": 7,
       "riskFit": 18,
       "cost": 20,
       "quality": 20,
@@ -213,64 +242,30 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "86276b",
-    "rank": 8,
-    "ticker": "MSFT",
-    "companyName": "Microsoft",
-    "category": "large_cap",
-    "tier": "low",
-    "matchScore": 67,
-    "scoreBreakdown": {
-      "signal": 4,
-      "riskFit": 15,
-      "cost": 17,
-      "quality": 20,
-      "news": 11
-    },
-    "why": "Large, established holding",
-    "price": 428.3,
-    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
-    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
-    "verdict": "Strong business quality, but it is a single stock priced for success. A close fit for the Starting out profile.",
-    "newsTags": [
-      {
-        "headline": "Microsoft cloud revenue grows faster than expected",
-        "stance": "supports",
-        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "9a8853",
+    "id": "11297e",
     "rank": 9,
-    "ticker": "NVDA",
-    "companyName": "NVIDIA",
+    "ticker": "PG",
+    "companyName": "Procter & Gamble",
     "category": "large_cap",
     "tier": "low",
-    "matchScore": 65,
+    "matchScore": 69,
     "scoreBreakdown": {
-      "signal": 18,
-      "riskFit": 0,
-      "cost": 12,
+      "signal": 8,
+      "riskFit": 14,
+      "cost": 19,
       "quality": 20,
-      "news": 15
+      "news": 8
     },
     "why": "Large, established holding",
-    "price": 141.2,
-    "bullCase": "It designs the chips that power most AI data centers, and sales and profits have grown very fast. Company insiders have been buying recently, a sign of internal confidence.",
-    "bearCase": "The valuation is high, so even good results can disappoint investors. Sales depend on a few large customers, and export limits or new competitors could slow growth.",
-    "verdict": "High growth with high volatility, suited to people who can ride out large price swings. A loose fit for the Starting out profile because its volatility differs from that risk level.",
+    "price": 167.2,
+    "bullCase": "Tide, Pampers and Gillette sell in good times and bad, giving the company dependable sales. It has paid a rising dividend for nearly 70 years and has strong pricing power.",
+    "bearCase": "Growth is slow because its products are already sold almost everywhere. Higher commodity costs and store-brand competition can squeeze profit margins.",
+    "verdict": "A calm, defensive single stock with modest growth compared with a broad fund. A moderate fit for the Starting out profile.",
     "newsTags": [
       {
-        "headline": "NVIDIA data-center demand stays strong",
-        "stance": "supports",
-        "url": "https://example.com/nvidia-data-center-demand-stays-strong"
-      },
-      {
-        "headline": "NVIDIA unveils next-generation data-center chip",
-        "stance": "supports",
-        "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip"
+        "headline": "P&G cuts costs as input prices rise",
+        "stance": "neutral",
+        "url": "https://example.com/p-g-cuts-costs-as-input-prices-rise"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
@@ -282,9 +277,9 @@
     "companyName": "Vanguard Total Bond Market ETF",
     "category": "bond_etf",
     "tier": "low",
-    "matchScore": 63,
+    "matchScore": 60,
     "scoreBreakdown": {
-      "signal": 13,
+      "signal": 10,
       "riskFit": 3,
       "cost": 20,
       "quality": 20,

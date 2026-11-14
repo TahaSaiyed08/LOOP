@@ -6,9 +6,9 @@
     "companyName": "Vanguard S&P 500 ETF",
     "category": "index_etf",
     "tier": "medium",
-    "matchScore": 88,
+    "matchScore": 84,
     "scoreBreakdown": {
-      "signal": 18,
+      "signal": 14,
       "riskFit": 19,
       "cost": 20,
       "quality": 19,
@@ -34,44 +34,15 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "79e86b",
-    "rank": 2,
-    "ticker": "VTI",
-    "companyName": "Vanguard Total Stock Market ETF",
-    "category": "index_etf",
-    "tier": "medium",
-    "matchScore": 86,
-    "scoreBreakdown": {
-      "signal": 17,
-      "riskFit": 20,
-      "cost": 20,
-      "quality": 19,
-      "news": 10
-    },
-    "why": "Volatility is a close fit for this risk level",
-    "price": 284.1,
-    "bullCase": "It covers large, mid and small US companies in one holding, the widest spread of any simple choice. The 0.03% fee keeps costs negligible.",
-    "bearCase": "About three quarters of the fund is large companies, so it behaves much like an S&P 500 fund. It offers no protection outside US stocks.",
-    "verdict": "A simple one-fund holding for a long horizon. It overlaps heavily with VOO, so holding both adds little. A close fit for the Some knowledge profile.",
-    "newsTags": [
-      {
-        "headline": "Small-cap stocks rebound on lower yields",
-        "stance": "supports",
-        "url": "https://example.com/small-cap-stocks-rebound-on-lower-yields"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
     "id": "682bc0",
-    "rank": 3,
+    "rank": 2,
     "ticker": "QQQ",
     "companyName": "Invesco QQQ Trust",
     "category": "index_etf",
     "tier": "medium",
-    "matchScore": 80,
+    "matchScore": 82,
     "scoreBreakdown": {
-      "signal": 16,
+      "signal": 18,
       "riskFit": 20,
       "cost": 15,
       "quality": 18,
@@ -92,15 +63,73 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "3ad54e",
+    "id": "79e86b",
+    "rank": 3,
+    "ticker": "VTI",
+    "companyName": "Vanguard Total Stock Market ETF",
+    "category": "index_etf",
+    "tier": "medium",
+    "matchScore": 82,
+    "scoreBreakdown": {
+      "signal": 13,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 19,
+      "news": 10
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 284.1,
+    "bullCase": "It covers large, mid and small US companies in one holding, the widest spread of any simple choice. The 0.03% fee keeps costs negligible.",
+    "bearCase": "About three quarters of the fund is large companies, so it behaves much like an S&P 500 fund. It offers no protection outside US stocks.",
+    "verdict": "A simple one-fund holding for a long horizon. It overlaps heavily with VOO, so holding both adds little. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Small-cap stocks rebound on lower yields",
+        "stance": "supports",
+        "url": "https://example.com/small-cap-stocks-rebound-on-lower-yields"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "288585",
     "rank": 4,
+    "ticker": "MSFT",
+    "companyName": "Microsoft",
+    "category": "large_cap",
+    "tier": "medium",
+    "matchScore": 80,
+    "scoreBreakdown": {
+      "signal": 14,
+      "riskFit": 20,
+      "cost": 14,
+      "quality": 20,
+      "news": 12
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 428.3,
+    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
+    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
+    "verdict": "Strong business quality, but it is a single stock priced for success. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Microsoft cloud revenue grows faster than expected",
+        "stance": "supports",
+        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "3ad54e",
+    "rank": 5,
     "ticker": "XLK",
     "companyName": "Technology Select Sector SPDR Fund",
     "category": "sector_etf",
     "tier": "medium",
-    "matchScore": 75,
+    "matchScore": 79,
     "scoreBreakdown": {
-      "signal": 15,
+      "signal": 19,
       "riskFit": 19,
       "cost": 18,
       "quality": 12,
@@ -122,14 +151,14 @@
   },
   {
     "id": "5b2f7a",
-    "rank": 5,
+    "rank": 6,
     "ticker": "SCHD",
     "companyName": "Schwab U.S. Dividend Equity ETF",
     "category": "dividend_etf",
     "tier": "medium",
-    "matchScore": 74,
+    "matchScore": 72,
     "scoreBreakdown": {
-      "signal": 15,
+      "signal": 13,
       "riskFit": 13,
       "cost": 17,
       "quality": 18,
@@ -151,14 +180,14 @@
   },
   {
     "id": "cac7a9",
-    "rank": 6,
+    "rank": 7,
     "ticker": "VIG",
     "companyName": "Vanguard Dividend Appreciation ETF",
     "category": "dividend_etf",
     "tier": "medium",
-    "matchScore": 73,
+    "matchScore": 70,
     "scoreBreakdown": {
-      "signal": 15,
+      "signal": 12,
       "riskFit": 15,
       "cost": 19,
       "quality": 17,
@@ -180,14 +209,14 @@
   },
   {
     "id": "a4a098",
-    "rank": 7,
+    "rank": 8,
     "ticker": "VYM",
     "companyName": "Vanguard High Dividend Yield ETF",
     "category": "dividend_etf",
     "tier": "medium",
-    "matchScore": 73,
+    "matchScore": 70,
     "scoreBreakdown": {
-      "signal": 15,
+      "signal": 12,
       "riskFit": 14,
       "cost": 17,
       "quality": 17,
@@ -208,48 +237,48 @@
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "288585",
-    "rank": 8,
-    "ticker": "MSFT",
-    "companyName": "Microsoft",
-    "category": "large_cap",
+    "id": "090d3b",
+    "rank": 9,
+    "ticker": "PINS",
+    "companyName": "Pinterest",
+    "category": "mid_cap",
     "tier": "medium",
-    "matchScore": 71,
+    "matchScore": 67,
     "scoreBreakdown": {
-      "signal": 5,
-      "riskFit": 20,
-      "cost": 14,
-      "quality": 20,
-      "news": 12
+      "signal": 12,
+      "riskFit": 17,
+      "cost": 16,
+      "quality": 11,
+      "news": 11
     },
     "why": "Volatility is a close fit for this risk level",
-    "price": 428.3,
-    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
-    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
-    "verdict": "Strong business quality, but it is a single stock priced for success. A close fit for the Some knowledge profile.",
+    "price": 37.8,
+    "bullCase": "Advertising revenue and user numbers are both growing, and the company is turning consistent profits. Its shoppable-pins strategy gives it a clear path to more ad income.",
+    "bearCase": "It competes for ad dollars with much larger platforms, and ad budgets shrink quickly in a slowdown. Some insiders have been selling shares.",
+    "verdict": "A growing mid-sized company with the risk that comes with ad-driven revenue. A close fit for the Some knowledge profile.",
     "newsTags": [
       {
-        "headline": "Microsoft cloud revenue grows faster than expected",
+        "headline": "Pinterest ad revenue grows, users rise",
         "stance": "supports",
-        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
+        "url": "https://example.com/pinterest-ad-revenue-grows-users-rise"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
     "id": "2bb14f",
-    "rank": 9,
+    "rank": 10,
     "ticker": "NVDA",
     "companyName": "NVIDIA",
     "category": "large_cap",
     "tier": "medium",
-    "matchScore": 69,
+    "matchScore": 64,
     "scoreBreakdown": {
       "signal": 20,
       "riskFit": 4,
       "cost": 10,
       "quality": 20,
-      "news": 15
+      "news": 10
     },
     "why": "Notable insider activity at the company",
     "price": 141.2,
@@ -263,38 +292,9 @@
         "url": "https://example.com/nvidia-data-center-demand-stays-strong"
       },
       {
-        "headline": "NVIDIA unveils next-generation data-center chip",
-        "stance": "supports",
-        "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "9ff18e",
-    "rank": 10,
-    "ticker": "XLE",
-    "companyName": "Energy Select Sector SPDR Fund",
-    "category": "sector_etf",
-    "tier": "medium",
-    "matchScore": 68,
-    "scoreBreakdown": {
-      "signal": 14,
-      "riskFit": 18,
-      "cost": 16,
-      "quality": 14,
-      "news": 6
-    },
-    "why": "Volatility is a close fit for this risk level",
-    "price": 91.35,
-    "bullCase": "It holds the large US oil and gas producers, which pay generous dividends and often rise when inflation does. Energy can balance a portfolio heavy in tech.",
-    "bearCase": "Energy company earnings follow oil prices, which swing widely and are hard to predict. Long-term demand worries about fossil fuels add uncertainty.",
-    "verdict": "A cyclical sector fund that can diversify a portfolio but moves with commodity prices. A close fit for the Some knowledge profile.",
-    "newsTags": [
-      {
-        "headline": "Oil slips as supply outlook improves",
+        "headline": "Export limits could trim chip sales",
         "stance": "challenges",
-        "url": "https://example.com/oil-slips-as-supply-outlook-improves"
+        "url": "https://example.com/export-limits-could-trim-chip-sales"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"

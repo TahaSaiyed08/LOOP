@@ -2,7 +2,8 @@
 // Input: a Contract A stock object + a tier. Output: Contract B score fields.
 //
 // Five components, each an integer 0-20, summing to matchScore (0-100):
-//   signal  - insider activity (stocks); neutral for ETFs/crypto (no insider data)
+//   signal  - stocks/REITs: 50% insider activity + 50% 5-day momentum.
+//             ETFs/crypto: 5-day momentum, scaled down when dollar volume is thin.
 //   riskFit - how close beta is to the tier's target beta
 //   cost    - ETF fee (merPct) or stock valuation (P/E), minus a TFSA US-dividend
 //             withholding drag (15% of the yield)
@@ -12,8 +13,7 @@
 // Each component = round(20 * min(1, calibrated * tierWeight)), where
 //   calibrated = clamp01((raw - lo) / (hi - lo))   (CALIBRATION: stretches each raw
 //   score's realistic range onto 0-1 so the full 0-100 scale is used). Weights differ per tier.
-// ETFs/crypto have no insider data, so their `signal` is imputed as the rounded mean of
-// their other four components (no evidence = no better and no worse than the rest).
+// Missing priceChange5dPct -> neutral momentum; missing avgVolume -> no liquidity penalty.
 
 const TIERS = ['low', 'medium', 'high'];
 
@@ -31,6 +31,10 @@ const ELIGIBILITY = {
   crypto: ['high'],
 };
 
+// Extra beta gate: a category is admitted to a tier only if beta <= max.
+// The beginner tier screens on volatility, not just company size.
+const BETA_GATE = { low: { large_cap: 1.1 } };
+
 // Per-tier weight table (multiplies the 0-1 raw score before capping at 20).
 const WEIGHTS = {
   low:    { signal: 0.90, riskFit: 1.25, cost: 1.20, quality: 1.10, news: 0.95 },
@@ -40,7 +44,7 @@ const WEIGHTS = {
 
 // Realistic [lo, hi] range of each raw score, stretched onto 0-1 before weighting.
 const CALIBRATION = {
-  signal:  [0.30, 0.85],
+  signal:  [0.10, 0.90], // symmetric around neutral 0.5, so neutral momentum = 10/20
   riskFit: [0.00, 1.00],
   cost:    [0.10, 0.92],
   quality: [0.20, 0.88],
@@ -69,19 +73,44 @@ const FUND_QUALITY = {
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const isNum = (x) => typeof x === 'number' && Number.isFinite(x);
 const isStockLike = (cat) => ['large_cap', 'mid_cap', 'small_cap', 'reit'].includes(cat);
-const hasInsiderData = (s) => isStockLike(s.category);
 
-function isEligible(category, tier) {
-  return Boolean(ELIGIBILITY[category] && ELIGIBILITY[category].includes(tier));
+// beta is optional: when given (or defaulted by category) it is checked against BETA_GATE.
+function isEligible(category, tier, beta) {
+  if (!(ELIGIBILITY[category] && ELIGIBILITY[category].includes(tier))) return false;
+  const max = BETA_GATE[tier] && BETA_GATE[tier][category];
+  if (max === undefined) return true;
+  const b = isNum(beta) ? beta : DEFAULT_BETA[category];
+  return b <= max;
 }
 
-function rawSignal(s) {
-  if (!hasInsiderData(s)) return 0.5; // unused for ETFs/crypto: their signal is imputed in scoreStock
+// 5-day move that counts as "strong" (maps to 0 or 1), by how volatile the category is.
+const MOMENTUM_SCALE_PCT = { crypto: 12, small_cap: 10, thematic_etf: 7, mid_cap: 7 };
+
+function rawMomentum(s) {
+  if (!isNum(s.priceChange5dPct)) return 0.5; // unknown -> neutral
+  const scale = MOMENTUM_SCALE_PCT[s.category] || 4;
+  return clamp01(0.5 + s.priceChange5dPct / (2 * scale));
+}
+
+function rawInsider(s) {
   const ins = s.insider || {};
   const count = isNum(ins.count) ? ins.count : 0;
   const usd = isNum(ins.totalUsd) ? ins.totalUsd : 0;
   if (count <= 0 && !ins.execBuyer) return 0.35; // quiet: slightly below neutral
   return clamp01(0.35 + 0.25 * Math.min(count, 5) / 5 + (ins.execBuyer ? 0.25 : 0) + 0.15 * Math.min(usd / 1e6, 1));
+}
+
+// Thin trading pulls signal down: dollar volume >= $50M/day -> 1.0, <= $2M/day -> 0.5 (log scale).
+function liquidityFactor(s) {
+  if (!isNum(s.avgVolume) || !isNum(s.price) || s.avgVolume <= 0 || s.price <= 0) return 1;
+  const dollars = s.avgVolume * s.price;
+  const t = clamp01((Math.log10(dollars) - Math.log10(2e6)) / (Math.log10(5e7) - Math.log10(2e6)));
+  return 0.5 + 0.5 * t;
+}
+
+function rawSignal(s) {
+  if (isStockLike(s.category)) return 0.5 * rawInsider(s) + 0.5 * rawMomentum(s);
+  return rawMomentum(s) * liquidityFactor(s); // ETFs and crypto: no insider data
 }
 
 function rawRiskFit(s, tier) {
@@ -139,7 +168,7 @@ function buildWhy(breakdown) {
 function scoreStock(stock, tier) {
   if (!stock || !TIERS.includes(tier)) return null;
   if (stock.usListed === false) return null; // US-listed universe only
-  if (!isEligible(stock.category, tier)) return null;
+  if (!isEligible(stock.category, tier, stock.beta)) return null;
   const w = WEIGHTS[tier];
   const raw = {
     signal: rawSignal(stock),
@@ -152,15 +181,19 @@ function scoreStock(stock, tier) {
     const [lo, hi] = CALIBRATION[k];
     return Math.round(20 * Math.min(1, clamp01((raw[k] - lo) / (hi - lo)) * w[k]));
   };
-  const scoreBreakdown = { signal: 0, riskFit: comp('riskFit'), cost: comp('cost'), quality: comp('quality'), news: comp('news') };
-  scoreBreakdown.signal = hasInsiderData(stock)
-    ? comp('signal')
-    : Math.round((scoreBreakdown.riskFit + scoreBreakdown.cost + scoreBreakdown.quality + scoreBreakdown.news) / 4);
+  const scoreBreakdown = {
+    signal: comp('signal'),
+    riskFit: comp('riskFit'),
+    cost: comp('cost'),
+    quality: comp('quality'),
+    news: comp('news'),
+  };
   const matchScore = scoreBreakdown.signal + scoreBreakdown.riskFit + scoreBreakdown.cost + scoreBreakdown.quality + scoreBreakdown.news;
   return { tier, matchScore, scoreBreakdown, why: buildWhy(scoreBreakdown) };
 }
 
-// rankForTier(stocks, tier) -> eligible stocks scored and sorted (score desc, ticker asc), with rank 1..n
+// rankForTier(stocks, tier) -> eligible stocks scored and sorted (score desc, then ticker A-Z
+// as the final deterministic tiebreaker, so input order can never change the output), rank 1..n
 function rankForTier(stocks, tier) {
   const scored = [];
   for (const stock of stocks || []) {
@@ -171,4 +204,4 @@ function rankForTier(stocks, tier) {
   return scored.map((row, i) => ({ rank: i + 1, ...row }));
 }
 
-module.exports = { TIERS, ELIGIBILITY, WEIGHTS, isEligible, scoreStock, rankForTier };
+module.exports = { TIERS, ELIGIBILITY, BETA_GATE, WEIGHTS, isEligible, scoreStock, rankForTier };
