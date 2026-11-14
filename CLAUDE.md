@@ -162,7 +162,7 @@ Backend posts to `N8N_NOTIFY_WEBHOOK_URL` on any "challenges" stance (max one pe
 
 ## n8n
 
-`n8n/code/*.js` are the Code node sources; `node scripts/build-n8n-workflow.js` regenerates the importable `n8n/loop-daily.workflow.json` (universe comes from `scripts/universe.js`). Never hand-edit Code nodes in n8n. The Daily Schedule trigger ships disabled: enable it only after the Sunday 3 pm freeze. Workflow variables needed: `ALPACA_KEY_ID`, `ALPACA_SECRET_KEY`, `FINNHUB_KEY`, `LOOP_BASE_URL`, `INBOUND_WEBHOOK_SECRET`, `SEC_USER_AGENT` (SEC EDGAR returns 403 without a contact in the User-Agent). Insider data = Form 4 open-market purchases (code P) in the last 30 days.
+`n8n/code/*.js` are the Code node sources; `node scripts/build-n8n-workflow.js` regenerates the importable `n8n/loop-daily.workflow.json` (universe comes from `scripts/universe.js`). Never hand-edit Code nodes in n8n. The Daily Schedule trigger ships disabled: enable it only after the Sunday 3 pm freeze. n8n Starter has no Variables, so secrets live in n8n **credentials** (names must match): "LOOP Alpaca" (Custom Auth, because it needs two headers), "LOOP Finnhub" (Header Auth, `X-Finnhub-Token`), "LOOP SEC User-Agent" (Header Auth, `User-Agent`; must include a contact or SEC EDGAR returns 403), "LOOP Webhook Secret" (Header Auth, `x-webhook-secret`), plus Gmail OAuth2. After import, pick the credential in each HTTP node and edit the POST node's URL to the Render URL. **Accepted risk (Taha, Nov 14): the Notify Webhook has no secret.** The recipient is one hardcoded inbox, so a leaked URL only means junk in one mailbox, and one more credential to misconfigure is a worse trade right now. Insider data = Form 4 open-market purchases (code P) in the last 30 days.
 
 ## Tests
 
