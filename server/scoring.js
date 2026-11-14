@@ -165,6 +165,7 @@ function buildWhy(breakdown) {
 }
 
 // scoreStock(stock, tier) -> { tier, matchScore, scoreBreakdown, why } | null if not eligible
+// (wrong category/beta gate for the tier, not US-listed, or riskFit component of 0)
 function scoreStock(stock, tier) {
   if (!stock || !TIERS.includes(tier)) return null;
   if (stock.usListed === false) return null; // US-listed universe only
@@ -188,6 +189,8 @@ function scoreStock(stock, tier) {
     quality: comp('quality'),
     news: comp('news'),
   };
+  // Eligibility floor: riskFit of 0 means the volatility is wrong for this tier, whatever else is strong.
+  if (scoreBreakdown.riskFit === 0) return null;
   const matchScore = scoreBreakdown.signal + scoreBreakdown.riskFit + scoreBreakdown.cost + scoreBreakdown.quality + scoreBreakdown.news;
   return { tier, matchScore, scoreBreakdown, why: buildWhy(scoreBreakdown) };
 }

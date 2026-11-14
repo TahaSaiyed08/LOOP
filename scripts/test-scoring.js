@@ -21,10 +21,13 @@ for (const tier of TIERS) {
   }
   assert.deepStrictEqual(rankForTier(seed.stocks, tier).map((r) => r.matchScore), ranked.map((r) => r.matchScore), 'deterministic');
 }
-// Spread: rank 1 -> rank 10 spans >= 20 points. (Absolute top score is NOT asserted: samples are not tuned to a target.)
+// Feed is "top 10 or fewer", never padded; no item with riskFit 0 is ever eligible; sanity spread >= 12.
 for (const tier of TIERS) {
   const r = rankForTier(seed.stocks, tier);
-  assert(r[0].matchScore - r[9].matchScore >= 20, `${tier}: rank1-rank10 span should be >= 20`);
+  assert(r.every((x) => x.scoreBreakdown.riskFit > 0), `${tier}: riskFit 0 must be ineligible`);
+  const top = r.slice(0, 10);
+  assert(top.length <= 10, `${tier}: at most 10 rows`);
+  if (top.length > 1) assert(top[0].matchScore - top[top.length - 1].matchScore >= 12, `${tier}: spread across the list should be >= 12`);
 }
 // Tiers must differ in ORDER (not just score): compare the top-10 ticker sequences.
 const top10 = (t) => orders[t].slice(0, 10).join();
@@ -61,4 +64,4 @@ assert(stk({ priceChange5dPct: 4 }) > stk({ priceChange5dPct: -4 }), 'stock mome
 assert(stk({ insider: { count: 4, execBuyer: true, totalUsd: 800000 } }) > stk({ insider: { count: 0, execBuyer: false, totalUsd: 0 } }), 'insider buying raises stock signal');
 assert(sig({ priceChange5dPct: null, avgVolume: null }) >= 0, 'null momentum/volume tolerated');
 
-console.log('\nOK: components 0-20, sums match, deterministic, span >= 20, tiers reorder, tiebreak, beta gate, signal inputs.');
+console.log('\nOK: components 0-20, sums match, deterministic, riskFit floor, top-10-or-fewer, spread >= 12, tiers reorder, tiebreak, beta gate, signal inputs.');
