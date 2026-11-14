@@ -1,0 +1,302 @@
+[
+  {
+    "id": "826085",
+    "rank": 1,
+    "ticker": "VOO",
+    "companyName": "Vanguard S&P 500 ETF",
+    "category": "index_etf",
+    "tier": "medium",
+    "matchScore": 88,
+    "scoreBreakdown": {
+      "signal": 18,
+      "riskFit": 19,
+      "cost": 20,
+      "quality": 19,
+      "news": 12
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 512.4,
+    "bullCase": "One fund holds roughly 500 of the largest US companies, so a single stumble barely moves it. The 0.03% fee leaves almost all of the return with the investor, which matters over years of small deposits.",
+    "bearCase": "It is concentrated in a handful of mega-cap tech names, so it is less diversified than the 500-stock count suggests. A broad US downturn would hit it fully, and it has no bond cushion.",
+    "verdict": "Cost and diversification are hard to beat for a long horizon, but expect normal stock market swings. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Fed holds rates steady",
+        "stance": "supports",
+        "url": "https://example.com/fed-holds-rates-steady"
+      },
+      {
+        "headline": "S&P 500 earnings growth tops forecasts",
+        "stance": "supports",
+        "url": "https://example.com/s-p-500-earnings-growth-tops-forecasts"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "79e86b",
+    "rank": 2,
+    "ticker": "VTI",
+    "companyName": "Vanguard Total Stock Market ETF",
+    "category": "index_etf",
+    "tier": "medium",
+    "matchScore": 86,
+    "scoreBreakdown": {
+      "signal": 17,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 19,
+      "news": 10
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 284.1,
+    "bullCase": "It covers large, mid and small US companies in one holding, the widest spread of any simple choice. The 0.03% fee keeps costs negligible.",
+    "bearCase": "About three quarters of the fund is large companies, so it behaves much like an S&P 500 fund. It offers no protection outside US stocks.",
+    "verdict": "A simple one-fund holding for a long horizon. It overlaps heavily with VOO, so holding both adds little. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Small-cap stocks rebound on lower yields",
+        "stance": "supports",
+        "url": "https://example.com/small-cap-stocks-rebound-on-lower-yields"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "682bc0",
+    "rank": 3,
+    "ticker": "QQQ",
+    "companyName": "Invesco QQQ Trust",
+    "category": "index_etf",
+    "tier": "medium",
+    "matchScore": 80,
+    "scoreBreakdown": {
+      "signal": 16,
+      "riskFit": 20,
+      "cost": 15,
+      "quality": 18,
+      "news": 11
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 531.7,
+    "bullCase": "It tracks the 100 largest non-financial Nasdaq companies, giving direct exposure to the firms driving software, chips and AI. Over long stretches it has outpaced the broader market.",
+    "bearCase": "Roughly half the fund sits in a few giant tech names, so a tech selloff hits it harder than a total-market fund. The 0.20% fee is higher than the broad index funds.",
+    "verdict": "Growth-oriented and more volatile than a total-market fund, so it sits between cautious and aggressive profiles. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Chip stocks lead Nasdaq higher",
+        "stance": "supports",
+        "url": "https://example.com/chip-stocks-lead-nasdaq-higher"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "3ad54e",
+    "rank": 4,
+    "ticker": "XLK",
+    "companyName": "Technology Select Sector SPDR Fund",
+    "category": "sector_etf",
+    "tier": "medium",
+    "matchScore": 75,
+    "scoreBreakdown": {
+      "signal": 15,
+      "riskFit": 19,
+      "cost": 18,
+      "quality": 12,
+      "news": 11
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 232,
+    "bullCase": "One fund bundles the biggest US technology companies, including software, chips and hardware. It has benefited from the surge in AI spending.",
+    "bearCase": "The top three holdings make up a large share of the fund, so it is far less diversified than a broad index fund. Tech tends to fall hardest when interest rates rise.",
+    "verdict": "A concentrated bet on one sector, suited to those comfortable with larger swings. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Tech earnings beat on AI spending",
+        "stance": "supports",
+        "url": "https://example.com/tech-earnings-beat-on-ai-spending"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "5b2f7a",
+    "rank": 5,
+    "ticker": "SCHD",
+    "companyName": "Schwab U.S. Dividend Equity ETF",
+    "category": "dividend_etf",
+    "tier": "medium",
+    "matchScore": 74,
+    "scoreBreakdown": {
+      "signal": 15,
+      "riskFit": 13,
+      "cost": 17,
+      "quality": 18,
+      "news": 11
+    },
+    "why": "Large, established holding",
+    "price": 28.65,
+    "bullCase": "It screens for companies with long records of paying and growing dividends, which tends to favor financially sturdy businesses. The 0.06% fee is low and the yield gives regular income to reinvest.",
+    "bearCase": "Dividend-focused funds can lag in strong growth rallies led by tech. US dividends are also subject to withholding tax in some Canadian account types, which trims the yield.",
+    "verdict": "A steady, income-leaning option with the tradeoff of slower upside in tech-led markets. A moderate fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Dividend stocks draw inflows as rates level off",
+        "stance": "supports",
+        "url": "https://example.com/dividend-stocks-draw-inflows-as-rates-level-off"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "cac7a9",
+    "rank": 6,
+    "ticker": "VIG",
+    "companyName": "Vanguard Dividend Appreciation ETF",
+    "category": "dividend_etf",
+    "tier": "medium",
+    "matchScore": 73,
+    "scoreBreakdown": {
+      "signal": 15,
+      "riskFit": 15,
+      "cost": 19,
+      "quality": 17,
+      "news": 7
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 204.6,
+    "bullCase": "It holds US companies with at least ten years of rising dividends, which favors durable, well-run businesses. The 0.05% fee is low.",
+    "bearCase": "The starting yield is small, so it offers little income today. Its top holdings overlap with broad market funds, limiting extra diversification.",
+    "verdict": "A quality-focused long-term holding, with a low current yield as the main tradeoff. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Dividend growth slows across large caps",
+        "stance": "neutral",
+        "url": "https://example.com/dividend-growth-slows-across-large-caps"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "a4a098",
+    "rank": 7,
+    "ticker": "VYM",
+    "companyName": "Vanguard High Dividend Yield ETF",
+    "category": "dividend_etf",
+    "tier": "medium",
+    "matchScore": 73,
+    "scoreBreakdown": {
+      "signal": 15,
+      "riskFit": 14,
+      "cost": 17,
+      "quality": 17,
+      "news": 10
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 128.9,
+    "bullCase": "It spreads money across about 500 large US companies paying above-average dividends. Holdings lean toward financials, healthcare and consumer staples, which tend to hold up in rough markets.",
+    "bearCase": "It has little exposure to technology, so it can trail the overall market during tech-driven rallies. A high yield can also signal a stock under pressure.",
+    "verdict": "A reasonable income-minded holding. It overlaps with SCHD, so picking one is usually enough. A moderate fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Bank earnings support higher payouts",
+        "stance": "supports",
+        "url": "https://example.com/bank-earnings-support-higher-payouts"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "288585",
+    "rank": 8,
+    "ticker": "MSFT",
+    "companyName": "Microsoft",
+    "category": "large_cap",
+    "tier": "medium",
+    "matchScore": 71,
+    "scoreBreakdown": {
+      "signal": 5,
+      "riskFit": 20,
+      "cost": 14,
+      "quality": 20,
+      "news": 12
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 428.3,
+    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
+    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
+    "verdict": "Strong business quality, but it is a single stock priced for success. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Microsoft cloud revenue grows faster than expected",
+        "stance": "supports",
+        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "2bb14f",
+    "rank": 9,
+    "ticker": "NVDA",
+    "companyName": "NVIDIA",
+    "category": "large_cap",
+    "tier": "medium",
+    "matchScore": 69,
+    "scoreBreakdown": {
+      "signal": 20,
+      "riskFit": 4,
+      "cost": 10,
+      "quality": 20,
+      "news": 15
+    },
+    "why": "Notable insider activity at the company",
+    "price": 141.2,
+    "bullCase": "It designs the chips that power most AI data centers, and sales and profits have grown very fast. Company insiders have been buying recently, a sign of internal confidence.",
+    "bearCase": "The valuation is high, so even good results can disappoint investors. Sales depend on a few large customers, and export limits or new competitors could slow growth.",
+    "verdict": "High growth with high volatility, suited to people who can ride out large price swings. A loose fit for the Some knowledge profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "NVIDIA data-center demand stays strong",
+        "stance": "supports",
+        "url": "https://example.com/nvidia-data-center-demand-stays-strong"
+      },
+      {
+        "headline": "NVIDIA unveils next-generation data-center chip",
+        "stance": "supports",
+        "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "9ff18e",
+    "rank": 10,
+    "ticker": "XLE",
+    "companyName": "Energy Select Sector SPDR Fund",
+    "category": "sector_etf",
+    "tier": "medium",
+    "matchScore": 68,
+    "scoreBreakdown": {
+      "signal": 14,
+      "riskFit": 18,
+      "cost": 16,
+      "quality": 14,
+      "news": 6
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 91.35,
+    "bullCase": "It holds the large US oil and gas producers, which pay generous dividends and often rise when inflation does. Energy can balance a portfolio heavy in tech.",
+    "bearCase": "Energy company earnings follow oil prices, which swing widely and are hard to predict. Long-term demand worries about fossil fuels add uncertainty.",
+    "verdict": "A cyclical sector fund that can diversify a portfolio but moves with commodity prices. A close fit for the Some knowledge profile.",
+    "newsTags": [
+      {
+        "headline": "Oil slips as supply outlook improves",
+        "stance": "challenges",
+        "url": "https://example.com/oil-slips-as-supply-outlook-improves"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  }
+]

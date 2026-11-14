@@ -9,7 +9,11 @@
 //   quality - size/category robustness, plus a small income bonus
 //   news    - mean news sentiment, shrunk toward neutral when there are few items
 //
-// Each component = round(20 * min(1, raw * tierWeight)). Weights differ per tier.
+// Each component = round(20 * min(1, calibrated * tierWeight)), where
+//   calibrated = clamp01((raw - lo) / (hi - lo))   (CALIBRATION: stretches each raw
+//   score's realistic range onto 0-1 so the full 0-100 scale is used). Weights differ per tier.
+// ETFs/crypto have no insider data, so their `signal` is imputed as the rounded mean of
+// their other four components (no evidence = no better and no worse than the rest).
 
 const TIERS = ['low', 'medium', 'high'];
 
@@ -29,9 +33,18 @@ const ELIGIBILITY = {
 
 // Per-tier weight table (multiplies the 0-1 raw score before capping at 20).
 const WEIGHTS = {
-  low:    { signal: 0.70, riskFit: 1.30, cost: 1.20, quality: 1.15, news: 0.80 },
+  low:    { signal: 0.90, riskFit: 1.25, cost: 1.20, quality: 1.10, news: 0.95 },
   medium: { signal: 1.00, riskFit: 1.10, cost: 1.00, quality: 1.00, news: 1.00 },
-  high:   { signal: 1.30, riskFit: 0.85, cost: 0.75, quality: 0.85, news: 1.25 },
+  high:   { signal: 1.30, riskFit: 1.00, cost: 1.00, quality: 1.00, news: 1.25 },
+};
+
+// Realistic [lo, hi] range of each raw score, stretched onto 0-1 before weighting.
+const CALIBRATION = {
+  signal:  [0.30, 0.85],
+  riskFit: [0.00, 1.00],
+  cost:    [0.10, 0.92],
+  quality: [0.20, 0.88],
+  news:    [0.30, 0.80],
 };
 
 // Beta each tier is aiming for, and how far off (in beta) drives riskFit to zero.
@@ -56,13 +69,14 @@ const FUND_QUALITY = {
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const isNum = (x) => typeof x === 'number' && Number.isFinite(x);
 const isStockLike = (cat) => ['large_cap', 'mid_cap', 'small_cap', 'reit'].includes(cat);
+const hasInsiderData = (s) => isStockLike(s.category);
 
 function isEligible(category, tier) {
   return Boolean(ELIGIBILITY[category] && ELIGIBILITY[category].includes(tier));
 }
 
 function rawSignal(s) {
-  if (!isStockLike(s.category)) return 0.5; // no insider data for ETFs/crypto
+  if (!hasInsiderData(s)) return 0.5; // unused for ETFs/crypto: their signal is imputed in scoreStock
   const ins = s.insider || {};
   const count = isNum(ins.count) ? ins.count : 0;
   const usd = isNum(ins.totalUsd) ? ins.totalUsd : 0;
@@ -79,7 +93,7 @@ function rawRiskFit(s, tier) {
 function rawCost(s) {
   let base;
   if (isNum(s.merPct)) base = clamp01(1 - s.merPct / 0.75); // ETF fee: 0% -> 1, 0.75%+ -> 0
-  else if (s.category !== 'reit' && isNum(s.peRatio) && s.peRatio > 0) base = clamp01(1 - (s.peRatio - 15) / 35); // P/E 15 -> 1, 50+ -> 0
+  else if (s.category !== 'reit' && isNum(s.peRatio) && s.peRatio > 0) base = clamp01(1 - (s.peRatio - 15) / 65); // P/E 15 -> 1, 80+ -> 0
   else if (s.category === 'crypto') base = 0.3;
   else base = 0.4; // unknown/negative earnings, or a REIT (P/E is not meaningful for REITs)
   const yieldPct = isNum(s.dividendYieldPct) ? s.dividendYieldPct : 0;
@@ -134,12 +148,15 @@ function scoreStock(stock, tier) {
     quality: rawQuality(stock),
     news: rawNews(stock),
   };
-  const scoreBreakdown = {};
-  let matchScore = 0;
-  for (const k of ['signal', 'riskFit', 'cost', 'quality', 'news']) {
-    scoreBreakdown[k] = Math.round(20 * Math.min(1, raw[k] * w[k]));
-    matchScore += scoreBreakdown[k];
-  }
+  const comp = (k) => {
+    const [lo, hi] = CALIBRATION[k];
+    return Math.round(20 * Math.min(1, clamp01((raw[k] - lo) / (hi - lo)) * w[k]));
+  };
+  const scoreBreakdown = { signal: 0, riskFit: comp('riskFit'), cost: comp('cost'), quality: comp('quality'), news: comp('news') };
+  scoreBreakdown.signal = hasInsiderData(stock)
+    ? comp('signal')
+    : Math.round((scoreBreakdown.riskFit + scoreBreakdown.cost + scoreBreakdown.quality + scoreBreakdown.news) / 4);
+  const matchScore = scoreBreakdown.signal + scoreBreakdown.riskFit + scoreBreakdown.cost + scoreBreakdown.quality + scoreBreakdown.news;
   return { tier, matchScore, scoreBreakdown, why: buildWhy(scoreBreakdown) };
 }
 

@@ -21,8 +21,17 @@ for (const tier of TIERS) {
   }
   assert.deepStrictEqual(rankForTier(seed.stocks, tier).map((r) => r.matchScore), ranked.map((r) => r.matchScore), 'deterministic');
 }
-assert.notDeepStrictEqual(orders.low, orders.medium, 'low and medium should differ');
-assert.notDeepStrictEqual(orders.medium, orders.high, 'medium and high should differ');
+// Calibration: best candidate in the high 80s+, rank 1 -> rank 10 spans >= 20 points.
+for (const tier of TIERS) {
+  const r = rankForTier(seed.stocks, tier);
+  assert(r[0].matchScore >= 85, `${tier}: top score ${r[0].matchScore} should be >= 85`);
+  assert(r[0].matchScore - r[9].matchScore >= 20, `${tier}: rank1-rank10 span should be >= 20`);
+}
+// Tiers must differ in ORDER (not just score): compare the top-10 ticker sequences.
+const top10 = (t) => orders[t].slice(0, 10).join();
+assert.notStrictEqual(top10('low'), top10('medium'), 'low and medium top-10 order should differ');
+assert.notStrictEqual(top10('medium'), top10('high'), 'medium and high top-10 order should differ');
+assert.notStrictEqual(top10('low'), top10('high'), 'low and high top-10 order should differ');
 console.log('\nTop 5 by tier:');
 for (const t of TIERS) console.log(`  ${t.padEnd(6)} ${orders[t].slice(0, 5).join(', ')}`);
-console.log('\nOK: components 0-20, sums match, deterministic, tiers reorder.');
+console.log('\nOK: components 0-20, sums match, deterministic, top >= 85, span >= 20, tiers reorder.');

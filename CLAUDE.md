@@ -120,9 +120,12 @@ The five breakdown parts are each 0 to 20 and sum to `matchScore`. `bullCase`, `
   "value": 10340,
   "returnPct": 3.4,
   "whatIfLine": "With real money since Oct 28 you would be up $340",
-  "positions": [ { "ticker": "VOO", "qty": 2, "entryPrice": 498.1, "currentPrice": 512.4, "plUsd": 28.6, "plPct": 2.9 } ]
+  "positions": [ { "ticker": "VOO", "qty": 2, "entryPrice": 498.1, "currentPrice": 512.4, "plUsd": 28.6, "plPct": 2.9 } ],
+  "trades": [ { "ticker": "VOO", "side": "buy", "qty": 2, "price": 498.1, "at": "2026-10-28T14:30:00Z" } ]
 }
 ```
+
+`positions` are aggregate per ticker with no date (`entryPrice` is the quantity-weighted average of that ticker's buys). `trades` is the order history (maps to Alpaca's orders endpoint), one row per filled order, newest first, `side` is `buy` or `sell`. *Amendment (Taha, Nov 14): `trades` added to Contract D.*
 
 Alpaca paper API backs it. Seed 3 to 4 trades backdated 2 to 3 weeks so the demo shows real movement.
 

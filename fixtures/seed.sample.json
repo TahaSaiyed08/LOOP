@@ -307,10 +307,10 @@
           "datetime": "2026-11-15T13:00:00Z"
         },
         {
-          "headline": "Export limits could trim chip sales",
+          "headline": "NVIDIA unveils next-generation data-center chip",
           "source": "Reuters",
-          "url": "https://example.com/export-limits-could-trim-chip-sales",
-          "sentiment": -0.3,
+          "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip",
+          "sentiment": 0.5,
           "datetime": "2026-11-15T13:00:00Z"
         }
       ]

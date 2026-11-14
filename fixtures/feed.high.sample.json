@@ -1,0 +1,312 @@
+[
+  {
+    "id": "ec71eb",
+    "rank": 1,
+    "ticker": "NVDA",
+    "companyName": "NVIDIA",
+    "category": "large_cap",
+    "tier": "high",
+    "matchScore": 88,
+    "scoreBreakdown": {
+      "signal": 20,
+      "riskFit": 19,
+      "cost": 10,
+      "quality": 20,
+      "news": 19
+    },
+    "why": "Notable insider activity at the company",
+    "price": 141.2,
+    "bullCase": "It designs the chips that power most AI data centers, and sales and profits have grown very fast. Company insiders have been buying recently, a sign of internal confidence.",
+    "bearCase": "The valuation is high, so even good results can disappoint investors. Sales depend on a few large customers, and export limits or new competitors could slow growth.",
+    "verdict": "High growth with high volatility, suited to people who can ride out large price swings. A close fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "NVIDIA data-center demand stays strong",
+        "stance": "supports",
+        "url": "https://example.com/nvidia-data-center-demand-stays-strong"
+      },
+      {
+        "headline": "NVIDIA unveils next-generation data-center chip",
+        "stance": "supports",
+        "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "f43fe1",
+    "rank": 2,
+    "ticker": "ETSY",
+    "companyName": "Etsy",
+    "category": "mid_cap",
+    "tier": "high",
+    "matchScore": 73,
+    "scoreBreakdown": {
+      "signal": 20,
+      "riskFit": 17,
+      "cost": 17,
+      "quality": 6,
+      "news": 13
+    },
+    "why": "Notable insider activity at the company",
+    "price": 64.2,
+    "bullCase": "The online marketplace has stabilized sales after a rough stretch, and several executives have bought shares in the open market. Its valuation is far below its past peaks.",
+    "bearCase": "Competition from larger marketplaces is intense, and shoppers have cut back on discretionary spending. As a mid-sized company, its share price can swing sharply.",
+    "verdict": "A recovery story with real insider support but a bumpy path. A close fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Etsy marketplace sales stabilize",
+        "stance": "supports",
+        "url": "https://example.com/etsy-marketplace-sales-stabilize"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "e5f52e",
+    "rank": 3,
+    "ticker": "XLK",
+    "companyName": "Technology Select Sector SPDR Fund",
+    "category": "sector_etf",
+    "tier": "high",
+    "matchScore": 68,
+    "scoreBreakdown": {
+      "signal": 14,
+      "riskFit": 10,
+      "cost": 18,
+      "quality": 12,
+      "news": 14
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 232,
+    "bullCase": "One fund bundles the biggest US technology companies, including software, chips and hardware. It has benefited from the surge in AI spending.",
+    "bearCase": "The top three holdings make up a large share of the fund, so it is far less diversified than a broad index fund. Tech tends to fall hardest when interest rates rise.",
+    "verdict": "A concentrated bet on one sector, suited to those comfortable with larger swings. A moderate fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Tech earnings beat on AI spending",
+        "stance": "supports",
+        "url": "https://example.com/tech-earnings-beat-on-ai-spending"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "771202",
+    "rank": 4,
+    "ticker": "MSFT",
+    "companyName": "Microsoft",
+    "category": "large_cap",
+    "tier": "high",
+    "matchScore": 63,
+    "scoreBreakdown": {
+      "signal": 6,
+      "riskFit": 8,
+      "cost": 14,
+      "quality": 20,
+      "news": 15
+    },
+    "why": "Large, established holding",
+    "price": 428.3,
+    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
+    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
+    "verdict": "Strong business quality, but it is a single stock priced for success. A moderate fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Microsoft cloud revenue grows faster than expected",
+        "stance": "supports",
+        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "46b45e",
+    "rank": 5,
+    "ticker": "PINS",
+    "companyName": "Pinterest",
+    "category": "mid_cap",
+    "tier": "high",
+    "matchScore": 62,
+    "scoreBreakdown": {
+      "signal": 9,
+      "riskFit": 12,
+      "cost": 16,
+      "quality": 11,
+      "news": 14
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 37.8,
+    "bullCase": "Advertising revenue and user numbers are both growing, and the company is turning consistent profits. Its shoppable-pins strategy gives it a clear path to more ad income.",
+    "bearCase": "It competes for ad dollars with much larger platforms, and ad budgets shrink quickly in a slowdown. Some insiders have been selling shares.",
+    "verdict": "A growing mid-sized company with the risk that comes with ad-driven revenue. A moderate fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Pinterest ad revenue grows, users rise",
+        "stance": "supports",
+        "url": "https://example.com/pinterest-ad-revenue-grows-users-rise"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "f2b555",
+    "rank": 6,
+    "ticker": "XLE",
+    "companyName": "Energy Select Sector SPDR Fund",
+    "category": "sector_etf",
+    "tier": "high",
+    "matchScore": 55,
+    "scoreBreakdown": {
+      "signal": 11,
+      "riskFit": 6,
+      "cost": 16,
+      "quality": 14,
+      "news": 8
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 91.35,
+    "bullCase": "It holds the large US oil and gas producers, which pay generous dividends and often rise when inflation does. Energy can balance a portfolio heavy in tech.",
+    "bearCase": "Energy company earnings follow oil prices, which swing widely and are hard to predict. Long-term demand worries about fossil fuels add uncertainty.",
+    "verdict": "A cyclical sector fund that can diversify a portfolio but moves with commodity prices. A loose fit for the Experienced profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "Oil slips as supply outlook improves",
+        "stance": "challenges",
+        "url": "https://example.com/oil-slips-as-supply-outlook-improves"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "8c9e2d",
+    "rank": 7,
+    "ticker": "JNJ",
+    "companyName": "Johnson & Johnson",
+    "category": "large_cap",
+    "tier": "high",
+    "matchScore": 54,
+    "scoreBreakdown": {
+      "signal": 6,
+      "riskFit": 0,
+      "cost": 19,
+      "quality": 20,
+      "news": 9
+    },
+    "why": "Large, established holding",
+    "price": 158.4,
+    "bullCase": "The company sells medicines and medical devices, which people need in any economy, so earnings are steady. It has raised its dividend for over 60 years and carries a top-tier credit rating.",
+    "bearCase": "Ongoing talc lawsuits could cost billions in settlements. Its drug patents also expire over time, so growth depends on new products.",
+    "verdict": "A stable single company, though one stock carries more risk than a fund. A loose fit for the Experienced profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "J&J raises full-year earnings outlook",
+        "stance": "supports",
+        "url": "https://example.com/j-j-raises-full-year-earnings-outlook"
+      },
+      {
+        "headline": "Court ruling revives talc claims",
+        "stance": "challenges",
+        "url": "https://example.com/court-ruling-revives-talc-claims"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "02b909",
+    "rank": 8,
+    "ticker": "PG",
+    "companyName": "Procter & Gamble",
+    "category": "large_cap",
+    "tier": "high",
+    "matchScore": 48,
+    "scoreBreakdown": {
+      "signal": 2,
+      "riskFit": 0,
+      "cost": 16,
+      "quality": 20,
+      "news": 10
+    },
+    "why": "Large, established holding",
+    "price": 167.2,
+    "bullCase": "Tide, Pampers and Gillette sell in good times and bad, giving the company dependable sales. It has paid a rising dividend for nearly 70 years and has strong pricing power.",
+    "bearCase": "Growth is slow because its products are already sold almost everywhere. Higher commodity costs and store-brand competition can squeeze profit margins.",
+    "verdict": "A calm, defensive single stock with modest growth compared with a broad fund. A loose fit for the Experienced profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "P&G cuts costs as input prices rise",
+        "stance": "neutral",
+        "url": "https://example.com/p-g-cuts-costs-as-input-prices-rise"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "ea0548",
+    "rank": 9,
+    "ticker": "ARKK",
+    "companyName": "ARK Innovation ETF",
+    "category": "thematic_etf",
+    "tier": "high",
+    "matchScore": 44,
+    "scoreBreakdown": {
+      "signal": 9,
+      "riskFit": 18,
+      "cost": 0,
+      "quality": 6,
+      "news": 11
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 57.8,
+    "bullCase": "The fund holds high-growth companies in genomics, robotics and fintech, which could grow quickly if their technologies take off. A concentrated, actively managed approach can pay off in strong innovation cycles.",
+    "bearCase": "It fell sharply in past downturns and has seen heavy outflows. The 0.75% fee is high, and many holdings are not yet profitable.",
+    "verdict": "A volatile theme fund that has taken large losses in down markets, for experienced investors only. A close fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Innovation funds see outflows",
+        "stance": "challenges",
+        "url": "https://example.com/innovation-funds-see-outflows"
+      },
+      {
+        "headline": "Genomics firms report early trial gains",
+        "stance": "supports",
+        "url": "https://example.com/genomics-firms-report-early-trial-gains"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "daedcf",
+    "rank": 10,
+    "ticker": "PLUG",
+    "companyName": "Plug Power",
+    "category": "small_cap",
+    "tier": "high",
+    "matchScore": 42,
+    "scoreBreakdown": {
+      "signal": 8,
+      "riskFit": 18,
+      "cost": 7,
+      "quality": 1,
+      "news": 8
+    },
+    "why": "Volatility is a close fit for this risk level",
+    "price": 2.1,
+    "bullCase": "The company makes hydrogen fuel cells and is narrowing its losses as it scales up. A policy push toward clean energy could boost demand.",
+    "bearCase": "It has lost money for years and depends on raising more funds, which can dilute current shareholders. Project delays continue to weigh on the shares.",
+    "verdict": "A speculative small company where a full loss of value is possible. A close fit for the Experienced profile.",
+    "newsTags": [
+      {
+        "headline": "Plug Power narrows quarterly loss",
+        "stance": "supports",
+        "url": "https://example.com/plug-power-narrows-quarterly-loss"
+      },
+      {
+        "headline": "Hydrogen project delays weigh on shares",
+        "stance": "challenges",
+        "url": "https://example.com/hydrogen-project-delays-weigh-on-shares"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  }
+]

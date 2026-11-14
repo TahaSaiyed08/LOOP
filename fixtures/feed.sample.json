@@ -1,310 +1,310 @@
 [
   {
-    "id": "a1b2c3",
+    "id": "ad0c37",
     "rank": 1,
-    "ticker": "VOO",
-    "companyName": "Vanguard S&P 500 ETF",
-    "category": "index_etf",
-    "tier": "low",
-    "matchScore": 87,
-    "scoreBreakdown": {
-      "signal": 12,
-      "riskFit": 19,
-      "cost": 18,
-      "quality": 20,
-      "news": 18
-    },
-    "why": "Low fee broad market fit for a long horizon",
-    "price": 512.4,
-    "bullCase": "One fund holds roughly 500 of the largest US companies, so a single stumble barely moves it. The 0.03% fee leaves almost all of the return with the investor, which matters a lot over a decade of small deposits.",
-    "bearCase": "It is concentrated in a handful of mega-cap tech names, so it is less diversified than the 500-stock count suggests. A broad US downturn would hit it fully, and it has no bond cushion.",
-    "verdict": "A strong match for a long horizon and small recurring deposits. The cost and diversification are hard to beat, but expect normal stock market swings.",
-    "newsTags": [
-      {
-        "headline": "Fed holds rates steady",
-        "stance": "supports",
-        "url": "https://example.com/fed-holds"
-      },
-      {
-        "headline": "S&P 500 earnings growth tops forecasts",
-        "stance": "supports",
-        "url": "https://example.com/sp500-earnings"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "d4e5f6",
-    "rank": 2,
     "ticker": "SCHD",
     "companyName": "Schwab U.S. Dividend Equity ETF",
     "category": "dividend_etf",
     "tier": "low",
-    "matchScore": 83,
+    "matchScore": 88,
     "scoreBreakdown": {
-      "signal": 11,
-      "riskFit": 18,
-      "cost": 17,
-      "quality": 19,
-      "news": 18
+      "signal": 18,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 20,
+      "news": 10
     },
-    "why": "Steady dividend payers with a very low fee",
+    "why": "Volatility is a close fit for this risk level",
     "price": 28.65,
     "bullCase": "It screens for companies with long records of paying and growing dividends, which tends to favor financially sturdy businesses. The 0.06% fee is low and the yield gives regular income to reinvest.",
-    "bearCase": "Dividend-focused funds can lag in strong growth rallies led by tech. Dividends from US stocks are also subject to withholding tax in some Canadian account types, which reduces the yield.",
-    "verdict": "A solid match for someone who values steady income and quality, with the tradeoff of slower upside in tech-led markets.",
+    "bearCase": "Dividend-focused funds can lag in strong growth rallies led by tech. US dividends are also subject to withholding tax in some Canadian account types, which trims the yield.",
+    "verdict": "A steady, income-leaning option with the tradeoff of slower upside in tech-led markets. A close fit for the Starting out profile.",
     "newsTags": [
       {
         "headline": "Dividend stocks draw inflows as rates level off",
         "stance": "supports",
-        "url": "https://example.com/dividend-inflows"
+        "url": "https://example.com/dividend-stocks-draw-inflows-as-rates-level-off"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "07a8b9",
-    "rank": 3,
-    "ticker": "VTI",
-    "companyName": "Vanguard Total Stock Market ETF",
-    "category": "index_etf",
-    "tier": "low",
-    "matchScore": 82,
-    "scoreBreakdown": {
-      "signal": 12,
-      "riskFit": 18,
-      "cost": 18,
-      "quality": 19,
-      "news": 15
-    },
-    "why": "Whole US market in one fund at minimal cost",
-    "price": 284.1,
-    "bullCase": "It covers large, mid and small US companies in one holding, giving the widest spread of any simple choice. The 0.03% fee keeps costs negligible.",
-    "bearCase": "About three quarters of the fund is large companies, so it behaves much like an S&P 500 fund. It offers no protection outside US stocks.",
-    "verdict": "A good match for a beginner who wants one simple holding. It overlaps heavily with VOO, so holding both adds little.",
-    "newsTags": [
-      {
-        "headline": "Small-cap stocks rebound on lower yields",
-        "stance": "supports",
-        "url": "https://example.com/small-cap-rebound"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "c0d1e2",
-    "rank": 4,
-    "ticker": "BND",
-    "companyName": "Vanguard Total Bond Market ETF",
-    "category": "bond_etf",
-    "tier": "low",
-    "matchScore": 80,
-    "scoreBreakdown": {
-      "signal": 8,
-      "riskFit": 20,
-      "cost": 17,
-      "quality": 18,
-      "news": 17
-    },
-    "why": "Bond cushion that dampens portfolio swings",
-    "price": 72.8,
-    "bullCase": "It holds thousands of investment-grade US bonds, which usually move far less than stocks. The 0.03% fee is low and the monthly interest adds a steady return.",
-    "bearCase": "When interest rates rise, existing bond prices fall, so it can lose value in a rate-hike cycle. Its long-run return is lower than stocks and may not beat inflation by much.",
-    "verdict": "A strong fit for lowering risk, less so for fast growth. Its main role is stability alongside a stock fund.",
-    "newsTags": [
-      {
-        "headline": "Fed signals rate cuts are not imminent",
-        "stance": "challenges",
-        "url": "https://example.com/fed-no-cuts"
-      },
-      {
-        "headline": "Treasury yields ease from monthly highs",
-        "stance": "supports",
-        "url": "https://example.com/yields-ease"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "f3a4b5",
-    "rank": 5,
-    "ticker": "JNJ",
-    "companyName": "Johnson & Johnson",
-    "category": "large_cap",
-    "tier": "low",
-    "matchScore": 79,
-    "scoreBreakdown": {
-      "signal": 11,
-      "riskFit": 17,
-      "cost": 20,
-      "quality": 16,
-      "news": 15
-    },
-    "why": "Large, stable healthcare company with a long dividend record",
-    "price": 158.4,
-    "bullCase": "The company sells medicines and medical devices, which people need in any economy, so earnings are steady. It has raised its dividend for over 60 years and carries a top-tier credit rating.",
-    "bearCase": "Ongoing talc lawsuits could cost billions in settlements. Its drug patents also expire over time, so growth depends on new products.",
-    "verdict": "It fits a cautious investor who wants a stable single company, but one stock carries more risk than a fund.",
-    "newsTags": [
-      {
-        "headline": "J&J raises full-year earnings outlook",
-        "stance": "supports",
-        "url": "https://example.com/jnj-outlook"
-      },
-      {
-        "headline": "Court ruling revives talc claims",
-        "stance": "challenges",
-        "url": "https://example.com/jnj-talc"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "96c7d8",
-    "rank": 6,
+    "id": "632d43",
+    "rank": 2,
     "ticker": "VYM",
     "companyName": "Vanguard High Dividend Yield ETF",
     "category": "dividend_etf",
     "tier": "low",
-    "matchScore": 77,
+    "matchScore": 86,
     "scoreBreakdown": {
-      "signal": 10,
-      "riskFit": 17,
-      "cost": 17,
-      "quality": 18,
-      "news": 15
+      "signal": 17,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 19,
+      "news": 10
     },
-    "why": "Broad high-dividend basket with a 0.06% fee",
+    "why": "Volatility is a close fit for this risk level",
     "price": 128.9,
-    "bullCase": "It spreads money across about 500 large US companies that pay above-average dividends. Holdings lean toward financials, healthcare and consumer staples, which tend to hold up in rough markets.",
+    "bullCase": "It spreads money across about 500 large US companies paying above-average dividends. Holdings lean toward financials, healthcare and consumer staples, which tend to hold up in rough markets.",
     "bearCase": "It has little exposure to technology, so it can trail the overall market during tech-driven rallies. A high yield can also signal a stock under pressure.",
-    "verdict": "A reasonable fit for income-minded long-term savers. It overlaps with SCHD, so picking one is usually enough.",
+    "verdict": "A reasonable income-minded holding. It overlaps with SCHD, so picking one is usually enough. A close fit for the Starting out profile.",
     "newsTags": [
       {
         "headline": "Bank earnings support higher payouts",
         "stance": "supports",
-        "url": "https://example.com/bank-payouts"
+        "url": "https://example.com/bank-earnings-support-higher-payouts"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "e9f0a1",
-    "rank": 7,
-    "ticker": "PG",
-    "companyName": "Procter & Gamble",
-    "category": "large_cap",
+    "id": "304fa8",
+    "rank": 3,
+    "ticker": "VOO",
+    "companyName": "Vanguard S&P 500 ETF",
+    "category": "index_etf",
     "tier": "low",
-    "matchScore": 75,
+    "matchScore": 85,
     "scoreBreakdown": {
-      "signal": 9,
-      "riskFit": 18,
-      "cost": 19,
-      "quality": 17,
-      "news": 12
-    },
-    "why": "Everyday household brands with reliable demand",
-    "price": 167.2,
-    "bullCase": "Tide, Pampers and Gillette sell in good times and bad, giving the company dependable sales. It has paid a rising dividend for nearly 70 years and has strong pricing power.",
-    "bearCase": "Growth is slow because its products are already sold almost everywhere. Higher commodity costs and store-brand competition can squeeze profit margins.",
-    "verdict": "A calm, defensive single stock. It suits low risk tolerance but offers modest growth compared with a broad fund.",
-    "newsTags": [
-      {
-        "headline": "P&G cuts costs as input prices rise",
-        "stance": "neutral",
-        "url": "https://example.com/pg-costs"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "b2c3d4",
-    "rank": 8,
-    "ticker": "O",
-    "companyName": "Realty Income",
-    "category": "reit",
-    "tier": "low",
-    "matchScore": 73,
-    "scoreBreakdown": {
-      "signal": 12,
-      "riskFit": 14,
-      "cost": 19,
-      "quality": 15,
-      "news": 13
-    },
-    "why": "Monthly-paying property company with long leases",
-    "price": 57.9,
-    "bullCase": "It owns more than 15,000 stores and other properties leased to chains on long contracts, and pays rent-based dividends monthly. Its payout has risen for decades.",
-    "bearCase": "Real estate companies carry heavy debt, so higher interest rates raise its borrowing costs and often push the share price down. Dividends are taxed as regular income in many accounts.",
-    "verdict": "A fit for income seekers who accept interest-rate sensitivity. It acts differently from stocks, which adds variety.",
-    "newsTags": [
-      {
-        "headline": "Fed signals rate cuts are not imminent",
-        "stance": "challenges",
-        "url": "https://example.com/fed-no-cuts"
-      },
-      {
-        "headline": "Realty Income acquires retail portfolio",
-        "stance": "supports",
-        "url": "https://example.com/o-acquisition"
-      }
-    ],
-    "updatedAt": "2026-11-15T14:05:00Z"
-  },
-  {
-    "id": "5e6f70",
-    "rank": 9,
-    "ticker": "MSFT",
-    "companyName": "Microsoft",
-    "category": "large_cap",
-    "tier": "low",
-    "matchScore": 71,
-    "scoreBreakdown": {
-      "signal": 13,
-      "riskFit": 12,
-      "cost": 19,
-      "quality": 16,
+      "signal": 17,
+      "riskFit": 17,
+      "cost": 20,
+      "quality": 20,
       "news": 11
     },
-    "why": "Large, profitable company with growing cloud business",
-    "price": 428.3,
-    "bullCase": "Its cloud, software and AI products produce huge, steadily growing profits and the balance sheet is among the strongest. It has been a long-term compounder.",
-    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
-    "verdict": "Strong business quality, but it is a single stock priced for success. It fits a medium risk appetite better than a first purchase.",
+    "why": "Low cost to hold relative to alternatives",
+    "price": 512.4,
+    "bullCase": "One fund holds roughly 500 of the largest US companies, so a single stumble barely moves it. The 0.03% fee leaves almost all of the return with the investor, which matters over years of small deposits.",
+    "bearCase": "It is concentrated in a handful of mega-cap tech names, so it is less diversified than the 500-stock count suggests. A broad US downturn would hit it fully, and it has no bond cushion.",
+    "verdict": "Cost and diversification are hard to beat for a long horizon, but expect normal stock market swings. A close fit for the Starting out profile.",
     "newsTags": [
       {
-        "headline": "Microsoft cloud revenue grows faster than expected",
+        "headline": "Fed holds rates steady",
         "stance": "supports",
-        "url": "https://example.com/msft-cloud"
+        "url": "https://example.com/fed-holds-rates-steady"
+      },
+      {
+        "headline": "S&P 500 earnings growth tops forecasts",
+        "stance": "supports",
+        "url": "https://example.com/s-p-500-earnings-growth-tops-forecasts"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"
   },
   {
-    "id": "81920a",
-    "rank": 10,
+    "id": "1120c5",
+    "rank": 4,
+    "ticker": "VTI",
+    "companyName": "Vanguard Total Stock Market ETF",
+    "category": "index_etf",
+    "tier": "low",
+    "matchScore": 83,
+    "scoreBreakdown": {
+      "signal": 17,
+      "riskFit": 16,
+      "cost": 20,
+      "quality": 20,
+      "news": 10
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 284.1,
+    "bullCase": "It covers large, mid and small US companies in one holding, the widest spread of any simple choice. The 0.03% fee keeps costs negligible.",
+    "bearCase": "About three quarters of the fund is large companies, so it behaves much like an S&P 500 fund. It offers no protection outside US stocks.",
+    "verdict": "A simple one-fund holding for a long horizon. It overlaps heavily with VOO, so holding both adds little. A close fit for the Starting out profile.",
+    "newsTags": [
+      {
+        "headline": "Small-cap stocks rebound on lower yields",
+        "stance": "supports",
+        "url": "https://example.com/small-cap-stocks-rebound-on-lower-yields"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "73e7a8",
+    "rank": 5,
     "ticker": "VIG",
     "companyName": "Vanguard Dividend Appreciation ETF",
     "category": "dividend_etf",
     "tier": "low",
-    "matchScore": 68,
+    "matchScore": 81,
     "scoreBreakdown": {
-      "signal": 8,
-      "riskFit": 17,
-      "cost": 17,
-      "quality": 17,
-      "news": 9
+      "signal": 16,
+      "riskFit": 20,
+      "cost": 20,
+      "quality": 18,
+      "news": 7
     },
-    "why": "Companies that keep raising their dividends",
+    "why": "Volatility is a close fit for this risk level",
     "price": 204.6,
     "bullCase": "It holds US companies with at least ten years of rising dividends, which favors durable, well-run businesses. The 0.05% fee is low.",
     "bearCase": "The starting yield is small, so it offers little income today. Its top holdings overlap with broad market funds, limiting extra diversification.",
-    "verdict": "A reasonable match for quality-focused long-term holders, ranked lower here because of its low current yield.",
+    "verdict": "A quality-focused long-term holding, with a low current yield as the main tradeoff. A close fit for the Starting out profile.",
     "newsTags": [
       {
         "headline": "Dividend growth slows across large caps",
         "stance": "neutral",
-        "url": "https://example.com/dividend-growth"
+        "url": "https://example.com/dividend-growth-slows-across-large-caps"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "e2b2a7",
+    "rank": 6,
+    "ticker": "QQQ",
+    "companyName": "Invesco QQQ Trust",
+    "category": "index_etf",
+    "tier": "low",
+    "matchScore": 75,
+    "scoreBreakdown": {
+      "signal": 15,
+      "riskFit": 11,
+      "cost": 18,
+      "quality": 20,
+      "news": 11
+    },
+    "why": "Large, established holding",
+    "price": 531.7,
+    "bullCase": "It tracks the 100 largest non-financial Nasdaq companies, giving direct exposure to the firms driving software, chips and AI. Over long stretches it has outpaced the broader market.",
+    "bearCase": "Roughly half the fund sits in a few giant tech names, so a tech selloff hits it harder than a total-market fund. The 0.20% fee is higher than the broad index funds.",
+    "verdict": "Growth-oriented and more volatile than a total-market fund, so it sits between cautious and aggressive profiles. A moderate fit for the Starting out profile.",
+    "newsTags": [
+      {
+        "headline": "Chip stocks lead Nasdaq higher",
+        "stance": "supports",
+        "url": "https://example.com/chip-stocks-lead-nasdaq-higher"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "8be7f5",
+    "rank": 7,
+    "ticker": "JNJ",
+    "companyName": "Johnson & Johnson",
+    "category": "large_cap",
+    "tier": "low",
+    "matchScore": 69,
+    "scoreBreakdown": {
+      "signal": 4,
+      "riskFit": 18,
+      "cost": 20,
+      "quality": 20,
+      "news": 7
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 158.4,
+    "bullCase": "The company sells medicines and medical devices, which people need in any economy, so earnings are steady. It has raised its dividend for over 60 years and carries a top-tier credit rating.",
+    "bearCase": "Ongoing talc lawsuits could cost billions in settlements. Its drug patents also expire over time, so growth depends on new products.",
+    "verdict": "A stable single company, though one stock carries more risk than a fund. A close fit for the Starting out profile.",
+    "newsTags": [
+      {
+        "headline": "J&J raises full-year earnings outlook",
+        "stance": "supports",
+        "url": "https://example.com/j-j-raises-full-year-earnings-outlook"
+      },
+      {
+        "headline": "Court ruling revives talc claims",
+        "stance": "challenges",
+        "url": "https://example.com/court-ruling-revives-talc-claims"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "86276b",
+    "rank": 8,
+    "ticker": "MSFT",
+    "companyName": "Microsoft",
+    "category": "large_cap",
+    "tier": "low",
+    "matchScore": 67,
+    "scoreBreakdown": {
+      "signal": 4,
+      "riskFit": 15,
+      "cost": 17,
+      "quality": 20,
+      "news": 11
+    },
+    "why": "Large, established holding",
+    "price": 428.3,
+    "bullCase": "Its cloud, software and AI products produce large, steadily growing profits, and the balance sheet is among the strongest. It has been a long-term compounder.",
+    "bearCase": "The share price already reflects high expectations, so any slowdown in cloud growth could cause a sharp drop. It pays a small dividend, so returns depend on price gains.",
+    "verdict": "Strong business quality, but it is a single stock priced for success. A close fit for the Starting out profile.",
+    "newsTags": [
+      {
+        "headline": "Microsoft cloud revenue grows faster than expected",
+        "stance": "supports",
+        "url": "https://example.com/microsoft-cloud-revenue-grows-faster-than-expected"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "9a8853",
+    "rank": 9,
+    "ticker": "NVDA",
+    "companyName": "NVIDIA",
+    "category": "large_cap",
+    "tier": "low",
+    "matchScore": 65,
+    "scoreBreakdown": {
+      "signal": 18,
+      "riskFit": 0,
+      "cost": 12,
+      "quality": 20,
+      "news": 15
+    },
+    "why": "Large, established holding",
+    "price": 141.2,
+    "bullCase": "It designs the chips that power most AI data centers, and sales and profits have grown very fast. Company insiders have been buying recently, a sign of internal confidence.",
+    "bearCase": "The valuation is high, so even good results can disappoint investors. Sales depend on a few large customers, and export limits or new competitors could slow growth.",
+    "verdict": "High growth with high volatility, suited to people who can ride out large price swings. A loose fit for the Starting out profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "NVIDIA data-center demand stays strong",
+        "stance": "supports",
+        "url": "https://example.com/nvidia-data-center-demand-stays-strong"
+      },
+      {
+        "headline": "NVIDIA unveils next-generation data-center chip",
+        "stance": "supports",
+        "url": "https://example.com/nvidia-unveils-next-generation-data-center-chip"
+      }
+    ],
+    "updatedAt": "2026-11-15T14:05:00Z"
+  },
+  {
+    "id": "e904ea",
+    "rank": 10,
+    "ticker": "BND",
+    "companyName": "Vanguard Total Bond Market ETF",
+    "category": "bond_etf",
+    "tier": "low",
+    "matchScore": 63,
+    "scoreBreakdown": {
+      "signal": 13,
+      "riskFit": 3,
+      "cost": 20,
+      "quality": 20,
+      "news": 7
+    },
+    "why": "Low cost to hold relative to alternatives",
+    "price": 72.8,
+    "bullCase": "It holds thousands of investment-grade US bonds, which usually move far less than stocks. The 0.03% fee is low and the monthly interest adds a steady return.",
+    "bearCase": "When interest rates rise, existing bond prices fall, so it can lose value in a rate-hike cycle. Its long-run return is lower than stocks and may not beat inflation by much.",
+    "verdict": "Mainly a stabilizer: it lowers swings but is not built for fast growth. A loose fit for the Starting out profile because its volatility differs from that risk level.",
+    "newsTags": [
+      {
+        "headline": "Fed signals rate cuts are not imminent",
+        "stance": "challenges",
+        "url": "https://example.com/fed-signals-rate-cuts-are-not-imminent"
+      },
+      {
+        "headline": "Treasury yields ease from monthly highs",
+        "stance": "supports",
+        "url": "https://example.com/treasury-yields-ease-from-monthly-highs"
       }
     ],
     "updatedAt": "2026-11-15T14:05:00Z"

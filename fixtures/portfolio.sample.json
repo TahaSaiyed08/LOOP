@@ -36,5 +36,42 @@
       "plUsd": -36,
       "plPct": -5.9
     }
+  ],
+  "trades": [
+    {
+      "ticker": "ARKK",
+      "side": "buy",
+      "qty": 10,
+      "price": 61.4,
+      "at": "2026-11-05T14:35:00Z"
+    },
+    {
+      "ticker": "VOO",
+      "side": "buy",
+      "qty": 4,
+      "price": 500.95,
+      "at": "2026-11-04T14:35:00Z"
+    },
+    {
+      "ticker": "XLE",
+      "side": "buy",
+      "qty": 12,
+      "price": 94.2,
+      "at": "2026-11-03T14:35:00Z"
+    },
+    {
+      "ticker": "AAPL",
+      "side": "buy",
+      "qty": 8,
+      "price": 226.5,
+      "at": "2026-10-30T14:35:00Z"
+    },
+    {
+      "ticker": "VOO",
+      "side": "buy",
+      "qty": 6,
+      "price": 496.2,
+      "at": "2026-10-28T14:35:00Z"
+    }
   ]
 }
