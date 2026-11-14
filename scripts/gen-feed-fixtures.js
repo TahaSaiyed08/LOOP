@@ -86,8 +86,18 @@ function verdictFor(ticker, tier, riskFit) {
   return `${base} ${fit}`;
 }
 
+// Fail once, listing every ticker that lacks hand-written text (e.g. after the live seed rebuild).
+const missing = new Set();
 for (const tier of TIERS) {
-  const ranked = rankForTier(seed.stocks, tier).slice(0, 10);
+  for (const r of rankForTier(seed.stocks, tier).slice(0, 10)) if (!TEXT[r.stock.ticker]) missing.add(r.stock.ticker);
+}
+if (missing.size) {
+  console.error(`Add bull/bear/verdict text to TEXT in scripts/gen-feed-fixtures.js for: ${[...missing].join(', ')}`);
+  process.exit(1);
+}
+
+for (const tier of TIERS) {
+  const ranked = rankForTier(seed.stocks, tier).slice(0, 10); // "top 10 or fewer", never padded
   const rows = ranked.map((r) => {
     const t = TEXT[r.stock.ticker];
     if (!t) throw new Error(`Missing hand-written text for ${r.stock.ticker}`);
