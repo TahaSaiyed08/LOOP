@@ -19,14 +19,24 @@ const r1 = (x) => Math.round(x * 10) / 10;
 const loadFixture = (name) => JSON.parse(JSON.stringify(require(path.join(FIXTURES, name))));
 const fixturePortfolio = () => loadFixture('portfolio.sample.json');
 
+// The honest label for a ledger entry that was NOT a real Alpaca execution (null when it was).
+const SAMPLE_NOTE = 'sample data, not a real order';
+function noteOf(t) {
+  if (t.fillNote) return t.fillNote;
+  if (t.seeded) return `demo trade, backdated: priced at the real close on ${String(t.at).slice(0, 10)}, no order was placed`;
+  return null;
+}
+
 // computePortfolio(trades, prices) -> Contract D. Pure. Only buys are supported.
+// fillNote (string|null) on each trade and position says when a fill was simulated or estimated.
 function computePortfolio(trades, prices, startValue = START_VALUE) {
   const byTicker = new Map();
   const chrono = [...trades].sort((a, b) => (a.at < b.at ? -1 : a.at > b.at ? 1 : 0));
   for (const t of chrono) {
-    const p = byTicker.get(t.ticker) || { ticker: t.ticker, qty: 0, cost: 0 };
+    const p = byTicker.get(t.ticker) || { ticker: t.ticker, qty: 0, cost: 0, notes: new Set() };
     p.qty += t.qty;
     p.cost += t.qty * t.price;
+    if (noteOf(t)) p.notes.add(noteOf(t));
     byTicker.set(t.ticker, p);
   }
   const positions = [];
@@ -36,7 +46,10 @@ function computePortfolio(trades, prices, startValue = START_VALUE) {
     const currentPrice = prices[p.ticker] ?? entryPrice;
     const plUsd = r2((currentPrice - entryPrice) * p.qty);
     totalPl += plUsd;
-    positions.push({ ticker: p.ticker, qty: Math.round(p.qty * 1e4) / 1e4, entryPrice, currentPrice, plUsd, plPct: r1(((currentPrice - entryPrice) / entryPrice) * 100) });
+    positions.push({
+      ticker: p.ticker, qty: Math.round(p.qty * 1e4) / 1e4, entryPrice, currentPrice, plUsd,
+      plPct: r1(((currentPrice - entryPrice) / entryPrice) * 100), fillNote: p.notes.size ? [...p.notes].join('; ') : null,
+    });
   }
   totalPl = r2(totalPl);
   const first = chrono[0];
@@ -51,7 +64,7 @@ function computePortfolio(trades, prices, startValue = START_VALUE) {
     returnPct: r1((totalPl / startValue) * 100),
     whatIfLine,
     positions,
-    trades: [...chrono].reverse().map(({ ticker, side, qty, price, at }) => ({ ticker, side, qty, price, at })), // newest first
+    trades: [...chrono].reverse().map((t) => ({ ticker: t.ticker, side: t.side, qty: t.qty, price: t.price, at: t.at, fillNote: noteOf(t) })), // newest first
   };
 }
 
@@ -68,46 +81,72 @@ function staticPrices() {
   return prices;
 }
 
-async function currentPrices(tickers) {
-  if (!alpaca.hasCredentials()) return staticPrices();
+// -> { prices, live }. live is true only if Alpaca answered with a price for EVERY requested ticker.
+async function livePrices(tickers) {
+  if (!alpaca.hasCredentials()) return { prices: staticPrices(), live: false };
   try {
-    return { ...staticPrices(), ...(await alpaca.getLatestPrices(tickers)) };
+    const got = await alpaca.getLatestPrices(tickers);
+    return { prices: { ...staticPrices(), ...got }, live: tickers.every((t) => got[t] > 0) };
   } catch (err) {
     console.warn('[paper] price lookup failed, using static prices:', err.message);
-    return staticPrices();
+    return { prices: staticPrices(), live: false };
   }
 }
+const currentPrices = async (tickers) => (await livePrices(tickers)).prices;
 
-// Ledger starts as the fixture trades (fixture mode) or, with Alpaca keys, whatever the seed script wrote.
+// Ledger starts as the fixture trades (flagged `sample`) or, with Alpaca keys, whatever the seed/buys wrote.
 function currentTrades() {
   const saved = ledger();
   if (saved && saved.length) return saved;
-  return fixturePortfolio().trades.map((t) => ({ ...t }));
+  return fixturePortfolio().trades.map((t) => ({ ticker: t.ticker, side: t.side, qty: t.qty, price: t.price, at: t.at, fillNote: SAMPLE_NOTE, sample: true }));
 }
 
+// -> { portfolio, source }. source is 'live' only with Alpaca prices for every ticker AND no sample-data
+// trades in the ledger; otherwise 'fixture' (the X-Data-Source header on /api/paper/portfolio).
 async function getPortfolio() {
   const trades = currentTrades();
-  const prices = await currentPrices(trades.map((t) => t.ticker));
-  return computePortfolio(trades, prices);
+  const { prices, live } = await livePrices([...new Set(trades.map((t) => t.ticker))]);
+  const source = live && !trades.some((t) => t.sample) ? 'live' : 'fixture';
+  return { portfolio: computePortfolio(trades, prices), source };
+}
+
+const money = (x) => `$${r2(x).toFixed(2)}`;
+const dayOf = (iso, tz) => (iso && !Number.isNaN(Date.parse(iso)) ? new Date(iso).toLocaleDateString('en-US', { weekday: 'long', timeZone: tz }) : null);
+
+// Why a buy was estimated instead of executed, in words a judge can read on screen.
+function unfilledNote(r) {
+  const price = money(r.entryPrice);
+  if (r.marketOpen === false) {
+    const day = dayOf(r.priceAt, 'America/New_York');
+    return `market closed, simulated at ${day ? `${day}'s` : 'the last'} close (${price}); order queued at Alpaca`;
+  }
+  if (r.marketOpen === null) return `market status unknown, position estimated at the latest price (${price})`;
+  return `order not filled yet, position estimated at the latest price (${price})`;
 }
 
 // buy(ticker, amountUsd) -> Contract D buy response. Real Alpaca paper order when keys work,
 // otherwise a simulated fill at the best known price. Either way it lands in the ledger.
+// The response carries fillNote: null for a real Alpaca fill, otherwise the plain-words reason it was estimated.
 async function buy(ticker, amountUsd) {
   let result;
-  if (alpaca.hasCredentials()) {
-    try { result = await alpaca.placePaperBuy(ticker, amountUsd); }
-    catch (err) { console.warn('[paper] Alpaca buy failed, simulating:', err.message); }
+  let fillNote = null;
+  const keys = alpaca.hasCredentials();
+  if (keys) {
+    try {
+      result = await alpaca.placePaperBuy(ticker, amountUsd);
+      if (!result.filled) fillNote = unfilledNote(result);
+    } catch (err) { console.warn('[paper] Alpaca buy failed, simulating:', err.message); }
   }
   if (!result) {
     const price = (await currentPrices([ticker]))[ticker];
     if (!price) { const e = new Error(`No price available for ${ticker}`); e.code = 'NO_PRICE'; throw e; }
     result = { orderId: `sim-${Date.now().toString(36)}`, ticker, qty: Math.round((amountUsd / price) * 1e4) / 1e4, entryPrice: price, filledAt: new Date().toISOString() };
+    fillNote = `${keys ? 'Alpaca unavailable' : 'paper trading offline (no Alpaca keys)'}, simulated fill at the last known price (${money(price)})`;
   }
   const trades = currentTrades();
-  trades.push({ ticker, side: 'buy', qty: result.qty, price: result.entryPrice, at: result.filledAt, orderId: result.orderId });
+  trades.push({ ticker, side: 'buy', qty: result.qty, price: result.entryPrice, at: result.filledAt, orderId: result.orderId, fillNote });
   saveLedger(trades);
-  return { orderId: result.orderId, ticker, qty: result.qty, entryPrice: result.entryPrice, filledAt: result.filledAt };
+  return { orderId: result.orderId, ticker, qty: result.qty, entryPrice: result.entryPrice, filledAt: result.filledAt, fillNote };
 }
 
 // ---- Demo scaffolding -------------------------------------------------------------------------

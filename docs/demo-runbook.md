@@ -8,8 +8,9 @@ Wording on stage: "candidates" and "matches", never "recommendations". Keep "Edu
 - **Render free tier sleeps** after ~15 min idle and takes up to a minute to wake.
 - **Render's disk is ephemeral.** Every restart, redeploy or env-var change wipes `data/db.json`: the seeded feed, the saved thesis, the paper ledger, the sentiment cache and the "email sent today" flag. After a wipe `/api/stocks` quietly serves fixture data until n8n seeds again.
 - **Never change an env var or deploy after you have seeded.** Do all of that first.
-- **The challenge email fires at most once per UTC day**, on the first "challenges" match after a thesis exists. Rehearsals that save a thesis can burn today's slot. Use the Reset procedure (section 5) before the real run.
-- **Fallbacks are silent.** If Alpaca is down, buys are simulated and the portfolio falls back to fixture trades, and the UI cannot tell. `npm run preflight` is how you find out.
+- **The challenge email fires at most once per UTC day**, on the first "challenges" match after a thesis exists. Rehearsals that save a thesis can burn today's slot. Clear it between rehearsals with `POST /api/admin/reset-notify` (section 5); no restart needed.
+- **Fallbacks are silent in the UI.** If Alpaca is down, buys are simulated and the portfolio falls back to fixture trades, and the UI shows no badge. The control is the `X-Data-Source: live | fixture` header on `/api/stocks` and `/api/paper/portfolio`, which `npm run preflight` checks.
+- **The market is closed on Sunday.** Stock buys cannot genuinely fill. The demo buy is a crypto ticker (section 3). Anything estimated or simulated carries a plain-words `fillNote`.
 
 ## 1. Env flags on Render (set well before the demo)
 
@@ -42,7 +43,7 @@ Times are relative to the start of the demo (T).
    - `sentimentMissing` true: the news score is a constant, reseed (see fallbacks).
    - `thesisIsStub` true: every typed goal returns the same fixture thesis; acceptable only if you say so.
    - rank 1 without bull/bear text: the council has not run; the detail drawer will show no analysis.
-   - portfolio IDENTICAL to fixture: running on fallback, not live Alpaca.
+   - portfolio IDENTICAL to fixture / `X-Data-Source: fixture` on `/api/paper/portfolio`: running on fallback, not live Alpaca.
 6. **T-30** Write down the top 3 per tier from the preflight output (cheat sheet for narration). Spot-check the expense ratios (MER) of any ETF in a top 10 against the issuer's page; they were entered from memory. MER is never shown as a number in the UI.
 7. **T-20 Test the email branch without using the backend's daily slot:** POST a sample Contract E body straight to the n8n production webhook URL:
    `curl -X POST "$N8N_URL" -H 'content-type: application/json' -d '{"to":"<inbox>","ticker":"VOO","headline":"Fed signals rate hikes","stance":"challenges","whyItMatters":"Test","thesisGoal":"Long-term growth","link":"https://tfsa-gold-site.onrender.com/#thesis"}'`
@@ -61,9 +62,13 @@ UI screens are from Anne's and Dianne's briefs; confirm the exact paths after th
 | 0:55 | Click the rank 1 row | Five-part score breakdown, bull case, bear case, council verdict, news tags. | Drawer opens |
 | 1:20 | Switch the tier chip: **Some knowledge**, then **Experienced** | The list reorders instantly. Same engine, different risk fit. | Orderings differ (preflight checks this) |
 | 1:50 | Back to onboarding or the goals box; type: "I want to invest $20 every two weeks and grow my money long-term." | Goals in plain English become a thesis with assumptions to monitor. | Thesis card with 2-3 assumptions |
-| 2:15 | **Paper buy** $500 on a row, then open the portfolio | Virtual money, real prices. The green "what if you had used real money" banner and the dated trades list. | Confirmation, then stat cards, banner, positions |
+| 2:15 | **Paper buy** $500 on **BTC/USD** (high tier; switch the tier chip first), then open the portfolio | Virtual money, real prices. Crypto trades 24/7, so this is a genuine Alpaca paper fill even on a Sunday. Then the green "what if you had used real money" banner and the dated trades list. | Confirmation with `fillNote: null`, then stat cards, banner, positions |
 | 2:45 | Show the email in the inbox | When news challenges an assumption, you hear about it. | "A development affects your thesis" (arrives when the thesis is saved and a challenge exists) |
 | 2:55 | Close | We are not another stock picker: we connect your goals to real-world events, with evidence. Educational research, not advice. | |
+
+**Demo path = crypto buy.** The stock buy (e.g. VOO) is a rehearsal-only check: on a closed market the response carries `fillNote` ("market closed, simulated at Friday's close ($X); order queued at Alpaca"). Do not use it on stage as a live execution.
+
+If a judge asks "did that actually execute?": the BTC/USD buy did, as an Alpaca paper order. The four backdated trades in the ledger are demo scaffolding priced from real daily bars with no order placed, and each says so in its `fillNote`.
 
 ## 4. Fallback at each step
 
@@ -75,15 +80,18 @@ UI screens are from Anne's and Dianne's briefs; confirm the exact paths after th
 | D. Drawer has no bull/bear/verdict | Council not wired or Gemini failed | Narrate from the score breakdown and news tags. Last resort: with no seed at all, `/api/stocks` serves the fixture feed, which has full hand-written text; say it is sample data. |
 | E. Sentiment missing (`sentimentMissing` true) | Gemini down or rate limited | Reseed with the fixture (step B). Or wait a minute and reseed; scores are cached for 7 days so a retry costs little. |
 | F. Thesis returns the same text for any goal | `thesisIsStub` is true | Use the example goal above, which matches the fixture, and do not claim it is personalized. |
-| G. Paper buy errors | Alpaca down or bad ticker | The backend simulates a fill at the last known price and the demo continues. Do not mash the button: each click adds a trade. |
-| H. Stock buy on a weekend | The market is closed (Sunday demo) | Alpaca queues the order; the app estimates quantity and entry price from the latest (Friday) price. Believed to work; verify in rehearsal. Crypto trades 24/7. |
-| I. Portfolio looks like the sample | Alpaca keys missing or unreachable | It is still a valid view. Say the numbers are seeded demo trades, which they are. |
-| J. Email does not arrive | Slot already used today, webhook URL wrong, Gmail credential | Check the n8n Notify Webhook execution. Show the template from the earlier test email (step 7). Reset procedure if you need a clean slot. |
+| G. Paper buy errors | Alpaca down or bad ticker | The backend simulates a fill at the last known price and the demo continues; the response `fillNote` says it was simulated (say so if asked). Do not mash the button: each click adds a trade. |
+| H. Stock buy on a weekend | The market is closed (Sunday demo) | Do not buy a stock on stage; buy BTC/USD (genuine fill, 24/7). If it happens anyway: Alpaca queues the order, the app estimates qty and entry price from the last trade, and the `fillNote` on the buy response and on the portfolio position/trade says "market closed, simulated at Friday's close". Present it as an estimate, not an execution. Verify in rehearsal. |
+| I. Portfolio looks like the sample | Alpaca keys missing or unreachable | Check `curl -si $URL/api/paper/portfolio` for `X-Data-Source: fixture`. It is still a valid view; say the numbers are sample/seeded demo trades (the `fillNote`s say so). |
+| J. Email does not arrive | Slot already used today, webhook URL wrong, Gmail credential | Check the n8n Notify Webhook execution. Show the template from the earlier test email (step 7). `POST /api/admin/reset-notify` if you need a clean slot. |
 | K. n8n run shows red on the first attempt | Cold start plus sentiment exceeded the 120 s timeout | The retries cover it. Better: warm Render first and do not show the n8n log live; show a recorded green execution instead. |
 
 ## 5. Reset procedure (clean slate after rehearsals)
 
-Do the last rehearsal, then reset, then do not touch anything but the click path:
+**Between rehearsals (no restart, keeps feed, ledger and thesis):** clear only the email flag:
+`curl -X POST "$URL/api/admin/reset-notify" -H "x-webhook-secret: $SECRET"` returns `{"ok":true,"previous":"<date or null>"}`. It does not delete the saved thesis; the next match run after it can send again.
+
+**Full clean slate** (a restart also costs a cold start and a reseed, so do it once, before the real run):
 
 1. Restart the service in the Render dashboard (this wipes feed, thesis, ledger, notify flag, sentiment cache).
 2. Wait for the boot log; confirm the `[demo-seed]` line.

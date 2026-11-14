@@ -109,7 +109,20 @@ async function main() {
     assert.deepStrictEqual(Object.keys(mail).sort(), ['headline', 'link', 'stance', 'thesisGoal', 'ticker', 'to', 'whyItMatters']);
     assert.strictEqual(mail.stance, 'challenges'); assert.strictEqual(mail.thesisGoal, th.goal);
     assert(mail.link.endsWith('/#thesis'));
-    console.log('\nOK: auth, fixture fallback, scorer==endpoint, riskFit floor, 10-or-fewer, sentiment warning, thesis stub, Contract E');
+
+    // Admin reset: same secret guard as the seed webhook; clears today's "already sent" flag
+    assert.strictEqual((await post('/api/admin/reset-notify', {})).status, 401, 'reset-notify needs the secret');
+    assert.strictEqual((await post('/api/admin/reset-notify', {}, { 'x-webhook-secret': 'nope' })).status, 401);
+    const reset = await (await post('/api/admin/reset-notify', {}, { 'x-webhook-secret': SECRET })).json();
+    assert.strictEqual(reset.ok, true); assert.strictEqual(reset.previous, new Date().toISOString().slice(0, 10));
+    await seedIt(withBad); await sleep(500);
+    assert.strictEqual(hooks.length, 3, 'a new email can fire after the reset');
+    await seedIt(withBad); await sleep(500);
+    assert.strictEqual(hooks.length, 3, 'and the one-per-day limit applies again');
+
+    // Portfolio source header (no Alpaca keys here, so always fixture)
+    assert.strictEqual((await get('/api/paper/portfolio')).headers.get('x-data-source'), 'fixture');
+    console.log('\nOK: auth, fixture fallback, scorer==endpoint, riskFit floor, 10-or-fewer, sentiment warning, thesis stub, Contract E, reset-notify');
   } catch (e) {
     console.error('\nFAILED:', e.message, '\n--- server log ---\n' + log);
     process.exitCode = 1;

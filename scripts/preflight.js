@@ -55,10 +55,12 @@ async function waitForServer() {
   if (!pr.ok || !p.positions || !p.positions.length) fail('portfolio is empty');
   else {
     ok(`${p.positions.length} positions, ${p.trades.length} trades, value $${p.value} (${p.returnPct}%)`);
-    const fx = require('../fixtures/portfolio.sample.json');
-    JSON.stringify(p) === JSON.stringify(fx)
-      ? warn('portfolio is IDENTICAL to the fixture: Alpaca keys missing, ledger empty or Alpaca unreachable (fine for a fallback demo, not live data)')
-      : ok('portfolio differs from fixture (live prices or live ledger)');
+    const src = pr.headers.get('x-data-source');
+    src === 'live'
+      ? ok('portfolio X-Data-Source: live (Alpaca prices for every position)')
+      : warn(`portfolio X-Data-Source: ${src}: Alpaca keys missing, ledger empty/sample, or Alpaca unreachable (fine as a fallback demo, not live data)`);
+    const noted = p.positions.filter((x) => x.fillNote);
+    for (const x of noted) console.log(`        ${x.ticker}: ${x.fillNote}`);
     console.log(`        "${p.whatIfLine}"`);
   }
 

@@ -125,7 +125,7 @@ The five breakdown parts are each 0 to 20 and sum to `matchScore`. The feed is t
 
 ### D: paper trading
 
-`POST /api/paper/buy` body `{ "ticker": "VOO", "amountUsd": 500 }` returns `{ "orderId", "ticker", "qty", "entryPrice", "filledAt" }`.
+`POST /api/paper/buy` body `{ "ticker": "VOO", "amountUsd": 500 }` returns `{ "orderId", "ticker", "qty", "entryPrice", "filledAt", "fillNote" }`. `fillNote` is `null` for a genuine Alpaca fill; otherwise a plain-words reason the fill was estimated or simulated, e.g. `"market closed, simulated at Friday's close ($512.40); order queued at Alpaca"`.
 
 `GET /api/paper/portfolio`:
 
@@ -135,12 +135,14 @@ The five breakdown parts are each 0 to 20 and sum to `matchScore`. The feed is t
   "value": 10340,
   "returnPct": 3.4,
   "whatIfLine": "With real money since Oct 28 you would be up $340",
-  "positions": [ { "ticker": "VOO", "qty": 2, "entryPrice": 498.1, "currentPrice": 512.4, "plUsd": 28.6, "plPct": 2.9 } ],
-  "trades": [ { "ticker": "VOO", "side": "buy", "qty": 2, "price": 498.1, "at": "2026-10-28T14:30:00Z" } ]
+  "positions": [ { "ticker": "VOO", "qty": 2, "entryPrice": 498.1, "currentPrice": 512.4, "plUsd": 28.6, "plPct": 2.9, "fillNote": null } ],
+  "trades": [ { "ticker": "VOO", "side": "buy", "qty": 2, "price": 498.1, "at": "2026-10-28T14:30:00Z", "fillNote": null } ]
 }
 ```
 
-`positions` are aggregate per ticker with no date (`entryPrice` is the quantity-weighted average of that ticker's buys). `trades` is the order history (maps to Alpaca's orders endpoint), one row per filled order, newest first, `side` is `buy` or `sell`. *Amendment (Taha, Nov 14): `trades` added to Contract D.*
+`positions` are aggregate per ticker with no date (`entryPrice` is the quantity-weighted average of that ticker's buys). `trades` is the order history (maps to Alpaca's orders endpoint), one row per filled order, newest first, `side` is `buy` or `sell`. *Amendment (Taha, Nov 14): `trades` added to Contract D.* *Amendment (Taha, Nov 14): `fillNote` (string or null) added to the buy response, to every position and to every trade. It is non-null for anything that was not a genuine Alpaca execution: sample-fixture data, backdated demo trades (priced at the real close, no order placed), simulated fills (no Alpaca keys or Alpaca down), and equity buys while the market is closed (position estimated from the last trade, order queued at Alpaca). A position's `fillNote` joins its trades' distinct notes with "; ". The UI may show it as small text; no badge is required.*
+
+`GET /api/paper/portfolio` also sets the response header `X-Data-Source: live | fixture`. `live` means Alpaca priced every position and the ledger contains no sample-fixture trades; any fallback is `fixture`. Same convention as `/api/stocks`.
 
 Alpaca paper API backs it. Seed 3 to 4 trades backdated 2 to 3 weeks so the demo shows real movement.
 

@@ -54,19 +54,30 @@ const split = (symbols) => {
   return { stocks: list.filter((s) => !isCrypto(s)), crypto: list.filter(isCrypto) };
 };
 
-// getLatestPrices(['VOO','BTC/USD']) -> { VOO: 512.4, 'BTC/USD': 98500 } (symbols with no data are omitted)
-async function getLatestPrices(symbols) {
+// getLatestTrades(['VOO','BTC/USD']) -> { VOO: { p: 512.4, t: '2026-11-13T20:59:58Z' }, ... } (symbols with no data are omitted)
+async function getLatestTrades(symbols) {
   const { stocks, crypto } = split(symbols);
   const out = {};
   if (stocks.length) {
     const d = await market('GET', '/v2/stocks/trades/latest', { query: { symbols: stocks.join(','), feed: 'iex' } });
-    for (const [sym, t] of Object.entries(d.trades || {})) if (t && t.p > 0) out[sym] = t.p;
+    for (const [sym, t] of Object.entries(d.trades || {})) if (t && t.p > 0) out[sym] = { p: t.p, t: t.t || null };
   }
   if (crypto.length) {
     const d = await market('GET', '/v1beta3/crypto/us/latest/trades', { query: { symbols: crypto.join(',') } });
-    for (const [sym, t] of Object.entries(d.trades || {})) if (t && t.p > 0) out[sym] = t.p;
+    for (const [sym, t] of Object.entries(d.trades || {})) if (t && t.p > 0) out[sym] = { p: t.p, t: t.t || null };
   }
   return out;
+}
+
+// getLatestPrices(['VOO','BTC/USD']) -> { VOO: 512.4, 'BTC/USD': 98500 } (symbols with no data are omitted)
+async function getLatestPrices(symbols) {
+  const trades = await getLatestTrades(symbols);
+  return Object.fromEntries(Object.entries(trades).map(([sym, t]) => [sym, t.p]));
+}
+
+// isMarketOpen() -> true | false, or null if the clock cannot be read. US equities only; crypto never closes.
+async function isMarketOpen() {
+  try { return Boolean((await trading('GET', '/v2/clock')).is_open); } catch { return null; }
 }
 
 // getBars(symbols, { days = 30 }) -> { VOO: [{t,o,h,l,c,v}, ...] } daily bars, oldest first. Follows pagination.
@@ -118,13 +129,19 @@ async function placePaperBuy(ticker, amountUsd) {
   if (order.status === 'filled' && Number(order.filled_avg_price) > 0) {
     return { orderId: order.id, ticker, qty: Number(order.filled_qty), entryPrice: Number(order.filled_avg_price), filledAt: order.filled_at, filled: true };
   }
-  const price = (await getLatestPrices([ticker]))[ticker];
-  if (!price) throw fail('NO_PRICE', `No price available for ${ticker}`);
-  return { orderId: order.id, ticker, qty: Math.round((amountUsd / price) * 1e6) / 1e6, entryPrice: price, filledAt: order.submitted_at || new Date().toISOString(), filled: false };
+  // Not filled: the order stays queued at Alpaca, and the position is ESTIMATED from the latest trade.
+  // priceAt (timestamp of that trade) and marketOpen let the caller say honestly why it was estimated.
+  const latest = (await getLatestTrades([ticker]))[ticker];
+  if (!latest) throw fail('NO_PRICE', `No price available for ${ticker}`);
+  const marketOpen = crypto ? true : await isMarketOpen();
+  return {
+    orderId: order.id, ticker, qty: Math.round((amountUsd / latest.p) * 1e6) / 1e6, entryPrice: latest.p,
+    filledAt: order.submitted_at || new Date().toISOString(), filled: false, priceAt: latest.t, marketOpen,
+  };
 }
 
 const getPositions = () => trading('GET', '/v2/positions');
 const getAccount = () => trading('GET', '/v2/account');
 const getOrders = (limit = 100) => trading('GET', '/v2/orders', { query: { status: 'all', direction: 'desc', limit } });
 
-module.exports = { hasCredentials, isCrypto, getLatestPrices, getBars, summarizeBars, placePaperBuy, getPositions, getAccount, getOrders };
+module.exports = { hasCredentials, isCrypto, getLatestTrades, getLatestPrices, isMarketOpen, getBars, summarizeBars, placePaperBuy, getPositions, getAccount, getOrders };

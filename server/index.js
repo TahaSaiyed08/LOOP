@@ -115,13 +115,28 @@ app.post('/api/paper/buy', async (req, res) => {
   }
 });
 
+// X-Data-Source: live (Alpaca prices for every position, no sample trades) or fixture (any fallback).
 app.get('/api/paper/portfolio', async (req, res) => {
   try {
-    res.json(await paper.getPortfolio());
+    const { portfolio, source } = await paper.getPortfolio();
+    res.set('X-Data-Source', source);
+    res.json(portfolio);
   } catch (err) {
     console.warn('[paper/portfolio] falling back to fixture:', err.message);
+    res.set('X-Data-Source', 'fixture');
     res.json(require('../fixtures/portfolio.sample.json')); // never render empty
   }
+});
+
+// Admin: clear the "challenge email already sent today" flag so a rehearsal does not burn the demo's email.
+// Guarded by the same x-webhook-secret as the seed endpoint.
+app.post('/api/admin/reset-notify', (req, res) => {
+  if (!process.env.INBOUND_WEBHOOK_SECRET) return res.status(503).json({ error: 'INBOUND_WEBHOOK_SECRET is not configured on the server' });
+  if (!secretOk(req)) return res.status(401).json({ error: 'bad or missing x-webhook-secret' });
+  const previous = store.get('notifyLastSentDate', null);
+  store.set('notifyLastSentDate', null);
+  console.log(`[admin] reset-notify (was ${previous})`);
+  res.json({ ok: true, previous });
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));
