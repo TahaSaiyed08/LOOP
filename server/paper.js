@@ -110,4 +110,38 @@ async function buy(ticker, amountUsd) {
   return { orderId: result.orderId, ticker, qty: result.qty, entryPrice: result.entryPrice, filledAt: result.filledAt };
 }
 
-module.exports = { START_VALUE, computePortfolio, getPortfolio, buy, saveLedger, currentTrades };
+// ---- Demo scaffolding -------------------------------------------------------------------------
+// [ticker, days back, dollar amount]. 2-3 weeks back, mixed risk so the demo has winners and losers.
+const DEMO_PLAN = [['VOO', 19, 3000], ['AAPL', 17, 1800], ['XLE', 14, 1100], ['ARKK', 12, 600]];
+
+const ledgerIsEmpty = () => !(ledger() || []).length;
+
+// Writes backdated trades priced from real Alpaca daily closes. Places NO orders. Needs Alpaca keys.
+async function seedDemoTrades() {
+  const bars = await alpaca.getBars(DEMO_PLAN.map((p) => p[0]), { days: 40 });
+  const trades = [];
+  for (const [ticker, daysBack, usd] of DEMO_PLAN) {
+    const target = new Date(Date.now() - daysBack * 86400000).toISOString().slice(0, 10);
+    const bar = (bars[ticker] || []).find((b) => b.t.slice(0, 10) >= target); // first trading day on/after
+    if (!bar) { console.warn(`[demo-seed] no bars for ${ticker}, skipping`); continue; }
+    trades.push({ ticker, side: 'buy', qty: Math.round((usd / bar.c) * 1e4) / 1e4, price: bar.c, at: `${bar.t.slice(0, 10)}T14:35:00Z`, seeded: true });
+  }
+  if (!trades.length) throw new Error('no demo trades could be seeded');
+  saveLedger(trades);
+  return trades;
+}
+
+// Boot hook: only when DEMO_SEED=true, the ledger is empty and Alpaca keys exist. Logs exactly one line.
+async function bootDemoSeed() {
+  if (process.env.DEMO_SEED !== 'true') return;
+  if (!ledgerIsEmpty()) return console.log('[demo-seed] DEMO_SEED=true but ledger already has trades; leaving it alone');
+  if (!alpaca.hasCredentials()) return console.log('[demo-seed] DEMO_SEED=true but no Alpaca keys; portfolio uses fixture trades instead');
+  try {
+    const t = await seedDemoTrades();
+    console.log(`[demo-seed] DEMO SCAFFOLDING: seeded ${t.length} backdated paper trades (${t.map((x) => x.ticker).join(', ')}). These are not user actions.`);
+  } catch (err) {
+    console.warn('[demo-seed] failed, portfolio falls back to fixture:', err.message);
+  }
+}
+
+module.exports = { START_VALUE, computePortfolio, getPortfolio, buy, saveLedger, currentTrades, ledgerIsEmpty, seedDemoTrades, bootDemoSeed };

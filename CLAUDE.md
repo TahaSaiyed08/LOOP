@@ -22,6 +22,16 @@ If code cannot satisfy a contract below, STOP and tell Taha. Never change a cont
 - Deterministic `server/scoring.js` ranks (no LLM calls in it). The AI council (`server/council.js`) only explains: it supplies `bullCase`, `bearCase`, `verdict`. The council must not decide ranking.
 - LLM via `server/llm.js` exporting `callLLM(systemPrompt, userPrompt, opts)`; Gemini OpenAI-compatible endpoint; 5 second delay between sequential calls.
 
+## Operational decisions (Taha, Nov 14)
+
+- **Render's filesystem is ephemeral.** `data/db.json` (feed, saved thesis, paper ledger, notify-date) is wiped on every restart/redeploy, so live paper buys and the saved thesis also die on restart. Accepted. After a restart `GET /api/stocks` serves fixtures until n8n seeds again, and the portfolio falls back to fixture trades.
+- **`DEMO_SEED=true`** seeds 4 backdated paper trades on boot, only if the ledger is empty and Alpaca keys exist, and logs one line saying so. These are demo scaffolding, not user actions. Alpaca cannot backdate orders: seeded trades are priced from real daily bars and place no orders.
+- **MER is never displayed as a number in the UI.** It only feeds the `cost` score component. ETF expense ratios in `scripts/universe.js` are hand-entered and UNVERIFIED (`merVerified: false`); spot-check only ETFs that reach a top 10 against the issuer's page during Sunday polish.
+- **News sentiment is not built yet (planned for step 6):** one batched LLM call per day (all headlines in, -1..1 per headline out) via `callLLM`, in its own `server/` file, NOT in `thesis.js` (Vamsi's `matchNews` is thesis-relative stance, a different job). Until then sentiment is null and the server logs a startup/seed warning when it is null for every ticker (also `sentimentMissing` in `/api/health`).
+- Feed rule: lists are "top 10 or fewer", never padded. `riskFit == 0` means ineligible for that tier.
+- `server/thesis.js` is a STUB until Vamsi's file arrives. `server/council.js` has not been delivered yet; feed `bullCase/bearCase/verdict` are null until it is wired.
+- Extra env vars (not in the task file): `DEMO_SEED`, `NOTIFY_TO_EMAIL` (Contract E recipient), `PUBLIC_URL` (email link base).
+
 ## Env vars
 
 `GEMINI_API_KEY`, `GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/`, `GEMINI_MODEL`, `ALPACA_KEY_ID`, `ALPACA_SECRET_KEY`, `FINNHUB_KEY`, `INBOUND_WEBHOOK_SECRET`, `N8N_NOTIFY_WEBHOOK_URL`, `COUNCIL_MODE` (`lite`, or `mini` as the fallback).

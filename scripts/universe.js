@@ -1,8 +1,11 @@
 // The ~60-ticker US-listed universe: identity + category + ETF expense ratio (merPct).
-// merPct values are published expense ratios (verify before a real launch); stocks have merPct null.
+// merPct values were entered BY HAND FROM MEMORY and are UNVERIFIED (merVerified: false on every ETF).
+// MER feeds only the `cost` score component and is never shown as a number in the UI, so a small
+// error is invisible on screen. Spot-check against the issuer's page only for ETFs that reach a top 10.
+// Stocks have merPct null.
 // Everything else in Contract A (price, 5d change, volume, beta, P/E, cap, yield, insider, news) is live data.
 // The n8n Code node in step 6 embeds this same list.
-const etf = (ticker, companyName, category, merPct) => ({ ticker, companyName, category, merPct });
+const etf = (ticker, companyName, category, merPct) => ({ ticker, companyName, category, merPct, merVerified: false });
 const stk = (ticker, companyName, category) => ({ ticker, companyName, category, merPct: null });
 
 module.exports = [
