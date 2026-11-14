@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Paper Portfolio | TFSA Gold</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="portfolio.css">
+  <script src="portfolio.js" defer></script>
+</head>
+<body class="portfolio-page">
+  <main class="portfolio">
+    <header class="portfolio-header">
+      <a class="portfolio-back" href="/"><span aria-hidden="true">←</span> Back to Feed</a>
+      <h1>My Paper Portfolio</h1>
+    </header>
+
+    <p id="portfolio-status" class="portfolio-status" role="status">Loading portfolio…</p>
+    <p id="portfolio-error" class="portfolio-error" role="alert"></p>
+
+    <div id="portfolio-data" hidden>
+      <dl class="portfolio-stats">
+        <div><dt>Portfolio Value <span class="portfolio-unit">(USD)</span></dt><dd id="portfolio-value"></dd></div>
+        <div><dt>Return Percentage</dt><dd id="portfolio-return"></dd></div>
+        <div><dt>Number of Positions</dt><dd id="portfolio-count"></dd></div>
+      </dl>
+
+      <p id="portfolio-what-if" class="portfolio-banner"></p>
+
+      <section class="portfolio-positions" aria-labelledby="positions-heading">
+        <h2 id="positions-heading">Positions <span class="portfolio-unit">(USD)</span></h2>
+        <p id="portfolio-empty" hidden>No positions yet.</p>
+        <div id="portfolio-table" class="portfolio-table" role="region" aria-labelledby="positions-heading" tabindex="0" hidden>
+          <table aria-labelledby="positions-heading">
+            <thead>
+              <tr>
+                <th scope="col">Ticker</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Entry Price</th>
+                <th scope="col">Current Price</th>
+                <th scope="col">P/L ($)</th>
+                <th scope="col">P/L (%)</th>
+              </tr>
+            </thead>
+            <tbody id="portfolio-rows"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <footer class="portfolio-footer">Educational research, not investment advice.</footer>
+  </main>
+</body>
+</html>

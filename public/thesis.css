@@ -1,0 +1,160 @@
+.thesis-page {
+  margin: 0;
+  min-block-size: 100vh;
+  background: var(--background, var(--bg, #f6f8f7));
+  color: var(--text, #172521);
+  font-family: var(--font-sans, system-ui, sans-serif);
+  line-height: 1.5;
+}
+
+.thesis-layout {
+  --thesis-surface: var(--surface, #fff);
+  --thesis-border: var(--border, #dce5df);
+  --thesis-muted: var(--muted, #4e625a);
+  --thesis-gain: var(--positive, #14683f);
+  --thesis-loss: var(--negative, #a52535);
+  box-sizing: border-box;
+  max-inline-size: 58rem;
+  margin-inline: auto;
+  padding: clamp(1.25rem, 5vw, 4rem);
+}
+
+.thesis-layout [hidden] {
+  display: none;
+}
+
+.thesis-header {
+  margin-block-end: 1.75rem;
+}
+
+.thesis-back {
+  color: var(--thesis-muted);
+  font-size: 0.875rem;
+  text-underline-offset: 0.2em;
+}
+
+.thesis-layout h1 {
+  margin: 0.65rem 0 0;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.045em;
+}
+
+.thesis-status,
+.thesis-note,
+.thesis-footer {
+  color: var(--thesis-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.thesis-footer {
+  margin-block-start: 1.5rem;
+}
+
+.thesis-error {
+  color: var(--thesis-loss);
+}
+
+.thesis-error:empty {
+  margin: 0;
+}
+
+.thesis-card h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.thesis-card {
+  padding: clamp(1rem, 4vw, 2rem);
+  border: 1px solid var(--thesis-border);
+  border-radius: var(--radius, 0.875rem);
+  background: var(--thesis-surface);
+  overflow-wrap: anywhere;
+}
+
+#thesis-goal {
+  font-size: clamp(1.125rem, 3vw, 1.5rem);
+  font-weight: 600;
+}
+
+.thesis-details,
+.thesis-news-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+}
+
+.thesis-details dt,
+.thesis-news p {
+  color: var(--thesis-muted);
+  font-size: 0.875rem;
+}
+
+.thesis-details dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.thesis-card h3 {
+  margin-block: 1.25rem 0.375rem;
+  font-size: 1rem;
+}
+
+.thesis-chip {
+  display: inline-block;
+  padding: 0.125rem 0.625rem;
+  border-radius: 999px;
+  background: var(--background, var(--bg, #f6f8f7));
+  color: var(--thesis-muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+#thesis-tier[data-tier="low"],
+.thesis-chip[data-stance="supports"] {
+  background: var(--success-bg, #d7f2e2);
+  color: var(--thesis-gain);
+}
+
+.thesis-chip[data-stance="challenges"] {
+  background: var(--danger-bg, #fce8ec);
+  color: var(--thesis-loss);
+}
+
+.thesis-checklist,
+.thesis-news {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.thesis-checklist li {
+  display: flex;
+  gap: 0.625rem;
+  margin-block: 0.375rem;
+}
+
+.thesis-checklist span {
+  color: var(--thesis-gain);
+  font-weight: 700;
+}
+
+.thesis-news li {
+  padding-block: 0.75rem;
+}
+
+.thesis-news li + li {
+  border-top: 1px solid var(--thesis-border);
+}
+
+.thesis-news-heading a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+.thesis-news p {
+  margin: 0.25rem 0 0;
+}
