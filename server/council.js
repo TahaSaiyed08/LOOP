@@ -319,7 +319,15 @@ async function councilForStock(stock, mode) {
     const bullCase = toSentences(r.bullCase, 4);
     const bearCase = toSentences(r.bearCase, 4);
     const verdict = toSentences(overallRead(r.verdict), 2);
-    if (!bullCase || !bearCase || !verdict) return null;
+    if (!bullCase || !bearCase || !verdict) {
+      const len = (x) => String(x || "").length;
+      console.log(
+        `[council][debug] ${stock && stock.ticker}: dropped by advice filter, chars before/after ` +
+        `bull ${len(r.bullCase)}/${len(bullCase)} bear ${len(r.bearCase)}/${len(bearCase)} ` +
+        `verdict ${len(overallRead(r.verdict))}/${len(verdict)}`
+      );
+      return null;
+    }
     return { bullCase, bearCase, verdict };
   } catch (err) {
     console.warn(`[council] ${stock && stock.ticker}: ${err.message}`);
