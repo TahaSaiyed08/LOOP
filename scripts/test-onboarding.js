@@ -4,6 +4,7 @@
 //  - "llm.js failure" tests go through the real server/llm.js against a local HTTP mock (HTTP error, garbage).
 //  - "fallback" tests use the rule-based path (no key / forced offline).
 // Run: npm run test:onboarding   (~6 s: llm.js spaces real calls 5 s apart)
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 
@@ -434,6 +435,56 @@ function assertShape(r) {
       assert.deepStrictEqual(llm.models, ['primary-m']);
       assert.strictEqual(r.source, 'fallback');
     } finally { delete process.env.GEMINI_MODEL; }
+  });
+
+  // ---- regression: the browser conversation "$5 every day" for a car (Nov 15) ----
+  const CAR = ['i want to put in 5 dollar every day', 'for a car', '1 year', 'nope', 'not good', 'yep'];
+
+  await test('31. "$5 every day" (mock Gemini says cadence "daily"): stored as daily, no repeated schedule question, complete without experience', async () => {
+    const llm = fakeLLM([
+      llmReply({ intent: 'goal_exploration', reply: 'A daily habit is a nice way to start.', profileUpdates: { amount: 5, cadence: 'daily' }, nextQuestion: { field: 'purpose', text: 'What is this money for?' } }),
+      llmReply({ intent: 'goal_exploration', reply: 'A car is a practical goal.', profileUpdates: { purpose: 'for a car' }, nextQuestion: { field: 'timelineYears', text: 'When do you need it?' } }),
+      llmReply({ intent: 'goal_exploration', reply: 'One year keeps it focused.', profileUpdates: { timelineYears: 1 }, nextQuestion: { field: 'cadence', text: 'Daily, or another schedule?' } }),
+      llmReply({ intent: 'goal_exploration', reply: 'Understood.', nextQuestion: { field: 'riskComfort', text: 'How do you feel about swings?' } }),
+      llmReply({ intent: 'goal_exploration', reply: 'Preferring steady is normal.', profileUpdates: { riskComfort: 'low' }, nextQuestion: { field: 'experience', text: 'How familiar are you with investing?' } }),
+      llmReply({ intent: 'goal_exploration', reply: 'Great.', nextQuestion: { field: 'experience', text: 'How familiar are you with investing?' } }),
+    ]);
+    let session = null; const turns = [];
+    for (const m of CAR) { const r = await onboardingTurn(m, session, { callLLM: llm }); assertShape(r); turns.push(r); session = r.session; }
+    assert.strictEqual(turns[0].profile.cadence, 'daily', 'Gemini\'s "daily" is kept (it used to be normalized to null)');
+    assert(turns.slice(1).every((r) => !r.nextQuestion || r.nextQuestion.field !== 'cadence'), 'never asked about the schedule again');
+    const last = turns[turns.length - 1];
+    assert.deepStrictEqual({ amount: last.profile.amount, cadence: last.profile.cadence, purpose: last.profile.purpose, timelineYears: last.profile.timelineYears, riskComfort: last.profile.riskComfort, experience: last.profile.experience },
+      { amount: 5, cadence: 'daily', purpose: 'for a car', timelineYears: 1, riskComfort: 'low', experience: null });
+    assert(turns[4].readyToProceed && last.readyToProceed, 'complete without investment experience');
+    assert.strictEqual(turns[4].nextQuestion, null, 'complete: no question, even though Gemini proposed one about experience');
+    assert.strictEqual(last.nextQuestion, null, 'and none on later turns either');
+    const summary = turns[4].displayText;
+    assert(/\$5 every day/.test(summary) && /savings accounts and GICs/.test(summary) && /Explore Investments/.test(summary), summary);
+    assert(/drop and stay down|swing/.test(summary) && !/you should (buy|invest)/i.test(summary), 'explains short-term risk without telling the user what to buy');
+  });
+
+  await test('32. the same conversation offline (no Gemini): amount + daily from "5 dollar every day", "not good" = low comfort, then no more questions', async () => {
+    let session = null; const turns = [];
+    for (const m of CAR) { const r = await onboardingTurn(m, session, { forceFallback: true }); turns.push(r); session = r.session; }
+    assert.strictEqual(turns[0].profile.amount, 5, '"5 dollar" (singular) is an amount');
+    assert.strictEqual(turns[0].profile.cadence, 'daily');
+    const last = turns[turns.length - 1];
+    assert(last.profile.riskComfort === 'low' && last.profile.timelineYears === 1 && last.profile.purpose && last.profile.experience == null);
+    assert(last.readyToProceed && last.nextQuestion === null);
+    assert(turns.every((r) => !r.nextQuestion || r.nextQuestion.field !== 'cadence'), 'the schedule is never asked');
+    assert(/savings account/i.test(last.displayText) && /GIC/.test(last.displayText), '"yep" to the offer explains savings accounts and GICs');
+    assert.deepStrictEqual(session.history.map((h) => h.content).filter((_, i) => i % 2 === 0), CAR, 'every message kept in order');
+  });
+
+  await test('33. daily wording variants are understood; other cadences unchanged', async () => {
+    for (const t of ['I can put in $5 a day', 'I want to invest 10 dollars every day', 'I will add $3 daily', 'I can do $2 per day', 'I plan to save $4 each day']) {
+      const r = await onboardingTurn(t, null, { forceFallback: true });
+      assert.strictEqual(r.profile.cadence, 'daily', t);
+    }
+    for (const [t, c] of [['I want to invest $50 a month', 'monthly'], ['I can add $20 every two weeks', 'biweekly'], ['I will put in $100 every week', 'weekly'], ['I have $1000 to invest all at once', 'one_time']]) {
+      assert.strictEqual((await onboardingTurn(t, null, { forceFallback: true })).profile.cadence, c, t);
+    }
   });
 
   const failed = results.filter(([ok]) => !ok);

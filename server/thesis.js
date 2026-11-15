@@ -125,7 +125,7 @@ const QUESTIONS = {
   purpose: 'What is this money for, for example a home, retirement, education or general long-term growth?',
   timelineYears: 'Roughly how many years from now do you expect to need this money?',
   amount: 'About how much would you like to put in each time (or in total, if it is a one-time amount)?',
-  cadence: 'How often would you add money: once, weekly, every two weeks or monthly?',
+  cadence: 'How often would you add money: once, every day, weekly, every two weeks or monthly?',
   riskComfort: 'If your investments dropped 20% in a bad year, how comfortable would you be: low, medium or high?',
   experience: 'How familiar are you with investing: beginner, some experience, or experienced?',
   currency: 'Which currency are you investing in, for example CAD or USD?',
@@ -180,7 +180,7 @@ const toNum = (v) => (isNum(v) ? v : typeof v === 'string' && /^\s*\$?\s*[\d,]+(
 const lookup = (table) => (v) => table[String(v ?? '').trim().toLowerCase().replace(/[\s-]+/g, '_')] || null;
 const NORMALIZE = {
   amount: (v) => { const n = toNum(v); return n > 0 && n < 1e9 ? Math.round(n * 100) / 100 : null; },
-  cadence: lookup({ one_time: 'one_time', once: 'one_time', onetime: 'one_time', lump_sum: 'one_time', weekly: 'weekly', biweekly: 'biweekly', bi_weekly: 'biweekly', fortnightly: 'biweekly', every_two_weeks: 'biweekly', monthly: 'monthly', yearly: 'yearly', annually: 'yearly', annual: 'yearly' }),
+  cadence: lookup({ daily: 'daily', every_day: 'daily', everyday: 'daily', per_day: 'daily', each_day: 'daily', a_day: 'daily', one_time: 'one_time', once: 'one_time', onetime: 'one_time', lump_sum: 'one_time', weekly: 'weekly', biweekly: 'biweekly', bi_weekly: 'biweekly', fortnightly: 'biweekly', every_two_weeks: 'biweekly', monthly: 'monthly', yearly: 'yearly', annually: 'yearly', annual: 'yearly' }),
   timelineYears: (v) => { const n = toNum(v); return n > 0 && n <= 80 ? Math.round(n * 10) / 10 : null; },
   currency: (v) => { const s = String(v ?? '').trim().toUpperCase(); return /^[A-Z]{3}$/.test(s) && s !== 'NUL' ? s : null; },
   experience: lookup({ beginner: 'beginner', novice: 'beginner', some: 'some', intermediate: 'some', experienced: 'experienced', advanced: 'experienced', expert: 'experienced' }),
@@ -195,7 +195,7 @@ const hasNumber = (t) => /\d/.test(t) || new RegExp(`\\b(${Object.keys(NUM_WORDS
 const wordOrNum = (s) => (/^\d/.test(s) ? Number(s) : NUM_WORDS[String(s).toLowerCase()] ?? null);
 
 const MULT = { k: 1e3, thousand: 1e3, m: 1e6, million: 1e6 };
-const MONEY_RE = /(c\$|us\$|\$)\s?(\d[\d,]*(?:\.\d+)?)\s*(k|thousand|m|million)?\b|\b(\d[\d,]*(?:\.\d+)?)\s*(k|thousand|m|million)?\s*(dollars|bucks|usd|cad)\b/gi;
+const MONEY_RE = /(c\$|us\$|\$)\s?(\d[\d,]*(?:\.\d+)?)\s*(k|thousand|m|million)?\b|\b(\d[\d,]*(?:\.\d+)?)\s*(k|thousand|m|million)?\s*(dollars?|bucks|usd|cad)\b/gi;
 const LOAN_AFTER = /^\s*(?:of\s+)?(?:home\s+)?(mortgage|loan|debt)/i;
 const LOAN_BEFORE = /(mortgage|loan|debt|owe)\s*(?:of|is|was|for|about|around|:)?\s*(?:about|around|roughly)?\s*$/i;
 const OTHER_BEFORE = /(salary|income|earn|make|paid|price|cost|worth|rent)\s*(?:of|is|was|for|about|around|:)?\s*(?:about|around|roughly)?\s*$/i;
@@ -226,6 +226,7 @@ function parseCadence(t) {
   if (/\b(monthly|(a|per|each|every)\s+month)\b/i.test(t)) return 'monthly';
   if (/\b(yearly|annually|(a|per|each|every)\s+year)\b/i.test(t)) return 'yearly';
   if (/\b(one[- ]time|lump[- ]sum|all at once|just once|single deposit)\b/i.test(t)) return 'one_time';
+  if (/\b(daily|every\s*day|each day|per day|a day)\b/i.test(t)) return 'daily';
   return null;
 }
 
@@ -477,8 +478,10 @@ function parseLLMReply(raw) {
 }
 
 // ---------- fallback path (no key / LLM failure) ----------
-const FINANCE_RE = /\b(invest\w*|stocks?|etfs?|funds?|bonds?|markets?|dividends?|risk\w*|interest|tfsa|rrsp|fhsa|index|portfolio|compound\w*|sav(e|ing|ings)|money|crypto\w*|bitcoin|mortgage|shares?|returns?|inflation|budget|retire\w*|fees?|mer|expense ratio|diversif\w*|broker\w*|financ\w*|wealth|debt|loan)\b/i;
+const FINANCE_RE = /\b(gics?|invest\w*|stocks?|etfs?|funds?|bonds?|markets?|dividends?|risk\w*|interest|tfsa|rrsp|fhsa|index|portfolio|compound\w*|sav(e|ing|ings)|money|crypto\w*|bitcoin|mortgage|shares?|returns?|inflation|budget|retire\w*|fees?|mer|expense ratio|diversif\w*|broker\w*|financ\w*|wealth|debt|loan)\b/i;
+const SAVINGS_EXPLAINER = 'A high-interest savings account keeps your money at a bank and pays interest; the balance does not swing with markets. A GIC is a bank deposit that locks your money for a set term, such as 1 year, at a fixed interest rate. Both are common comparison points for money needed within a few years. They are not part of what THESIS researches, and their interest can trail inflation. If you like, choose Explore Investments to see how market options behave next to them.';
 const GLOSSARY = [
+  [/\b(gics?|savings accounts?|hisa|high[- ]interest savings)\b/i, SAVINGS_EXPLAINER],
   [/\betfs?\b[\s\S]*\bstocks?\b|\bstocks?\b[\s\S]*\betfs?\b/i, "A stock is a small ownership slice of one company, so its value depends on that single business. An ETF (exchange-traded fund) is a basket that can hold dozens or thousands of stocks or bonds, and you buy it on an exchange just like a stock. Because an ETF spreads money across many holdings, one company having a bad year usually moves it much less than it moves that company's own stock."],
   [/\bindex funds?\b/i, "An index fund tries to match a market index, such as the S&P 500, by holding the same companies in roughly the same proportions. It doesn't try to pick winners, which keeps fees low; your result follows the overall market, ups and downs included."],
   [/\betfs?\b|exchange[- ]traded/i, 'An ETF (exchange-traded fund) is a fund that holds a basket of investments, like stocks or bonds, and trades on an exchange like a single stock. Many ETFs simply follow an index such as the S&P 500, which gives broad diversification for a low yearly fee.'],
@@ -500,7 +503,11 @@ function answerForField(field, text) {
   if (field === 'timelineYears') { const y = parseYears(t); if (y) return y; const m = t.match(new RegExp(`^(?:about|around|maybe|roughly|in)?\\s*(${NUM_WORD})\\s*[.!]?$`, 'i')); return m ? wordOrNum(m[1]) : null; }
   if (field === 'amount') { const m = t.match(/^(?:about|around|maybe|roughly)?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)\s*[.!]?$/i); return m ? Number(m[1].replace(/,/g, '')) : null; }
   if (field === 'cadence') return parseCadence(t) || (/\bonce\b/i.test(t) ? 'one_time' : null);
-  if (field === 'riskComfort') { const m = t.match(/\b(low|medium|moderate|high)\b/i); return parseRisk(t) || (m ? NORMALIZE.riskComfort(m[1]) : null); }
+  if (field === 'riskComfort') {
+    const m = t.match(/\b(low|medium|moderate|high)\b/i);
+    const uneasy = /^(?:honestly,?\s*)?(not (?:good|great|well|ok(?:ay)?|comfortable|at all)|bad|terrible|awful|nervous|scared|worried|uncomfortable|i'?d panic|panic)\b/i.test(t);
+    return parseRisk(t) || (m ? NORMALIZE.riskComfort(m[1]) : null) || (uneasy ? 'low' : null);
+  }
   if (field === 'experience') return parseExperience(t) || NORMALIZE.experience(t.replace(/[.!]/g, ''));
   if (field === 'purpose') return parsePurpose(t) || (t.length <= 80 && !/\?\s*$/.test(t) ? t.replace(/^(it'?s |for |to )/i, '').replace(/[.!]+$/, '') : null);
   if (field === 'currency') { const m = t.match(/\b(cad|usd)\b/i); return m ? m[1].toUpperCase() : null; }
@@ -518,12 +525,15 @@ function fallbackIntent(text, ev, facts, s, answeredLast) {
   return /\?\s*$|^(what|how|why|when|who|where)\b/i.test(text) ? 'off_topic' : 'unclear';
 }
 
+const lastAssistant = (s) => { const m = [...(s.history || [])].reverse().find((x) => x.role === 'assistant'); return m ? m.content : ''; };
 function fallbackAnalysis(text, s, ev) {
   const facts = { ...ev.facts };
   let answeredLast = false;
   const pending = [s.lastQuestionField, ...s.askedFields].filter((f, i, a) => f && PROFILE_FIELDS.includes(f) && s.profile[f] == null && a.indexOf(f) === i);
   for (const f of pending) {
     if (facts[f] != null) { answeredLast = true; break; }
+    // "1 year" or "$5 a day" answers another question: never store it as free-text goal wording
+    if (f === 'purpose' && (facts.timelineYears != null || facts.amount != null || facts.cadence != null)) continue;
     const v = answerForField(f, text);
     if (v != null) { facts[f] = v; answeredLast = true; break; }
   }
@@ -536,11 +546,12 @@ function fallbackAnalysis(text, s, ev) {
   let reply = null; // goal replies are written after the merge (they describe what changed)
   if (intent === 'learning') reply = (GLOSSARY.find(([re]) => re.test(text)) || [null, GLOSSARY_DEFAULT])[1];
   else if (intent === 'off_topic') reply = "I'm set up to help with investing education and research, so I can't help much with that. You can ask me about an investing idea, a goal you're saving for, or a company or fund you're curious about.";
+  else if (intent === 'unclear' && /^(y(es|ep|eah|up)|sure|ok(ay)?|please|go ahead|tell me)\b/i.test(text.trim()) && /savings accounts and GICs/.test(lastAssistant(s))) reply = SAVINGS_EXPLAINER; // "yes" to the offer in the completion summary
   else if (intent === 'unclear') reply = "I'm not sure I followed. You can ask me to explain an investing idea, tell me about a goal you're saving for, or name a company or fund you'd like to research.";
   return { intent, reply, profileUpdates, tickers: [], ambiguities: [], nextQuestion: null };
 }
 
-const CADENCE_TEXT = { one_time: 'one time', weekly: 'weekly', biweekly: 'every two weeks', monthly: 'monthly', yearly: 'yearly' };
+const CADENCE_TEXT = { daily: 'every day', one_time: 'one time', weekly: 'weekly', biweekly: 'every two weeks', monthly: 'monthly', yearly: 'yearly' };
 const fmtMoney = (v, cur) => `${cur === 'CAD' ? 'C$' : '$'}${Number(v).toLocaleString('en-US')}`;
 function fmtField(f, v, p) {
   if (v == null) return 'unknown';
@@ -569,7 +580,15 @@ function completionSummary(profile, timelineText) {
   const bits = [`goal: ${p.purpose}`, `${fmtMoney(p.amount, p.currency)} ${CADENCE_TEXT[p.cadence] || p.cadence}`, `timeline: ${timelineText || fmtField('timelineYears', p.timelineYears)}`, `risk comfort: ${p.riskComfort}`];
   if (p.experience) bits.push(`experience: ${p.experience}`);
   if (p.currency) bits.push(`currency: ${p.currency}`);
-  return `Here's your profile so far: ${bits.join(' · ')}. When you're ready, you can choose Explore Investments to browse research candidates, or Create Thesis Draft to turn this into a thesis you can review. Nothing is created or monitored until you choose.`;
+  const head = `Here's your profile so far: ${bits.join(' · ')}.`;
+  const near = p.timelineYears != null && p.timelineYears < 3;
+  if (near) {
+    // Money needed soon: why that matters, the usual comparison, and a natural choice to learn or explore.
+    const why = `Since you'll need this money in about ${timelineText || fmtField('timelineYears', p.timelineYears)}${p.riskComfort === 'low' ? ' and you prefer a steady balance' : ''}, it helps to know that stock and ETF prices can drop and stay down for longer than that, so the money might be worth less right when you need it.`;
+    return `${head} ${why} For money needed soon, people often compare savings accounts and GICs, which don't swing with markets but can trail inflation. Would you like me to explain those ideas, or choose Explore Investments to see how different options behave? Create Thesis Draft is there whenever you're ready. Exploring doesn't pick anything, and nothing is created or monitored until you choose.`;
+  }
+  const steady = p.riskComfort === 'low' ? ' Since you prefer a steady balance, it helps to know that stock and ETF prices can swing a lot, including drops that take years to recover; exploring shows which kinds tend to swing less.' : '';
+  return `${head}${steady} When you're ready, you can choose Explore Investments to browse research candidates, or Create Thesis Draft to turn this into a thesis you can review. Nothing is created or monitored until you choose.`;
 }
 
 function fallbackReplyFor(intent, ctx) {
@@ -709,7 +728,7 @@ function finalize(text, s, parsed, ev, source, fallbackReason, model) {
   const profileJustCompleted = goalComplete && (!wasComplete || corrections.length > 0);
   let nq = chooseQuestion({ proposed: parsed.nextQuestion, intent, flow: activeFlow, missing, profile, tickers: sessionTickers, asked: s.askedFields, ambiguities });
   if (nq && nq.field === 'clarification' && !nq.text.trim().endsWith('?')) nq.text = nq.text.trim() + '?';
-  if (profileJustCompleted && nq && nq.field !== 'clarification') nq = null; // offer next steps instead of more questions
+  if (goalComplete && nq && nq.field !== 'clarification') nq = null; // complete: offer next steps, never more profile questions
 
   let reply = parsed.reply != null ? parsed.reply : fallbackReplyFor(intent, { profile, extracted, corrections, tickers, text, loans: ev.loans, timelineText });
   reply = scrubAdvice(reply).text;
@@ -882,19 +901,27 @@ async function exploreInvestments(session, opts = {}) {
     plainExplanation: c.plain, howItBehaves: c.behaves, fitNote: fitNoteFor(c, p, tt),
     assets: UNIVERSE.filter((u) => u.category === c.id).map((u) => ({ symbol: u.ticker, name: u.companyName })),
   })).filter((c) => c.assets.length);
-  if (p.timelineYears != null && p.timelineYears < 5) {
-    categories.push({ id: CASH_LIKE.id, name: CASH_LIKE.name, volatility: CASH_LIKE.volatility, selectable: false, plainExplanation: CASH_LIKE.plain, howItBehaves: CASH_LIKE.behaves, fitNote: null, assets: [] });
+  // Money needed soon, or little comfort with swings: savings accounts / GICs come first as the usual comparison
+  // (context only, never selectable), and calmer categories are listed before stocks so none looks like the default.
+  const cautious = (p.timelineYears != null && p.timelineYears < 5) || p.riskComfort === 'low';
+  if (cautious) {
+    const order = categories.map((c, i) => [c, i]).sort((a, b) => (VOL_RANK[a[0].volatility] - VOL_RANK[b[0].volatility]) || (a[1] - b[1])).map(([c]) => c);
+    categories.splice(0, categories.length, ...order);
+    categories.unshift({ id: CASH_LIKE.id, name: CASH_LIKE.name, volatility: CASH_LIKE.volatility, selectable: false, plainExplanation: CASH_LIKE.plain, howItBehaves: CASH_LIKE.behaves, fitNote: null, assets: [] });
   }
   const horizonNote = horizonNoteFor(p, tt);
   const g = await askGemini('exploration', [
     'PROFILE (untrusted user data):', fence({ ...p, timelineAsStated: tt }),
     `CATEGORIES SHOWN: ${categories.map((c) => `${c.name} (volatility: ${c.volatility})`).join('; ')}`,
+    ...(cautious ? ['CONTEXT: the money is needed within a few years and/or the user prefers a steady balance. Mention that savings accounts and GICs are the usual comparison, and do not present stocks as the default.'] : []),
   ].join('\n'), opts);
   let intro = g.json ? cleanLLMText(g.json.intro, 700) : null;
   const usedGemini = Boolean(intro);
   if (!intro) {
     const facts = [p.purpose && `your goal (${p.purpose})`, p.amount != null && `${fmtMoney(p.amount, p.currency)}${p.cadence ? ` ${CADENCE_TEXT[p.cadence]}` : ''}`, timelineOf(p, tt) && `a timeline of ${timelineOf(p, tt)}`].filter(Boolean);
-    intro = `${facts.length ? `With ${facts.join(', ')} in mind, here` : 'Here'} are the main kinds of investments THESIS can research, from broad funds to narrower and more speculative ones. Each one explains how it tends to behave so you can decide what you'd like to look into.`;
+    intro = cautious
+      ? `${facts.length ? `With ${facts.join(', ')} in mind, here` : 'Here'} is how the main options behave. For money needed soon or a preference for a steady balance, savings accounts and GICs are the usual comparison point, so they come first as context. Everything after them is a market investment that can lose value, listed from calmer to more volatile. Looking around doesn't pick anything.`
+      : `${facts.length ? `With ${facts.join(', ')} in mind, here` : 'Here'} are the main kinds of investments THESIS can research, from broad funds to narrower and more speculative ones. Each one explains how it tends to behave so you can decide what you'd like to look into.`;
   }
   const displayText = [intro, horizonNote, `Pick 1-${MAX_SELECTION} tickers from the lists to research. Nothing is selected until you choose.`].filter(Boolean).join(' ');
   return {
@@ -995,25 +1022,60 @@ function internalTier(p) {
 }
 
 const shortName = (a) => (a.category === 'sector_etf' ? a.name.replace(/\s*Select Sector SPDR Fund$/i, '') : a.category === 'thematic_etf' ? a.name.replace(/^(iShares|Global X|ARK)\s+/i, '').replace(/\s+ETF$/i, '') : a.name);
-// One asset-specific, monitorable assumption per asset (used only when Gemini gives fewer than 2 valid ones).
-function templateAssumption(a, horizonText) {
+// Offline research ideas, one per asset (used only when Gemini gives fewer than 2 valid ones). Written in the
+// user's voice as a question to look into, never a forecast. Only the FIRST one mentions the user's own
+// situation (timeline, comfort with losses), so the personal part isn't pasted into every sentence.
+function personalLens(p, horizonText) {
+  const y = p && p.timelineYears;
+  const when = !horizonText ? '' : y != null && y < 3 ? ` for money I'll need in about ${horizonText}` : y != null && y < 5 ? ` for a goal about ${horizonText} away` : ` over the ${horizonText} I plan to invest`;
+  const comfort = p && p.riskComfort === 'low' ? ", and whether its ups and downs stay within what I'm comfortable with" : '';
+  return { when, comfort };
+}
+function templateAssumption(a, horizonText, p = {}, { personal = true } = {}) {
   const n = `${a.name} (${a.symbol})`;
+  const L = personal ? personalLens(p, horizonText) : { when: '', comfort: '' };
+  const fits = `${L.when}${L.comfort}`;
+  const sector = shortName(a);
   const T = {
-    index_etf: [`The companies held by ${n} keep growing their combined earnings, so the broad US market holds up over ${horizonText}.`, 'Reports of falling S&P 500 earnings, a US recession, or a market decline of 20% or more.'],
-    bond_etf: [`Interest rates stay stable or fall, so the bonds held by ${n} keep their value.`, 'Central bank rate hikes, inflation coming in higher than expected, or rising bond yields.'],
-    dividend_etf: [`The companies in ${n} keep paying, and gradually raising, their dividends.`, 'Dividend cuts or profit warnings from large holdings, or a recession hitting company earnings.'],
-    sector_etf: [`The ${shortName(a)} sector held by ${n} keeps growing its earnings at least as fast as the overall market.`, `Weak earnings, new regulation or falling demand across the ${shortName(a)} sector.`],
-    reit: [`${n} keeps its properties rented and its dividend covered by its income, even as interest rates move.`, 'Rising interest rates, falling occupancy, or a dividend cut.'],
-    thematic_etf: [`Demand and company growth behind the "${shortName(a)}" theme of ${n} stay strong.`, 'Slowing demand, new regulation, or investors moving away from the theme.'],
-    crypto: [`${n} keeps attracting users and investor demand without a major regulatory setback.`, 'Regulatory crackdowns, exchange failures or hacks, or a sharp fall in crypto trading demand.'],
+    index_etf: [personal
+      ? `I'm looking into ${n} because one fund spreads money across many companies. I want to understand whether that broad mix fits what I'm trying to do${fits}.`
+      : `I want to check whether owning a wide slice of the market through ${n} keeps my results from depending on any single company.`,
+    'News of a recession, falling profits across many companies, or a long market slump that would make a whole-market fund harder to hold.'],
+    bond_etf: [`I'm researching ${n} to learn whether a bond fund could move more gently than stock funds${fits}.`,
+      'News that interest rates are rising faster than expected or that inflation is staying high, which tends to push bond fund prices down.'],
+    dividend_etf: [`I want to understand how ${n} works, and whether the regular dividends its companies pay could play a part in growing my money${fits}.`,
+      'Reports of large companies cutting or pausing their dividends, or of profits falling across many businesses.'],
+    sector_etf: [`I'm curious about the ${sector.toLowerCase()} industry and want to understand how ${n}, a fund of companies from that one industry, reacts to industry news${fits}.`,
+      `News of falling demand, new rules or weak results across the ${sector.toLowerCase()} industry.`],
+    reit: [`I'm exploring ${n} to understand how a company that owns and rents out property earns money and pays dividends${fits}.`,
+      'News of rising interest rates, empty properties, or a cut to its dividend.'],
+    thematic_etf: [`I'm interested in the ${sector} trend and want to find out whether ${n} is a reasonable way to follow it, and how much its price swings with the excitement${L.when}.`,
+      `Reports of slowing demand, new regulation, or investors losing interest in ${sector}.`],
+    crypto: [`I want to understand what drives the price of ${n}, and whether I could live with its very large swings${L.when}.`,
+      'News of regulatory crackdowns, exchange failures or hacks, or falling interest in crypto.'],
   };
-  const [text, challenge] = T[a.category] || [`${n} keeps growing revenue and profits in its core business.`, `Missed earnings, lowered guidance, lawsuits or regulatory action involving ${a.name}.`];
+  const [text, challenge] = T[a.category] || [`I'm looking into ${n} to understand how its main business makes money and whether it keeps growing${fits}.`,
+    `Weaker sales or profits than expected, lowered forecasts, lawsuits or regulatory action involving ${a.name}.`];
   return { text, tickers: [a.symbol], whatWouldChallengeIt: challenge, origin: 'template' };
 }
 function horizonAssumption(assets, horizonText) {
   const syms = assets.map((a) => a.symbol);
-  return { text: `${syms.join(' and ')} ${syms.length > 1 ? 'do' : 'does'} not suffer a large, lasting drop within your timeline of ${horizonText}.`, tickers: syms,
-    whatWouldChallengeIt: `A broad market decline of 20% or more, or a sharp fall in ${syms.join('/')}, as the time you need the money gets closer.`, origin: 'template' };
+  return { text: `With about ${horizonText} until I need this money, I want to check whether ${syms.join(' and ')} could fall and not recover in time.`, tickers: syms,
+    whatWouldChallengeIt: 'News of a broad market slump or a recession as the time I need the money gets closer.', origin: 'template' };
+}
+
+// Gemini assumptions must read as the user's research ideas, not analyst forecasts or invented convictions.
+const FORECAST_RE = /\b(will (continue|remain|keep|stay|outperform|grow|rise|increase|deliver|maintain|benefit|thrive|recover)|outperform\w*|remains? (favou?red|popular|strong|stable|resilient)|price stability|strong cash flows?|(is|are) (poised|set|expected|likely) to|bound to)\b/i;
+const CONVICTION_RE = /\b(I('m| am) (confident|sure|certain|convinced)|I (strongly|firmly) believe|I believe (strongly|firmly)|I know (that )?(it|this|they)|I('ve| have) always|I love)\b/i;
+const TECHNICAL_RE = /\d+(\.\d+)?\s*%|\$\s?\d|\bprice target|\bmoving average|\bRSI\b|\bP\/E\b|\bbasis points?\b/i;
+const IDEA_STOP = new Set('want understand whether looking exploring research researching check learn see find out idea fund funds etf etfs stock company'.split(' '));
+function nearDuplicate(a, b, assets) {
+  const strip = (t) => { let x = String(t); for (const s of assets) { x = x.split(s.symbol).join(' '); if (s.name) x = x.split(s.name).join(' '); } return x; };
+  const w = (t) => new Set([...words(strip(t))].filter((x) => !IDEA_STOP.has(x)));
+  const x = w(a); const y = w(b);
+  if (!x.size || !y.size) return false;
+  let n = 0; for (const v of x) if (y.has(v)) n += 1;
+  return n / Math.min(x.size, y.size) >= 0.7;
 }
 
 function validateDraftJson(json, assets) {
@@ -1025,6 +1087,7 @@ function validateDraftJson(json, assets) {
   };
   const mentionsUnselected = (text) => detectTickers(text || '').some((x) => x.supported && !syms.has(x.symbol));
   const seen = new Set();
+  const kept = [];
   const dropped = []; // why Gemini assumptions were rejected (shown in diagnostics, never the raw reply)
   const drop = (i, why) => { dropped.push(`assumption ${i + 1}: ${why}`); return null; };
   const assumptions = (Array.isArray(json.assumptions) ? json.assumptions : []).map((a, i) => {
@@ -1033,12 +1096,15 @@ function validateDraftJson(json, assets) {
     const challenge = cleanLLMText(a.whatWouldChallengeIt, 280);
     if (!text || text.length < 15) return drop(i, typeof a.text === 'string' && a.text.trim() ? 'removed by the advice/safety filter or too short' : 'missing text');
     if (!challenge || challenge.length < 10) return drop(i, 'missing "whatWouldChallengeIt" evidence');
+    if (FORECAST_RE.test(text)) return drop(i, 'reads like a market forecast, not a research idea');
+    if (CONVICTION_RE.test(text)) return drop(i, 'claims a conviction the user never expressed');
+    if (TECHNICAL_RE.test(challenge)) return drop(i, '"whatWouldChallengeIt" needs numbers or technical indicators a beginner would not have');
     if (mentionsUnselected(text)) return drop(i, `mentions tickers you did not select (${detectTickers(text).filter((x) => x.supported && !syms.has(x.symbol)).map((x) => x.symbol).join(', ')})`);
     const tickers = tickersIn(a.tickers, text);
     if (!tickers.length) return drop(i, 'not tied to a selected asset');
     const key = text.toLowerCase();
-    if (seen.has(key)) return drop(i, 'duplicate');
-    seen.add(key);
+    if (seen.has(key) || kept.some((k) => nearDuplicate(k, text, assets))) return drop(i, 'duplicate or nearly the same as another assumption');
+    seen.add(key); kept.push(text);
     return { text, tickers, whatWouldChallengeIt: challenge, origin: 'gemini' };
   }).filter(Boolean);
   if (assumptions.length > 4) dropped.push(`${assumptions.length - 4} extra assumption(s) beyond the maximum of 4`);
@@ -1055,22 +1121,116 @@ function validateDraftJson(json, assets) {
   return { goal: goal && !mentionsUnselected(goal) ? goal : null, assumptions, risks, dropped };
 }
 
-function deterministicRisks(p, assets, horizonNote) {
-  const risks = [];
-  for (const cat of [...new Set(assets.map((a) => a.category))]) {
-    const c = CATEGORY_BY_ID[cat];
-    if (c) risks.push({ title: c.risk, explanation: `${assets.filter((a) => a.category === cat).map((a) => a.symbol).join(', ')}: ${c.behaves}` });
+const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+
+// Draft risks: one card per underlying issue, in plain words. Goal risks (your timeline, how you feel about
+// losses) come first, then one card per kind of investment you picked. Each card has a topic; any Gemini risk
+// that describes a topic already covered is dropped, whatever its title, so the same warning never appears twice.
+const SECTOR_OF = { XLK: 'technology', XLE: 'energy', XLV: 'healthcare', XLF: 'financial', XLY: 'consumer spending', XLU: 'utilities' };
+const COMPANY_CATS = ['large_cap', 'mid_cap', 'small_cap'];
+const joinSyms = (s) => (s.length <= 2 ? s.join(' and ') : `${s.slice(0, -1).join(', ')} and ${s[s.length - 1]}`);
+const bothOrAll = (s) => (s.length === 1 ? s[0] : s.length === 2 ? `Both ${s[0]} and ${s[1]}` : `All of these (${s.join(', ')})`);
+
+function assetRiskCards(assets) {
+  const cards = [];
+  const of = (cats) => assets.filter((a) => cats.includes(a.category)).map((a) => a.symbol);
+  const add = (topic, syms, title, explanation) => { if (syms.length) cards.push({ topic, scope: 'investment', tickers: syms, title: `${title} (${syms.join(', ')})`, explanation }); };
+  let s = of(['index_etf']);
+  add('market', s, 'Whole-market drops', `${s.length > 1 ? 'These funds follow' : 'This fund follows'} the overall stock market. In bad years the market has fallen 20–50%, sometimes taking several years to recover.`);
+  s = of(['bond_etf']);
+  add('rates', s, 'Bond prices can fall', `When interest rates rise, older bonds become less attractive than new ones, so bond funds like ${joinSyms(s)} can lose value. They usually move less than stock funds, but they did drop noticeably in 2022.`);
+  s = of(['dividend_etf']);
+  add('dividend', s, 'Dividends can be cut', `${joinSyms(s)} ${s.length > 1 ? 'are' : 'is'} still stock ${s.length > 1 ? 'funds' : 'fund'}, so ${s.length > 1 ? 'they rise' : 'it rises'} and fall${s.length > 1 ? '' : 's'} with the market, and companies can lower or stop their dividends. US dividends usually have 15% tax held back, even inside a TFSA.`);
+  s = of(['sector_etf']);
+  const sectors = [...new Set(s.map((x) => SECTOR_OF[x]).filter(Boolean))];
+  if (s.length) {
+    const one = sectors.length === 1 ? sectors[0] : null;
+    add('sector', s, one ? `${capFirst(one)} concentration` : 'Industry concentration', one
+      ? `${joinSyms(s)} only ${s.length > 1 ? 'hold' : 'holds'} ${one} companies, so problems affecting that one industry could make the whole fund lose value at the same time.`
+      : `Each of these funds holds companies from just one industry${sectors.length ? ` (${sectors.join(', ')})` : ''}, so a bad stretch for that industry can pull the whole fund down together.`);
   }
-  if (p.timelineYears < 5 && horizonNote) risks.push({ title: 'Short time horizon', explanation: horizonNote });
-  const single = assets.filter((a) => ['large_cap', 'mid_cap', 'small_cap'].includes(a.category));
-  if (assets.length === 1 || single.length === assets.length) {
-    risks.push({ title: 'Concentration', explanation: `This draft covers ${assets.length === 1 ? 'a single holding' : 'only individual companies'}, so ${assets.length === 1 ? 'its' : 'their'} results swing more than a broad fund's; one company's news can move the price a lot.` });
+  s = of(['reit']);
+  add('real_estate', s, 'Real estate and interest rates', `These companies own property and usually borrow a lot, so rising interest rates or a weak property market can push their prices down.`);
+  s = of(COMPANY_CATS);
+  if (s.length) {
+    const onlyCompanies = s.length === assets.length;
+    const small = of(['small_cap']).length ? ' Small companies can swing even more, and some fail entirely.' : '';
+    add('company', s, s.length > 1 ? 'Relying on single companies' : 'Relying on one company',
+      `${s.length > 1 ? 'Each of these is' : 'This is'} one business, so a bad earnings report, lawsuit or product problem can move the price far more than a broad fund would.${small}${onlyCompanies ? ' Your picks include no broad fund to soften that.' : ''}`);
   }
-  if (p.riskComfort == null) risks.push({ title: 'Risk comfort not stated', explanation: "You haven't said how you'd feel about losses, so this draft treats your situation cautiously." });
-  return risks;
+  s = of(['thematic_etf']);
+  add('theme', s, 'Trends can fade', `${s.length > 1 ? 'These funds bet' : 'This fund bets'} on one trend. ${s.length > 1 ? 'They' : 'It'} can rise fast while the trend is popular and fall hard when interest fades; some theme funds have dropped more than 50% from their peaks.`);
+  s = of(['crypto']);
+  add('crypto', s, 'Very large price swings', `Crypto prices can rise or fall by large amounts within days, and drops of 50% or more have happened several times. There are no company earnings or dividends behind ${s.length > 1 ? 'them' : 'it'}.`);
+  return cards;
 }
 
-const capFirst = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+function goalRiskCards(p, assets, horizonText) {
+  const cards = [];
+  const syms = assets.map((a) => a.symbol);
+  const goal = p.purpose ? `Your goal (${String(p.purpose).replace(/[.!?]+$/, '')}) is about ${horizonText} away. ` : `You need this money in about ${horizonText}. `;
+  const lowComfort = p.riskComfort === 'low';
+  const comparison = lowComfort ? " You said you'd rather avoid losses, so it can help to compare this with a savings account or GIC, whose value doesn't swing like this." : '';
+  if (p.timelineYears != null && p.timelineYears < 3) {
+    cards.push({ topic: 'horizon', scope: 'goal', tickers: syms, title: 'Needing the money soon',
+      explanation: `${goal}${bothOrAll(syms)} could be worth less than you put in when that time comes, and there may not be enough time to wait for prices to recover.${comparison}` });
+  } else if (p.timelineYears != null && p.timelineYears < 5) {
+    cards.push({ topic: 'horizon', scope: 'goal', tickers: syms, title: 'Needing the money in a few years',
+      explanation: `${goal}A drop in ${joinSyms(syms)} could still be underway when you need the money; past market drops have taken several years to recover.${comparison}` });
+  } else if (lowComfort) {
+    cards.push({ topic: 'comfort', scope: 'goal', tickers: syms, title: 'Ups and downs along the way',
+      explanation: `You said you'd rather avoid losses. Even over ${horizonText}, ${joinSyms(syms)} can drop sharply for months or years at a time, which can be stressful to watch.` });
+  }
+  if (p.riskComfort == null) {
+    cards.push({ topic: 'comfort', scope: 'goal', tickers: [], title: "How you'd feel about a drop",
+      explanation: "You haven't said how you'd feel if this money dropped in value, so this draft treats your situation cautiously." });
+  }
+  return cards;
+}
+
+// Which underlying issue a free-text risk is about (null = something new).
+const RISK_TOPICS = [
+  ['horizon', /\b(horizon|timeline|time ?frame|short[- ]term|need(ing)? (the|this|your) money|money (soon|sooner)|withdraw|recover(y)? (time|before))\b/i],
+  ['rates', /\b(interest[- ]?rates?|rate (hikes?|rises?|increases?)|rising rates|bond (prices?|values?|funds?)|duration)\b/i],
+  ['real_estate', /\b(real estate|property|reits?)\b/i],
+  ['dividend', /\bdividends?\b/i],
+  ['crypto', /\b(crypto\w*|bitcoin|ethereum)\b/i],
+  ['theme', /\b(theme|thematic|trend|hype|fad)\b/i],
+  ['sector', /\b(sector|industry|concentrat\w*|healthcare|health care|technology|tech sector|energy|financials?|utilities)\b/i],
+  ['company', /\b(single[- ]company|one company|company[- ]specific|individual (stock|compan)\w*|earnings)\b/i],
+  ['market', /\b(market (risk|drops?|downturns?|declines?|crash\w*|volatility|swings?)|stock market|broad market|recession|downturn|volatility)\b/i],
+  ['comfort', /\b(risk comfort|risk tolerance|comfort with (risk|loss\w*))\b/i],
+];
+const topicOf = (r) => { const t = `${r.title} ${r.explanation}`; const hit = RISK_TOPICS.find(([, re]) => re.test(t)); return hit ? hit[0] : null; };
+const STOP = new Set('the a an of to in and or for is are be can could may might your you this that these it its with on as by if from at more less than'.split(' '));
+const words = (t) => new Set(String(t).toLowerCase().replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter((w) => w.length > 2 && !STOP.has(w)));
+function similar(a, b) {
+  const x = words(`${a.title} ${a.explanation}`); const y = words(`${b.title} ${b.explanation}`);
+  let n = 0; for (const w of x) if (y.has(w)) n += 1;
+  return n / Math.max(1, Math.min(x.size, y.size)) >= 0.6;
+}
+
+const MAX_EXTRA_RISKS = 2;
+function buildDraftRisks(p, assets, horizonText, geminiRisks) {
+  const cards = [...goalRiskCards(p, assets, horizonText), ...assetRiskCards(assets)];
+  const covered = new Set(cards.map((c) => c.topic));
+  // a whole-market warning is already part of the short-horizon card
+  if (covered.has('horizon')) covered.add('market');
+  if (covered.has('real_estate')) covered.add('rates');
+  let extras = 0;
+  for (const r of geminiRisks || []) {
+    if (extras >= MAX_EXTRA_RISKS) break;
+    const topic = topicOf(r);
+    if (topic && covered.has(topic)) continue;
+    if (cards.some((c) => similar(c, r))) continue;
+    const tickers = detectTickers(`${r.title} ${r.explanation}`).filter((x) => x.supported && assets.some((a) => a.symbol === x.symbol)).map((x) => x.symbol);
+    cards.push({ topic: topic || `extra_${extras}`, scope: 'investment', tickers: [...new Set(tickers)], title: r.title, explanation: r.explanation });
+    if (topic) covered.add(topic);
+    extras += 1;
+  }
+  return cards.map(({ topic, ...c }) => c);
+}
+
 
 function formatDraft(d) {
   const p = d.profileSnapshot;
@@ -1106,26 +1266,21 @@ async function createThesisDraft(session, opts = {}) {
   const assets = s.selection.confirmed.map(assetInfo);
   const horizon = { years: p.timelineYears, text: timelineOf(p, s.profileDetails.timelineText) };
   const horizonNote = horizonNoteFor(p, s.profileDetails.timelineText);
-  const g = await askGemini('draft', draftPrompt(p, horizon.text, assets), opts);
+  const g = await askGemini('draft', draftPrompt(p, horizon.text, assets, null, userWords(s)), opts);
   const v = g.json ? validateDraftJson(g.json, assets) : { goal: null, assumptions: [], risks: [], dropped: [] };
 
   // 2-4 assumptions: Gemini's valid ones first; only if fewer than 2, top up with asset-specific templates.
   const details = [...v.assumptions];
   for (const a of assets) {
     if (details.length >= 2) break;
-    if (!details.some((d) => d.tickers.includes(a.symbol))) details.push(templateAssumption(a, horizon.text));
+    if (!details.some((d) => d.tickers.includes(a.symbol))) details.push(templateAssumption(a, horizon.text, p, { personal: !details.some((d) => d.origin === 'template') }));
   }
   if (details.length < 2) details.push(horizonAssumption(assets, horizon.text));
   if (!g.json) { // no Gemini at all: one template per asset, up to 4
-    for (const a of assets) if (details.length < 4 && !details.some((d) => d.tickers.includes(a.symbol))) details.push(templateAssumption(a, horizon.text));
+    for (const a of assets) if (details.length < 4 && !details.some((d) => d.tickers.includes(a.symbol))) details.push(templateAssumption(a, horizon.text, p, { personal: !details.some((d) => d.origin === 'template') }));
   }
 
-  const risks = [];
-  const fixed = deterministicRisks(p, assets, horizonNote);
-  const hasHorizon = fixed.some((r) => r.title === 'Short time horizon');
-  // Gemini's extra risks are kept unless they repeat a fixed one (same title, or another take on the short horizon).
-  const extra = v.risks.filter((r) => !(hasHorizon && /\b(horizon|timeline|short[- ]term|time frame|timeframe)\b/i.test(`${r.title} ${r.explanation}`)));
-  for (const r of [...fixed, ...extra]) if (!risks.some((x) => x.title.toLowerCase() === r.title.toLowerCase())) risks.push(r);
+  const risks = buildDraftRisks(p, assets, horizon.text, v.risks);
   const goal = v.goal || `${capFirst(p.purpose)}, investing ${fmtMoney(p.amount, p.currency)} ${CADENCE_TEXT[p.cadence]} over ${horizon.text}.`;
   const tier = internalTier(p);
   const usedGemini = v.assumptions.length > 0;
@@ -1163,9 +1318,16 @@ async function createThesisDraft(session, opts = {}) {
   };
 }
 
-function draftPrompt(p, horizonText, assets, previous) {
+// What the user actually said during onboarding (their own words only), so ideas can reflect real preferences.
+const USER_WORDS_MAX = 8;
+function userWords(s) {
+  return (Array.isArray(s.history) ? s.history : []).filter((h) => h.role === 'user').slice(-USER_WORDS_MAX).map((h) => String(h.content).replace(/<<<|>>>/g, '').slice(0, 300)).filter(Boolean);
+}
+function draftPrompt(p, horizonText, assets, previous, said) {
   const parts = [
     'PROFILE (untrusted user data):', fence({ ...p, timelineAsStated: horizonText }),
+    'NOT STATED BY THE USER (do not guess these):', fence(PROFILE_FIELDS.filter((f) => f !== 'currency' && p[f] == null)),
+    "WHAT THE USER SAID (their own words; only preferences found here may be described as theirs):", fence(said && said.length ? said : ['(nothing beyond the profile)']),
     'SELECTED ASSETS (the only ones you may mention):', fence(assets.map((a) => ({ ticker: a.symbol, name: a.name, category: a.category }))),
   ];
   if (previous && previous.length) {
@@ -1338,7 +1500,7 @@ async function regenerateAssumptions(session, opts = {}) {
   const p = { ...d.profileSnapshot };
   delete p.timelineText;
   const previous = d.assumptionDetails.map((a) => a.text);
-  const g = await askGemini('draft', draftPrompt(p, d.horizon.text, d.selectedAssets, previous), { ...opts, temperature: 0.7 });
+  const g = await askGemini('draft', draftPrompt(p, d.horizon.text, d.selectedAssets, previous, userWords(s)), { ...opts, temperature: 0.7 });
   const v = g.json ? validateDraftJson(g.json, d.selectedAssets) : { assumptions: [] };
   const fresh = v.assumptions.filter((a) => !previous.some((x) => x.toLowerCase() === a.text.toLowerCase()));
   if (fresh.length < MIN_ASSUMPTIONS) {
@@ -1852,6 +2014,32 @@ const softLower = (t) => (SOFT_LOWER.has(t.split(/\s/, 1)[0]) ? lowerFirst(t) : 
 const dropResearchClaims = (t) => splitSentences(t).filter((s) => !RESEARCH_CLAIM.test(s)).join('').trim();
 const chatStr = (v, n) => (typeof v === 'string' && v.trim() ? v.replace(/\s+/g, ' ').trim().slice(0, n) : null);
 
+// Who wrote each confirmed idea: the user's own words, or a THESIS proposal the user reviewed and confirmed.
+const ASSUMPTION_ORIGIN = {
+  user: 'written or edited by the user, then confirmed',
+  gemini: 'proposed by THESIS, reviewed and confirmed by the user to follow (not a belief the user stated on their own)',
+  template: 'proposed by THESIS, reviewed and confirmed by the user to follow (not a belief the user stated on their own)',
+  unknown: 'confirmed by the user to follow',
+};
+const detailOrigin = (t, i) => (Array.isArray(t.assumptionDetails) && t.assumptionDetails[i] && t.assumptionDetails[i].origin) || 'unknown';
+
+// Sentences a thesis chat reply must never contain: research picks are not purchases or holdings (THESIS
+// records none), bond funds are not "stable" or capital-preserving, and nothing is "right for" the user.
+const OWNERSHIP_CLAIM = /\b(you(?:'re| are)? (plan(?:ning)?|intend(?:ing)?|going|decided|want(?:ing)?) to (buy|purchase|invest in|put money (into|in))|you(?:'ve| have)? (bought|purchased)|you (own|hold)\b|you(?:'re| are) (holding|invested in)|your (portfolio|holdings?|positions?)\b|(stocks?|funds?|etfs?|investments?) you (own|hold|bought))/i;
+const BOND_WORDS = /\b(bonds?|bond (funds?|etfs?)|BND|AGG|TLT|SHY|LQD|treasur(y|ies))\b/i;
+const STABLE_CLAIM = /\b(stable|steady|stability|steadier|preserves? (your )?(capital|money|savings)|protects? (your )?(capital|money|savings)|keeps? (your )?money safe|low[- ]risk)\b/i;
+const FIT_CLAIM = /\b(suitable|(a )?(good|great|perfect|right) (fit|choice|match)|right) for (you|your)\b/i;
+// Returns the offending sentences (empty when the text is clean). The reply is never trimmed sentence by
+// sentence: a flagged reply gets one corrective regeneration, then a structured thesis recap (thesisChat).
+function findMisleadingChatClaims(text) {
+  return splitSentences(text).map((x) => x.trim()).filter((x) => x && ((OWNERSHIP_CLAIM.test(x) && !NEGATED.test(x))
+    || (BOND_WORDS.test(x) && STABLE_CLAIM.test(x) && !/\b(not|never|isn'?t|aren'?t|no) (always |necessarily |guaranteed )?(stable|steady|safe)|can (still )?(lose|fall|drop)/i.test(x))
+    || (FIT_CLAIM.test(x) && !NEGATED.test(x))));
+}
+const CHAT_CORRECTION = (bad) => ['YOUR PREVIOUS ANSWER BROKE THE THESIS RULES. Rewrite the whole answer, keeping every accurate detail and citation, but fix these sentences:',
+  fence(bad.slice(0, 6)),
+  'The investments were chosen to RESEARCH, not bought or owned, and there is no plan to buy and no portfolio. Never call a fund stable, steady, safe or capital-preserving, and never say anything suits or is right for the user.'].join('\n');
+
 // The user's own thesis, as Gemini sees it. User-supplied information: never cited as evidence.
 function chatThesisBlock(t) {
   const scope = thesisScope(t);
@@ -1866,7 +2054,10 @@ function chatThesisBlock(t) {
     riskComfort: chatStr(p.riskComfort, 20) || 'not stated',
     experience: chatStr(p.experience, 20) || 'not stated',
     investments: scope.assets.map((a) => `${a.symbol} (${a.name}, ${a.category})`),
-    confirmedAssumptions: scope.assumptions.map((a, i) => ({ number: i + 1, text: a.text, tickers: a.tickers, whatWouldChallengeIt: a.whatWouldChallengeIt })),
+    whatTheInvestmentsAre: 'Chosen to RESEARCH and follow in the news. THESIS records no purchases, holdings or portfolio for this user, and no plan to buy.',
+    howDetailsWereRecorded: 'Goal, contribution, time frame and risk comfort were gathered in a beginner conversation and stored as single values. They may have been rough figures, ranges or loose answers; describe them as recorded ("about", "you mentioned") and never firmer than stored. Only the time frame keeps the user\'s own wording.',
+    confirmedAssumptions: scope.assumptions.map((a, i) => ({ number: i + 1, text: a.text, tickers: a.tickers, whatWouldChallengeIt: a.whatWouldChallengeIt,
+      origin: ASSUMPTION_ORIGIN[detailOrigin(t, i)] || ASSUMPTION_ORIGIN.unknown })),
     knownRisks: (Array.isArray(t.risks) ? t.risks : []).slice(0, 6)
       .map((r) => (typeof r === 'string' ? chatStr(r, 360) : r && typeof r.title === 'string' ? chatStr(`${r.title}: ${r.explanation || ''}`, 360) : null)).filter(Boolean),
     horizonNote: chatStr(t.horizonNote, 400),
@@ -1984,6 +2175,7 @@ function validateChatReply(json, evidence) {
   const order = [];
   let droppedCitations = 0;
   let removedClaims = 0;
+  const misleading = []; // flagged, not deleted: the caller regenerates or falls back
   for (const seg of json.answer.slice(0, CHAT_MAX_SEGMENTS)) {
     if (!seg || typeof seg.text !== 'string') continue;
     let basis = CHAT_BASES.includes(seg.basis) ? seg.basis : 'general';
@@ -1998,6 +2190,7 @@ function validateChatReply(json, evidence) {
     let text = cleanLLMText(scrubEvidenceIds(seg.text.replace(URL_IN_TEXT, '').replace(MARKER_IN_TEXT, '')), CHAT_SEGMENT_MAX);
     text = text ? dropResearchClaims(text) : null;
     if (!text) continue;
+    misleading.push(...findMisleadingChatClaims(text));
     if (basis === 'evidence' && !ids.length) { // unsupported factual claim: removed, not relabelled
       removedClaims++;
       if (!segments.length || segments[segments.length - 1].text !== UNSUPPORTED_LINE) segments.push({ text: UNSUPPORTED_LINE, basis: 'uncertain', citations: [] });
@@ -2019,16 +2212,20 @@ function validateChatReply(json, evidence) {
     insufficientEvidence: json.insufficientEvidence === true || removedClaims > 0,
     droppedCitations,
     removedClaims,
+    misleading,
   };
 }
 
 // Both models failed / no key / offline: a plain recap of the user's own thesis (and the opened article).
-function chatFallback(tb, evidence, mode) {
-  const segments = [{ text: 'The AI research assistant is unavailable right now, so this is a plain summary of your thesis as you confirmed it, not an answer to your question.', basis: 'general', citations: [] }];
-  const about = [tb.goal ? `Your goal: ${tb.goal.replace(/[.\s]+$/, '')}.` : null, `Time horizon: ${tb.timeHorizon}.`, tb.investments.length ? `Investments in this thesis: ${tb.investments.join(', ')}.` : null];
+function chatFallback(tb, evidence, mode, why = 'unavailable') {
+  const intro = why === 'unreliable'
+    ? "I couldn't put together a reliable answer to that just now, so here is a plain summary of your thesis as you confirmed it."
+    : 'The AI research assistant is unavailable right now, so this is a plain summary of your thesis as you confirmed it, not an answer to your question.';
+  const segments = [{ text: intro, basis: 'general', citations: [] }];
+  const about = [tb.goal ? `Your goal: ${tb.goal.replace(/[.\s]+$/, '')}.` : null, `Time horizon: ${tb.timeHorizon}.`, tb.investments.length ? `Investments you chose to research (not purchases): ${tb.investments.join(', ')}.` : null];
   segments.push({ text: about.filter(Boolean).join(' '), basis: 'thesis', citations: [] });
   if (tb.confirmedAssumptions.length) {
-    segments.push({ text: `Your confirmed assumptions: ${tb.confirmedAssumptions.map((a) => `${a.number}) ${a.text.replace(/[.\s]+$/, '')}${a.whatWouldChallengeIt ? ` (what would challenge it: ${a.whatWouldChallengeIt.replace(/[.\s]+$/, '')})` : ''}`).join('; ')}.`, basis: 'thesis', citations: [] });
+    segments.push({ text: `Research ideas you confirmed: ${tb.confirmedAssumptions.map((a) => `${a.number}) ${a.text.replace(/[.\s]+$/, '')}${a.whatWouldChallengeIt ? ` (what would challenge it: ${a.whatWouldChallengeIt.replace(/[.\s]+$/, '')})` : ''}`).join('; ')}.`, basis: 'thesis', citations: [] });
   }
   const citations = [];
   const e = mode === 'investigation' ? evidence[0] : null;
@@ -2078,10 +2275,19 @@ async function thesisChat(thesis, history, message, context = {}, opts = {}) {
     const evidence = (focus ? [focus, ...items.filter((i) => i !== focus)] : items).slice(0, CHAT_MAX_EVIDENCE).map((e, i) => ({ ...e, id: `E${i + 1}` }));
     const mode = focus ? 'investigation' : 'general';
 
-    const g = await askGemini('chat', buildChatPrompt(mode, tb, evidence, h.list, message.trim()), { callLLM: opts.callLLM, forceFallback: opts.forceFallback, temperature: 0.3, parse: parseChatJson });
+    const prompt = buildChatPrompt(mode, tb, evidence, h.list, message.trim());
+    const gOpts = { callLLM: opts.callLLM, forceFallback: opts.forceFallback, temperature: 0.3, parse: parseChatJson };
+    let g = await askGemini('chat', prompt, gOpts);
     let out = g.json ? validateChatReply(g.json, evidence) : null;
+    let unreliable = false;
+    if (out && out.misleading.length) { // one corrective regeneration, never more
+      console.warn(`[chat] reply claimed ownership/suitability (${out.misleading.length} sentence(s)); regenerating once`);
+      const g2 = await askGemini('chat', `${prompt}\n${CHAT_CORRECTION(out.misleading)}`, { ...gOpts, temperature: 0.2 });
+      const out2 = g2.json ? validateChatReply(g2.json, evidence) : null;
+      if (out2 && !out2.misleading.length) { out = out2; g = g2; } else { out = null; unreliable = true; g = { ...g, reason: null }; }
+    }
     const source = out ? 'gemini' : 'fallback';
-    if (!out) out = chatFallback(tb, evidence, mode);
+    if (!out) out = chatFallback(tb, evidence, mode, unreliable ? 'unreliable' : 'unavailable');
     if (source === 'gemini' && JUDGMENT_Q.test(message) && !out.segments.some((s) => HAS_CAVEAT.test(s.text))) {
       out.segments.push({ text: JUDGMENT_NOTE, basis: 'general', citations: [] });
     }
@@ -2126,10 +2332,10 @@ module.exports = {
   SESSION_ACTIONS,
   thesisChat,
   // exposed for scripts/test-thesis-chat.js
-  _chat: { chatEvidence, chatThesisBlock, chatHistory, buildChatPrompt, validateChatReply, chatFallback, attributeEvidence, scrubEvidenceIds, UNSUPPORTED_LINE, CHAT_MAX_EVIDENCE, JUDGMENT_NOTE, JUDGMENT_Q },
+  _chat: { findMisleadingChatClaims, chatEvidence, chatThesisBlock, chatHistory, buildChatPrompt, validateChatReply, chatFallback, attributeEvidence, scrubEvidenceIds, UNSUPPORTED_LINE, CHAT_MAX_EVIDENCE, JUDGMENT_NOTE, JUDGMENT_Q },
   // exposed for scripts/test-thesis-draft.js
   _news: { thesisScope, normalizeNewsItems, linkOf, validateNewsMatches, safeUrl, NOTABLE_HOLDINGS, NEWS_BATCH },
-  _draft: { validateUserAssumption, parseSelectionInput, validateDraftJson, internalTier, horizonNoteFor, templateAssumption, dropSafeClaims, CATEGORY_INFO, MAX_SELECTION },
+  _draft: { validateUserAssumption, parseSelectionInput, validateDraftJson, internalTier, horizonNoteFor, templateAssumption, horizonAssumption, FORECAST_RE, CONVICTION_RE, TECHNICAL_RE, dropSafeClaims, CATEGORY_INFO, MAX_SELECTION },
   // exposed for scripts/test-onboarding.js
   _onboarding: { extractJson, callJsonWithModelFallback, isModelFallbackWorthy, callWithModelFallback, parseLLMReply, scrubAdvice, composeDisplay, detectTickers, analyzeMessage, buildUserPrompt, loadPrompt },
 };

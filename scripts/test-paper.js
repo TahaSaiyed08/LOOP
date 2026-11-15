@@ -1,6 +1,7 @@
 // Paper-trading honesty tests: fillNote on buys/positions/trades and the X-Data-Source header on
 // /api/paper/portfolio. Spawns the real server against a controllable mock of Alpaca.
 // Run: npm run test:paper   (takes ~10 s: unfilled equity orders are polled for 3 s each)
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 const os = require('os');

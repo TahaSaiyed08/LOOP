@@ -1,6 +1,7 @@
 // Tests investment exploration, explicit selection and thesis draft creation in server/thesis.js.
 // Offline: scripted callLLM (no real Gemini calls, no key needed), plus one group through the real
 // server/llm.js against a local HTTP mock. Run: npm run test:draft   (~6 s: llm.js spaces calls 5 s apart)
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 
@@ -150,10 +151,10 @@ function assertDraftContract(r) {
     assert.strictEqual(r.draft.horizon.text, '2–3 years', 'stated range must be preserved');
     assert.strictEqual(r.draft.horizonYears, 2);
     assert.strictEqual(r.draft.profileSnapshot.timelineText, '2–3 years');
-    assert(r.draft.risks.some((x) => x.title === 'Short time horizon'));
-    assert(r.draft.risks.some((x) => x.title === 'Concentration'), 'single stock needs a concentration note');
+    assert(r.draft.risks.some((x) => x.title === 'Needing the money soon' && x.scope === 'goal'));
+    assert(r.draft.risks.some((x) => x.title === 'Relying on one company (NVDA)' && x.scope === 'investment'), 'single stock needs a concentration note');
     const dup = await createThesisDraft(confirmed('VOO'), { callLLM: fakeLLM([goodDraft({ risks: [{ title: 'Short-Term Market Downturn', explanation: 'Because the timeline is only 2-3 years, a drop may not recover.' }] })]) });
-    assert.strictEqual(dup.draft.risks.filter((x) => /short/i.test(x.title)).length, 1, 'short-horizon risk repeated');
+    assert.strictEqual(dup.draft.risks.filter((x) => /short|needing the money/i.test(x.title)).length, 1, 'short-horizon risk repeated');
     assert.strictEqual(r.draft.tier, 'low');
     assert(/internal compatibility/i.test(r.draft.tierNote));
   });
@@ -188,7 +189,7 @@ function assertDraftContract(r) {
     assert.deepStrictEqual(r.draft.budget, { amount: 20, cadence: 'weekly' });
     assert.deepStrictEqual(r.draft.selectedAssets.map((a) => a.symbol), ['VOO', 'NVDA']);
     assert(r.draft.risks.some((x) => x.title === 'AI spending cycle'), 'Gemini risk kept');
-    assert(r.draft.risks.some((x) => x.title === 'Risk comfort not stated'));
+    assert(r.draft.risks.some((x) => x.title === "How you'd feel about a drop" && x.scope === 'goal'));
     assert(llm.calls[0].user.includes('"ticker": "NVDA"'), 'prompt must list the confirmed assets');
     assert(/THESIS DRAFT \(not saved, not monitored\)/.test(r.displayText));
     for (const k of Object.keys(require.cache)) assert(!/server[\\/](store|notify|paper|alpaca)\.js$/.test(k), `draft code loaded ${k}`);
@@ -207,7 +208,9 @@ function assertDraftContract(r) {
   });
 
   await test('12. 2-4 assumptions: trims extras, prefers 2 real ones over padding, tops up only when < 2', async () => {
-    const many = Array.from({ length: 6 }, (_, i) => ({ text: `VOO assumption number ${i + 1} about S&P 500 earnings growth.`, tickers: ['VOO'], whatWouldChallengeIt: `Evidence ${i + 1} of falling earnings.` }));
+    const many = ['how a fund holding hundreds of US companies spreads out my money', 'whether its yearly fee stays small enough not to matter much', 'how a recession usually affects a whole-market fund',
+      'whether adding money on a schedule makes market dips easier to live with', 'how interest rate changes from the central bank tend to reach big US companies', 'what share of the fund depends on a handful of very large tech firms']
+      .map((t, i) => ({ text: `I want to understand ${t} for VOO.`, tickers: ['VOO'], whatWouldChallengeIt: `News ${i + 1} that contradicts this, such as a recession or fee change.` }));
     const r6 = await createThesisDraft(confirmed('VOO, NVDA'), { callLLM: fakeLLM([goodDraft({ assumptions: many })]) });
     assert.strictEqual(r6.draft.assumptions.length, 4);
     const r2 = await createThesisDraft(confirmed('VOO, NVDA, XLK, BND'), { callLLM: fakeLLM([goodDraft()]) });
@@ -503,6 +506,107 @@ function assertDraftContract(r) {
     const off = await suggestChallenge(s, 2, text, { forceFallback: true });
     assert.strictEqual(off.source, 'fallback');
     assert(off.suggestion.length > 10);
+  });
+
+  await test('29. draft risks: duplicates removed by underlying issue, short plain-English set tied to the goal', async () => {
+    const car = { ...confirmed('BND, XLV'), profile: { ...confirmed('BND, XLV').profile, purpose: 'buy a car', timelineYears: 2, riskComfort: 'low' } };
+    car.profileDetails = { ...(car.profileDetails || {}), timelineText: '2 years' };
+    const llm = fakeLLM([goodDraft({ assumptions: [
+      { text: 'BND keeps paying steady interest while rates stay stable.', tickers: ['BND'], whatWouldChallengeIt: 'The Fed signals sharp rate hikes.' },
+      { text: 'Healthcare demand keeps XLV company earnings steady.', tickers: ['XLV'], whatWouldChallengeIt: 'Drug price caps cut healthcare earnings.' },
+    ], risks: [
+      { title: 'Interest Rate Risk for Bonds', explanation: 'If interest rates rise, BND bond prices may fall.' },
+      { title: 'Short-Term Market Downturn', explanation: 'With only 2 years, a drop may not recover in time.' },
+      { title: 'Healthcare Sector Concentration', explanation: 'XLV only holds healthcare companies.' },
+    ] })]);
+    const r = await createThesisDraft(car, { callLLM: llm });
+    assertDraftContract(r);
+    const t = r.draft.risks.map((x) => x.title);
+    assert.deepStrictEqual(t, ['Needing the money soon', 'Bond prices can fall (BND)', 'Healthcare concentration (XLV)'], t.join(' | '));
+    assert.deepStrictEqual(r.draft.risks.map((x) => x.scope), ['goal', 'investment', 'investment']);
+    const horizon = r.draft.risks[0].explanation;
+    assert(/buy a car/.test(horizon) && /2 years/.test(horizon) && /Both BND and XLV/.test(horizon), horizon);
+    assert(/savings account or GIC/.test(horizon), 'low risk comfort keeps the comparison');
+    for (const x of r.draft.risks) {
+      assert(x.title && x.explanation, 'each risk keeps title + explanation');
+      assert(!/\b(duration|volatility|beta|drawdown|basis points|yield curve)\b/i.test(x.explanation), `jargon: ${x.explanation}`);
+      assert(!/\b(safe|guarantee\w*|risk[- ]free)\b/i.test(x.explanation), `safety claim: ${x.explanation}`);
+      assert(x.explanation.split(/[.!?](\s|$)/).filter((z) => z && z.trim()).length <= 4, 'short');
+    }
+    // a genuinely new Gemini risk is kept, but no more than two extras; an unrelated reworded one is dropped
+    const extra = await createThesisDraft(confirmed('VOO'), { callLLM: fakeLLM([goodDraft({ assumptions: [goodDraft().assumptions[0], { text: 'S&P 500 earnings keep growing for VOO.', tickers: ['VOO'], whatWouldChallengeIt: 'Falling earnings reports.' }], risks: [
+      { title: 'Currency', explanation: 'VOO is priced in US dollars, so a stronger Canadian dollar lowers its value for you.' },
+      { title: 'Broad Market Decline', explanation: 'The whole stock market can fall in a recession.' },
+      { title: 'Fees', explanation: 'Fund fees reduce what you keep each year.' },
+      { title: 'Tax', explanation: 'Withholding tax applies to US dividends.' },
+    ] })]) });
+    const et = extra.draft.risks.map((x) => x.title);
+    assert(et.includes('Currency') && et.includes('Fees') && !et.includes('Tax'), et.join(' | '));
+    assert.strictEqual(et.filter((x) => /market/i.test(x)).length, 1, 'market drop warned once');
+    // no padding: one long-term broad fund with comfort stated -> one card
+    const lean = { ...confirmed('VOO'), profile: { ...confirmed('VOO').profile, timelineYears: 10, riskComfort: 'medium' } };
+    lean.profileDetails = { ...(lean.profileDetails || {}), timelineText: '10 years' };
+    const one = await createThesisDraft(lean, { callLLM: fakeLLM([goodDraft({ risks: [] })]) });
+    assert.deepStrictEqual(one.draft.risks.map((x) => x.title), ['Whole-market drops (VOO)']);
+  });
+
+  await test('30. research ideas: first person, personal where it matters, no forecasts, convictions, numbers or near-duplicates', async () => {
+    const { templateAssumption, horizonAssumption, FORECAST_RE, CONVICTION_RE, TECHNICAL_RE } = _draft;
+    // prompt carries the user's own words and what they did NOT say, so nothing is invented
+    const s = confirmed('VOO, NVDA');
+    s.history = [{ role: 'user', content: 'I like that index funds are simple and I hate checking prices every day.' }, { role: 'assistant', content: 'Got it.' }];
+    const llm = fakeLLM([goodDraft()]);
+    await createThesisDraft(s, { callLLM: llm });
+    const u = llm.calls[0].user; const sys = llm.calls[0].system;
+    assert(u.includes('I hate checking prices every day'), 'user words reach the prompt');
+    assert(!u.includes('Got it.'), 'assistant replies are not presented as the user\'s words');
+    assert(/NOT STATED BY THE USER[\s\S]*riskComfort/.test(u), 'unstated fields listed');
+    assert(/Never invent beliefs/.test(sys) && /not a prediction/.test(sys) && /No numbers, percentages/.test(sys), 'style rules in the system prompt');
+
+    // validation: forecasts, invented convictions, technical challenges and near-duplicates are dropped with reasons
+    const bad = await createThesisDraft(confirmed('VOO, NVDA'), { callLLM: fakeLLM([goodDraft({ assumptions: [
+      { text: 'Dividend stocks in VOO will remain favored by investors, supporting price stability.', tickers: ['VOO'], whatWouldChallengeIt: 'Investors rotating away from dividend stocks.' },
+      { text: "I'm confident NVIDIA is the best way to ride the AI boom for my retirement.", tickers: ['NVDA'], whatWouldChallengeIt: 'Weak AI chip demand.' },
+      { text: 'I want to understand whether NVIDIA chip demand from data centers keeps up.', tickers: ['NVDA'], whatWouldChallengeIt: 'NVDA dropping below its 200-day moving average.' },
+      { text: "I'm looking into VOO because one fund spreads money across many US companies.", tickers: ['VOO'], whatWouldChallengeIt: 'News of a recession or falling profits across many companies.' },
+      { text: "I'm looking into VOO since one fund spreads my money across many US companies.", tickers: ['VOO'], whatWouldChallengeIt: 'Reports of a broad market slump.' },
+      { text: 'I want to find out whether NVIDIA keeps winning orders for its AI chips from big tech companies.', tickers: ['NVDA'], whatWouldChallengeIt: 'News of big customers cutting AI spending or choosing rival chips.' },
+    ] })]) });
+    assertDraftContract(bad);
+    const texts = bad.draft.assumptions.join(' | ');
+    assert(!/remain favored|confident|moving average/.test(texts + bad.draft.assumptionDetails.map((a) => a.whatWouldChallengeIt).join(' ')), texts);
+    assert.strictEqual(bad.draft.assumptions.filter((t) => /spreads (my )?money across many US companies/.test(t)).length, 1, 'near-duplicate kept once');
+    const why = bad.diagnostics.droppedAssumptions.join(' ');
+    assert(/forecast/.test(why) && /conviction/.test(why) && /technical/.test(why) && /nearly the same/.test(why), why);
+
+    // offline ideas differ by scenario and asset type, read as questions, and personalize only the first one
+    const car = { purpose: 'buy a car', timelineYears: 2, riskComfort: 'low', amount: 5, cadence: 'daily' };
+    const retire = { purpose: 'retire comfortably', timelineYears: 25, riskComfort: 'high', amount: 200, cadence: 'monthly' };
+    const asset = (sym) => { const a = UNIVERSE.find((x) => x.ticker === sym); return { symbol: a.ticker, name: a.companyName, category: a.category }; };
+    const all = [];
+    for (const [p, h, syms] of [[car, '2 years', ['BND', 'XLV']], [retire, '25 years', ['VOO', 'NVDA', 'BTC/USD']], [{ ...nulls }, null, ['SCHD', 'ARKK']]]) {
+      const ideas = syms.map((sym, i) => templateAssumption(asset(sym), h, p, { personal: i === 0 }));
+      for (const a of ideas) {
+        all.push(a.text);
+        assert(/^(I'm|I want|I'd)/.test(a.text), `first person: ${a.text}`);
+        assert(!FORECAST_RE.test(a.text) && !CONVICTION_RE.test(a.text), `forecast or conviction: ${a.text}`);
+        assert(!TECHNICAL_RE.test(a.whatWouldChallengeIt) && /news|reports?|weaker/i.test(a.whatWouldChallengeIt), `challenge: ${a.whatWouldChallengeIt}`);
+        assert(!/\b(safe|will (grow|rise|keep))\b/i.test(a.text), a.text);
+      }
+      if (h) assert(ideas[0].text.includes(h), `first idea mentions the time frame: ${ideas[0].text}`);
+      assert(ideas.slice(1).every((a) => !h || !a.text.includes(h)), 'personal details are not pasted into every idea');
+      if (p.riskComfort === 'low') assert(/comfortable/.test(ideas[0].text), 'low comfort shapes the question');
+      if (p.riskComfort == null) assert(!/comfortable/.test(ideas.map((a) => a.text).join(' ')), 'no invented comfort level');
+    }
+    assert.strictEqual(new Set(all).size, all.length, 'no repeated ideas across assets');
+    assert(/until I need this money/.test(horizonAssumption([asset('VOO')], '2 years').text));
+
+    // fallback drafts for two different people read differently
+    const d1 = await createThesisDraft(confirmed('BND, XLV', car, '2 years'), { forceFallback: true });
+    const d2 = await createThesisDraft(confirmed('VOO, NVDA', retire, '25 years'), { forceFallback: true });
+    assertDraftContract(d1); assertDraftContract(d2);
+    assert(d1.draft.assumptions[0].includes('2 years') && d2.draft.assumptions[0].includes('25 years'));
+    assert.notDeepStrictEqual(d1.draft.assumptions, d2.draft.assumptions);
   });
 
   const failed = results.filter(([ok]) => !ok);

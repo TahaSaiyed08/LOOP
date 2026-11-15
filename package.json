@@ -7,7 +7,10 @@
     "start": "node server/index.js",
     "test:scoring": "node scripts/test-scoring.js",
     "test:endpoints": "node scripts/test-endpoints.js",
-    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment && npm run test:paper && npm run test:council && npm run test:onboarding && npm run test:draft && npm run test:news && npm run test:llm && npm run test:chat",
+    "test": "npm run test:isolation && npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment && npm run test:paper && npm run test:council && npm run test:onboarding && npm run test:draft && npm run test:news && npm run test:llm && npm run test:chat && npm run test:persistence && npm run test:shutdown && npm run test:app",
+    "test:app": "node scripts/test-app.js",
+    "test:isolation": "node scripts/test-isolation.js",
+    "test:shutdown": "node scripts/test-shutdown.js",
     "test:paper": "node scripts/test-paper.js",
     "test:council": "node scripts/test-council.js",
     "test:n8n": "node scripts/test-n8n.js",
@@ -21,7 +24,15 @@
     "test:session": "node scripts/test-thesis-session.js",
     "demo:news": "node scripts/demo-news-matching.js",
     "test:chat": "node scripts/test-thesis-chat.js",
-    "demo:chat": "node scripts/chat-demo.js"
+    "demo:chat": "node scripts/chat-demo.js",
+    "test:persistence": "node scripts/test-persistence.js",
+    "demo:persistence": "node scripts/demo-persistence.js",
+    "db:migrate": "node server/persistence/migrate.js",
+    "start:tigerdata": "LOOP_DB=postgres PGSCHEMA=thesis_dev PGSSLROOTCERT=certs/timescale-ca.pem node server/index.js",
+    "db:migrate:tigerdata": "LOOP_DB=postgres PGSCHEMA=thesis_dev PGSSLROOTCERT=certs/timescale-ca.pem node server/persistence/migrate.js",
+    "db:inspect": "LOOP_DB=postgres PGSCHEMA=thesis_dev PGSSLROOTCERT=certs/timescale-ca.pem node scripts/db-inspect.js",
+    "db:verify": "LOOP_DB=postgres PGSCHEMA=thesis_dev PGSSLROOTCERT=certs/timescale-ca.pem node scripts/db-inspect.js --verify",
+    "demo:persistence:tigerdata": "LOOP_DB=postgres PGSCHEMA=thesis_dev PGSSLROOTCERT=certs/timescale-ca.pem node scripts/demo-persistence.js --use-database-url"
   },
   "engines": {
     "node": ">=18"
@@ -30,6 +41,10 @@
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2"
+    "express": "^4.19.2",
+    "pg": "^8.23.1"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16"
   }
 }

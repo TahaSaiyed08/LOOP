@@ -1,4 +1,5 @@
 // Tests server/council.js with llm.callLLM stubbed (instant, offline). Run: npm run test:council
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const os = require('os');
 const path = require('path');

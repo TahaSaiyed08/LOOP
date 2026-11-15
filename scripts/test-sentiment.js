@@ -1,5 +1,6 @@
 // Tests server/sentiment.js against a local mock of the Gemini OpenAI-compatible endpoint.
 // Takes ~10-15 s because llm.js enforces its 5 s spacing between calls. Run: npm run test:sentiment
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 const os = require('os');

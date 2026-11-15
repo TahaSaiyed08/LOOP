@@ -1,6 +1,7 @@
 // Tests the n8n assets without an n8n instance: validates workflow JSON structure, then runs every Code
 // node's JavaScript against mocked upstream node outputs and feeds the result through the real backend
 // validator and scorer. Run: npm run test:n8n
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const fs = require('fs');
 const path = require('path');

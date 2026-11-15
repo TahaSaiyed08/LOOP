@@ -1,6 +1,7 @@
 // Tests for handleThesisAction (server/thesis.js), the stateless session action handler for a web route.
 // Offline: a scripted callLLM for onboarding and forceFallback for exploration/drafts. No key, no network,
 // nothing saved, monitored, emailed or traded. Run: npm run test:session
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const { handleThesisAction, SESSION_ACTIONS, createOnboardingSession } = require('../server/thesis');
 
@@ -189,6 +190,59 @@ const tests = [
     const weird = await handleThesisAction({ ...b.session, get selection() { throw new Error('bad getter'); } }, 'explore', {}, OFF);
     assertResponse(weird);
     assert.strictEqual(weird.ok, false); assert.strictEqual(weird.error.code, 'internal_error');
+  }],
+
+  ['regression: "$5 every day" for a car reaches "selecting" (experience unknown), and Explore shows savings/GICs first, calmer categories next', async () => {
+    let session = null; let r;
+    for (const m of ['i want to put in 5 dollar every day', 'for a car', '1 year', 'nope', 'not good', 'yep']) { r = await act(session ? roundTrip(session) : null, 'onboard', { message: m }); session = r.session; }
+    assert.strictEqual(r.stage, 'selecting', `stage ${r.stage}`);
+    assert.deepStrictEqual([session.profile.amount, session.profile.cadence, session.profile.timelineYears, session.profile.riskComfort, session.profile.experience], [5, 'daily', 1, 'low', null]);
+    assert(r.nextActions.includes('explore') && r.nextActions.includes('selectAssets'));
+    const before = session.history.length;
+    const e = await act(roundTrip(session), 'explore', {});
+    assert(e.ok && e.stage === 'selecting', 'exploring never moves the stage or selects anything');
+    assert.deepStrictEqual(e.session.selection, { pending: [], confirmed: [] });
+    const cats = e.result.categories;
+    assert(cats[0].id === 'cash_like' && cats[0].selectable === false && cats[0].assets.length === 0, 'savings accounts and GICs first, as context only');
+    const rank = { lower: 1, medium: 2, higher: 3, 'very high': 4 };
+    const vols = cats.slice(1).map((c) => rank[c.volatility]);
+    assert.deepStrictEqual(vols, [...vols].sort((a, b) => a - b), 'calmer categories before stocks');
+    assert(e.result.horizonNote && /1 year/.test(e.result.horizonNote));
+    assert(/savings accounts and GICs/.test(e.result.intro) && !/\b(should|recommend)\b/i.test(e.result.intro));
+    assert.strictEqual(e.session.history.length, before, 'history unchanged by exploring');
+    assert.strictEqual((await act(roundTrip(e.session), 'selectAssets', { symbols: 'CASH' })).ok, false, 'savings/GICs cannot be selected');
+  }],
+
+  ['partial onboarding: only the goal is known, Explore works at once, picking stays optional, a draft names what is still missing', async () => {
+    const first = await act(null, 'onboard', { message: 'I want to save for a car.' });
+    assert.strictEqual(first.stage, 'onboarding');
+    const e = await act(roundTrip(first.session), 'explore', {});
+    assert(e.ok && e.stage === 'onboarding' && e.result.categories.length > 3 && e.result.categories.some((c) => c.assets.some((a) => a.symbol === 'VOO')), 'explore during onboarding');
+    assert(e.nextActions.includes('onboard') && e.nextActions.includes('selectAssets'), 'can keep chatting or pick');
+    assert.deepStrictEqual(e.session.selection, { pending: [], confirmed: [] }, 'nothing selected by exploring');
+    const sel = await act(roundTrip(e.session), 'selectAssets', { symbols: ['VOO'] });
+    const conf = await act(roundTrip(sel.session), 'confirmSelection', {});
+    assert.strictEqual(conf.stage, 'drafting');
+    const d = await act(roundTrip(conf.session), 'createDraft', {});
+    assert(!d.ok && d.error.code === 'missing_profile' && /how often/.test(d.error.message) && /amount/.test(d.error.message) && !/experience/.test(d.error.message), d.error && d.error.message);
+    assert(d.nextActions.includes('onboard'), 'the user can answer in the conversation');
+  }],
+
+  ['regression: timeline 1 year -> Explore -> "actually 2 years" -> Explore describes 2 years everywhere (history unchanged)', async () => {
+    let session = null;
+    for (const m of ['I want to put in $5 every day for a car', '1 year', 'for a car', 'low risk']) session = (await act(session ? roundTrip(session) : null, 'onboard', { message: m })).session;
+    assert.strictEqual(session.profile.purpose, 'a car', 'a timeline answer is never stored as the goal');
+    const e1 = await act(roundTrip(session), 'explore', {});
+    assert(/1 year/.test(e1.result.horizonNote) && /1 year/.test(e1.result.intro));
+    const changed = await act(roundTrip(e1.session), 'onboard', { message: 'Actually, make that 2 years' });
+    assert.strictEqual(changed.session.profile.timelineYears, 2);
+    const historyBefore = roundTrip(changed.session.history);
+    const e2 = await act(roundTrip(changed.session), 'explore', {});
+    const text = JSON.stringify(e2.result);
+    assert(/2 years/.test(e2.result.horizonNote) && /2 years/.test(e2.result.intro), e2.result.intro);
+    assert(!/\b1 year\b/.test(text), 'no stale 1-year guidance in the new Explore result');
+    assert.deepStrictEqual(e2.session.history, historyBefore, 'earlier messages (which said 1 year) are kept unchanged');
+    assert(historyBefore.some((h) => /1 year/.test(h.content)));
   }],
 ];
 

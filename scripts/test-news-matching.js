@@ -1,6 +1,7 @@
 // Tests matchNews / matchNewsDetailed in server/thesis.js. Offline: a scripted Gemini that reads the
 // articles in each prompt and answers per headline (so tests don't depend on batch order), plus one test
 // through the real server/llm.js against a local HTTP mock. Run: npm run test:news   (~6 s)
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 const os = require('os');

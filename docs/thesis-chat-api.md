@@ -75,6 +75,7 @@ Evidence for each turn is passed again by the caller (for example the current `t
   - Store it as given, per thesis id, and send it back on the next turn. It holds the last 20 entries.
   - Assistant entries keep their `citations`, so older answers can still render their links.
 - **`source: "fallback"`** means Gemini was unavailable and the reply is a plain recap of the user's thesis (plus the opened article, cited). The `ok` field is still `true`. `fallbackReason` is one of `offline`, `not_configured`, `ai_error` or `unusable_reply`. No provider details are included.
+- **Misleading answers are regenerated, not trimmed.** If a Gemini answer says the user bought, owns or plans to buy an investment, calls a bond fund stable or capital-preserving, or calls something suitable for the user, the engine asks Gemini once more with those sentences named. If the second answer is clean it is used (`source: "gemini"`). Otherwise the reply is the plain thesis recap (`source: "fallback"`, `fallbackReason: "unusable_reply"`). At most two Gemini calls per message; sentences are never cut out of an answer.
 - **`insufficientEvidence: true`** means the evidence didn't support part of the answer. `removedClaims` counts claims the server removed; `droppedCitations` counts invalid source ids.
 
 ### Errors (`ok: false`)

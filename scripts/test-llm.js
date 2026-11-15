@@ -1,4 +1,5 @@
 // Tests server/llm.js model fallback against a local mock. Run: npm run test:llm
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 process.env.LLM_MIN_GAP_MS = '0';

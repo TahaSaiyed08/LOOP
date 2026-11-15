@@ -1,6 +1,7 @@
 // End-to-end check of the Contract A/B/C/E endpoints. Spawns the real server on a free port with a
 // temp database and no Alpaca/Gemini keys, plus an in-process mock of the n8n notify webhook.
 // Run: npm run test:endpoints
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const http = require('http');
 const os = require('os');

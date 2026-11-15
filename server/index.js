@@ -13,8 +13,13 @@ const thesisEngine = require('./thesis');
 const pipeline = require('./pipeline');
 const sentiment = require('./sentiment');
 const { TIERS } = require('./scoring');
+const persistence = require('./persistence');
+const repo = require('./persistence/repo');
+const { requestTracker, createShutdown } = require('./shutdown');
 
 const app = express();
+const tracker = requestTracker(); // first: graceful shutdown waits for every request still in progress
+app.use(tracker.middleware);
 app.use(cors());
 app.use(express.json({ limit: '2mb' }));
 
@@ -28,6 +33,7 @@ app.get('/api/health', (req, res) => {
     feedRunDate: feed ? feed.runDate : null,
     feedReceivedAt: feed ? feed.receivedAt : null,
     sentimentMissing: feed ? feedLib.sentimentMissing(feed.stocks) : null,
+    storage: store.health(), // { backend: json|postgres|pglite, relational, pendingWrites?, lastError? }
   });
 });
 
@@ -55,6 +61,10 @@ app.post('/api/webhook/seed', async (req, res) => {
   if (!clean.stocks.length) return res.status(400).json({ error: 'no valid stocks in payload', rejected: clean.rejected });
 
   const sent = await sentiment.applySentiment(clean.stocks); // before storing, so scoring always sees it
+  if (persistence.isEnabled()) { // database mode: keep every article (deduplicated) before accepting the feed
+    try { await repo.upsertArticles(persistence.getDb(), clean.stocks.flatMap((st) => (st.news || []).map((n) => ({ ticker: st.ticker, ...n }))), { runDate: clean.runDate }); }
+    catch (err) { console.error('[seed] could not save news articles:', persistence.redact(err.message)); return res.status(503).json({ error: 'storage unavailable; the seed was not saved, please retry' }); }
+  }
   store.set('feed', { runDate: clean.runDate, receivedAt: new Date().toISOString(), stocks: clean.stocks });
   warnIfNoSentiment(clean, `seed ${clean.runDate}`);
   console.log(`[seed] ${clean.runDate}: accepted ${clean.stocks.length}, rejected ${clean.rejected.length}, sentiment scored ${sent.scored} cached ${sent.cached}${sent.failed ? ' (FAILED)' : ''}`);
@@ -86,6 +96,7 @@ app.post('/api/thesis', async (req, res) => {
       const confirmed = thesisEngine.getConfirmedThesis(req.body.session);
       if (!confirmed) return res.status(409).json({ error: 'no confirmed thesis in this session; confirm the assumptions first' });
       if (!TIERS.includes(confirmed.tier) || !Array.isArray(confirmed.assumptions)) return res.status(502).json({ error: 'confirmed thesis is invalid' });
+      if (!(await recordLegacyThesis(confirmed, 'session', res))) return;
       store.set('thesis', confirmed);
       store.set('thesisMatches', []);
       pipeline.refreshThesisMatches();
@@ -102,6 +113,7 @@ app.post('/api/thesis', async (req, res) => {
     if (!thesis || !TIERS.includes(thesis.tier) || !Array.isArray(thesis.assumptions)) {
       return res.status(502).json({ error: 'thesis engine returned an invalid thesis' });
     }
+    if (!(await recordLegacyThesis(thesis, 'goals_text', res))) return;
     store.set('thesis', thesis);
     store.set('thesisMatches', []);
     pipeline.refreshThesisMatches();
@@ -111,6 +123,20 @@ app.post('/api/thesis', async (req, res) => {
     res.status(502).json({ error: 'could not create thesis' });
   }
 });
+
+// Database mode: the legacy single thesis is also saved as a thesis of the demo user (and becomes its one
+// monitored legacy thesis, as before). Returns false after answering 503 if the database did not confirm.
+async function recordLegacyThesis(thesis, origin, res) {
+  if (!persistence.isEnabled()) return true;
+  try {
+    await repo.createThesis(persistence.getDb(), persistence.DEMO_USER_ID, thesis, { origin, legacyId: String(thesis.id), pauseOtherLegacy: true });
+    return true;
+  } catch (err) {
+    console.error('[thesis] could not save the thesis:', persistence.redact(err.message));
+    res.status(503).json({ error: 'storage unavailable; the thesis was not saved, please retry' });
+    return false;
+  }
+}
 
 app.get('/api/thesis', (req, res) => {
   const thesis = store.get('thesis');
@@ -178,16 +204,32 @@ app.post('/api/admin/run-pipeline', async (req, res) => {
   res.status(202).json({ ok: true, started: true, previousRunDate: (store.get('feed') || {}).runDate || null });
 });
 
+// Persistent multi-thesis API (sessions, theses, chat, evidence history, timeline). docs/persistence.md
+app.use('/api/v2', require('./routes/v2'));
+
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
-  app.listen(PORT, () => {
-    console.log(`LOOP server on :${PORT}`);
-    if (thesisEngine.IS_STUB) console.warn('[WARNING] server/thesis.js is the STUB; drop in the real file from Vamsi.');
-    const feed = store.get('feed');
-    if (feed) warnIfNoSentiment(feed, 'stored feed');
-    paper.bootDemoSeed();
+  // Storage first (JSON: no-op; LOOP_DB=postgres|pglite: connect, migrate, load). A configured database that
+  // cannot be reached stops the boot loudly instead of silently serving temporary JSON data.
+  store.init().then(() => {
+    const server = app.listen(PORT, () => {
+      console.log(`LOOP server on :${PORT}`);
+      if (thesisEngine.IS_STUB) console.warn('[WARNING] server/thesis.js is the STUB; drop in the real file from Vamsi.');
+      const feed = store.get('feed');
+      if (feed) warnIfNoSentiment(feed, 'stored feed');
+      paper.bootDemoSeed();
+    });
+    // SIGTERM (Render deploy/restart) or Ctrl-C: finish active requests and the news pipeline (bounded), then
+    // flush storage and close the database. server/shutdown.js
+    const shutdown = createShutdown({ server, tracker, pipelineIdle: pipeline.isIdle, flush: () => store.flush(), close: () => persistence.close() });
+    const onSignal = (signal) => shutdown(signal).finally(() => process.exit(0));
+    process.once('SIGTERM', () => onSignal('SIGTERM'));
+    process.once('SIGINT', () => onSignal('SIGINT'));
+  }).catch((err) => {
+    console.error(`[storage] FATAL: ${err.message}. The server did not start.`);
+    process.exit(1);
   });
 }
 module.exports = app;

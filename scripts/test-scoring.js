@@ -1,5 +1,6 @@
 // Scores fixtures/seed.sample.json (Contract A inputs) for all three tiers and prints each ordering.
 // Also asserts: components in 0-20, sum == matchScore, determinism, tiers actually reorder.
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const { TIERS, rankForTier, scoreStock, isEligible } = require('../server/scoring');
 const seed = require('../fixtures/seed.sample.json');

@@ -1,6 +1,7 @@
 // Tests for thesisChat (server/thesis.js): general thesis chat and news investigation in one engine.
 // Offline: a scripted callLLM stands in for Gemini. No key, no network, nothing saved, monitored, emailed
 // or traded (fetch is stubbed to prove it). Run: npm run test:chat
+require('./test-env'); // never a real database, whatever the shell or .env holds
 const assert = require('assert');
 const fs = require('fs');
 const os = require('os');
@@ -482,6 +483,91 @@ test('22. faithful to the confirmed assumptions: prompt rules + verbatim thesis,
   assert(!/fast growth|rapid growth|explosive/i.test(u.split('USER\'S THESIS')[1].split('CONVERSATION SO FAR')[0]), 'the thesis block itself adds no strengthening words');
   assert.deepStrictEqual(roundTrip(A), before, 'thesis unchanged');
   assert(r.ok && r.segments[0].basis === 'thesis');
+});
+
+test('23. "explain my thesis in simple terms": research-only assets, details kept as loose as stored, no invented ownership', async () => {
+  // a car thesis: BND + XLV picked for research, "2–3 years", low comfort; idea 1 the user's own words, idea 2 proposed by THESIS
+  let s = T.createOnboardingSession();
+  s.profile = { ...nulls, amount: 5, cadence: 'daily', timelineYears: 2, riskComfort: 'low', purpose: 'buy a car' };
+  s.profileDetails = { timelineText: '2–3 years' };
+  s = T.confirmSelection(T.selectAssets('BND, XLV', s).session).session;
+  s = (await T.createThesisDraft(s, { forceFallback: true })).session;
+  s = T.editAssumption(s, 1, 'I want to see whether BND moves more gently than stock funds before I buy my car.', 'News of interest rates rising quickly.').session;
+  const car = T.getConfirmedThesis(T.confirmAssumptions(s).session);
+
+  const p = chatPrompt();
+  for (const want of ['THESIS has no record of purchases, holdings or a portfolio', 'Never say "you plan to buy", "you own"', 'an idea they reviewed and chose to follow',
+    'Never turn a range or rough answer into an exact figure or firm deadline', 'Never call any fund steady, stable, safe or capital-preserving', 'Explaining the thesis'])
+    assert(p.includes(want), `prompt includes: ${want}`);
+
+  const BAD = answer([
+    seg('Your goal is to buy a car in about 2–3 years, putting in about $5 a day.', 'thesis'),
+    seg('You plan to buy BND and XLV to grow that money.', 'thesis'),
+    seg('Your portfolio contains a bond fund, which is steady and protects your money.', 'thesis'),
+    seg('BND is a stable choice that is suitable for your goal.', 'general'),
+  ]);
+  const GOOD = answer([
+    seg('Your goal is to buy a car in about 2–3 years, putting in about $5 a day.', 'thesis'),
+    seg("You're researching BND, a bond fund, and XLV, a fund of healthcare companies. Bond funds usually move less than stock funds, but they can still lose value.", 'thesis'),
+    seg('One idea you wrote yourself is checking whether BND moves more gently than stock funds before you buy your car. Another, which THESIS proposed and you chose to follow, is about how XLV reacts to healthcare news.', 'thesis'),
+    seg('News of interest rates rising quickly would challenge your first idea.', 'thesis'),
+  ]);
+  const llm = mock([BAD, GOOD]);
+  const r = check(await thesisChat(car, [], 'Can you explain my thesis in simple terms?', {}, { callLLM: llm }));
+  const u = llm.calls[0].user;
+  assert(/Chosen to RESEARCH/.test(u) && /no purchases, holdings or portfolio/.test(u), 'context says the assets are research-only');
+  assert(u.includes('"timeHorizon": "2–3 years"'), 'the range reaches Gemini as stated, not "2 years"');
+  assert(/may have been rough figures, ranges or loose answers/.test(u), 'context says details may be approximate');
+  assert(u.includes('written or edited by the user, then confirmed') && u.includes('proposed by THESIS, reviewed and confirmed by the user to follow'), 'origin of each idea');
+  assert.strictEqual(llm.calls.length, 2, 'exactly one corrective regeneration');
+  assert(/BROKE THE THESIS RULES/.test(llm.calls[1].user) && llm.calls[1].user.includes('You plan to buy BND and XLV'), 'the retry names the bad sentences');
+  assert.strictEqual(r.source, 'gemini');
+  const out = r.reply;
+  assert(!/plan to buy BND|portfolio contains|protects your money|stable choice|suitable for your goal/i.test(out), `misleading claims gone:\n${out}`);
+  assert(/You're researching BND/.test(out) && /can still lose value/.test(out), 'research framing and the honest bond sentence are kept');
+  assert(/about 2–3 years/.test(out) && /THESIS proposed and you chose to follow/.test(out) && /rising quickly/.test(out), 'goal, idea origins and challenge kept');
+  assert(!/\byou (own|hold|bought)\b|your (portfolio|holdings)/i.test(out));
+
+  // offline fallback says the same thing without AI
+  const off = check(await thesisChat(car, [], 'Can you explain my thesis in simple terms?', {}, { forceFallback: true }));
+  assert(/Investments you chose to research \(not purchases\)/.test(off.reply) && /2–3 years/.test(off.reply) && !/you own|portfolio/i.test(off.reply), off.reply);
+});
+
+test('24. mixed sentences (useful detail + purchase claim): one corrective retry, never a trimmed or empty answer', async () => {
+  const t = await buildThesis(['NVDA'], NVDA_TEXT, NVDA_CHALLENGE);
+  const ev = { evidence: SAMPLE.filter((n) => n.ticker === 'NVDA').slice(0, 2), focus: 0 };
+  const { findMisleadingChatClaims } = T._chat;
+  const MIXED = "You plan to buy NVDA because its data-center chip demand is the core of your first assumption.";
+  assert.deepStrictEqual(findMisleadingChatClaims(`${MIXED} Lower guidance would challenge it.`), [MIXED], 'only the mixed sentence is flagged');
+  assert.deepStrictEqual(findMisleadingChatClaims("You don't own NVDA; you're researching it. Bond funds can still lose value, they aren't always stable."), [], 'honest negations pass');
+
+  // 1) retry succeeds: the corrected answer keeps the useful detail and its citation
+  const mixed = answer([seg(`${MIXED} Lower guidance would challenge it.`, 'thesis'), seg('The article reports a warning about slowing demand.', 'evidence', ['E1'])]);
+  const fixed = answer([seg("You're researching NVDA because its data-center chip demand is the core of your first assumption. Lower guidance would challenge it.", 'thesis'), seg('The article reports a warning about slowing demand.', 'evidence', ['E1'])]);
+  let llm = mock([mixed, fixed]);
+  let r = check(await thesisChat(t, [], 'Explain my thesis in simple terms', ev, { callLLM: llm }));
+  assert.strictEqual(llm.calls.length, 2);
+  assert(/researching NVDA because its data-center chip demand/.test(r.reply) && /Lower guidance/.test(r.reply), r.reply);
+  assert(!/plan to buy/i.test(r.reply) && r.citations.length === 1 && /\[1\]/.test(r.reply), 'citation preserved');
+
+  // 2) retry repeats the claim: structured recap (thesis + opened article, cited), not a half-deleted answer; no third call
+  llm = mock([mixed, mixed]);
+  r = check(await thesisChat(t, [], 'Explain my thesis in simple terms', ev, { callLLM: llm }));
+  assert.strictEqual(llm.calls.length, 2, 'no excessive retries');
+  assert.strictEqual(r.source, 'fallback'); assert.strictEqual(r.fallbackReason, 'unusable_reply');
+  assert(/couldn't put together a reliable answer/.test(r.reply) && r.reply.includes(NVDA_TEXT.replace(/\.$/, '')) && !/plan to buy/i.test(r.reply), r.reply);
+  assert(r.citations.length === 1 && r.segments.length >= 3, 'coherent recap with the article citation');
+  assert.strictEqual(r.history.length, 2, 'history still recorded');
+
+  // 3) retry call fails: same recap
+  llm = mock([mixed, llmError(500), llmError(500)]);
+  r = check(await thesisChat(t, [], 'Explain my thesis', {}, { callLLM: llm }));
+  assert(r.ok && r.source === 'fallback' && !/plan to buy/i.test(r.reply) && r.reply.trim().length > 40);
+
+  // 4) a clean answer costs one call
+  llm = mock([fixed]);
+  r = check(await thesisChat(t, [], 'Explain my thesis', ev, { callLLM: llm }));
+  assert.strictEqual(llm.calls.length, 1); assert.strictEqual(r.source, 'gemini');
 });
 
 // Same mocked Gemini reply + same SAMPLE news as before thesisChat existed: identical decisions.
