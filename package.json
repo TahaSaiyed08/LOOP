@@ -1,7 +1,7 @@
 {
   "name": "loop",
   "version": "0.1.0",
-  "description": "LOOP / TFSA Gold: personalized daily feed of stocks and ETFs. Educational research, not investment advice.",
+  "description": "LOOP / THESIS: personalized daily feed of stocks and ETFs. Educational research, not investment advice.",
   "main": "server/index.js",
   "scripts": {
     "start": "node server/index.js",
