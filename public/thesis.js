@@ -1,5 +1,14 @@
 const THESIS_URL = '/api/thesis';
 
+function thesisProfileTheme(value) {
+  const tier = String(value || '').toLowerCase();
+  if (tier === 'medium' || tier === 'intermediate') return 'medium';
+  if (tier === 'high' || tier === 'advanced') return 'high';
+  return 'low';
+}
+
+try { document.body.dataset.profile = thesisProfileTheme(localStorage.getItem('tier')); } catch (error) { document.body.dataset.profile = 'low'; }
+
 // The project uses USD for both portfolio and thesis amounts.
 const currency = new Intl.NumberFormat('en-US', {
   style: 'currency',

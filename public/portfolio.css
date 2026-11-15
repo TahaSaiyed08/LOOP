@@ -268,3 +268,20 @@
 .portfolio-trades { margin-top: 28px; }
 .portfolio-trade-list { list-style: none; margin: 0; padding: 0; }
 .portfolio-trade-list li { padding: 10px 0; border-bottom: 1px solid #303731; }
+
+.portfolio-page[data-profile] .portfolio-back,
+.portfolio-page[data-profile] #portfolio-empty a {
+  color: var(--gold);
+}
+
+.portfolio-page[data-profile] .portfolio-banner {
+  border: 1px solid var(--theme-border);
+  background: var(--theme-soft);
+  color: var(--gold);
+}
+
+.portfolio-page[data-profile] .portfolio-table:focus-visible,
+.portfolio-page[data-profile] .portfolio-avatar:focus-visible,
+.portfolio-page[data-profile] .btn:focus-visible {
+  outline-color: var(--gold);
+}

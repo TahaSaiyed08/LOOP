@@ -1,5 +1,7 @@
 const PORTFOLIO_URL = '/api/paper/portfolio';
 
+try { document.body.dataset.profile = localStorage.getItem('tier') || 'low'; } catch (error) { document.body.dataset.profile = 'low'; }
+
 const currencyOptions = { style: 'currency', currency: 'USD' };
 const percentOptions = { style: 'percent', maximumFractionDigits: 2 };
 const currency = new Intl.NumberFormat('en-US', currencyOptions);

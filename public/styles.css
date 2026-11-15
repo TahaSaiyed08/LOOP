@@ -7,12 +7,84 @@
 .buyhead{display:flex;flex-direction:column;gap:3px;margin:0 0 10px;font-size:.85rem}
 .buyrow{display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap}
 .buyrow label{display:flex;flex-direction:column;gap:5px;color:var(--muted);font-size:.72rem}
-.buyamount{width:120px;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);font:inherit}
+.amountcontrol{display:flex;width:120px;height:38px;overflow:hidden;border:1px solid var(--line);border-radius:8px;background:var(--panel)}
+.buyamount{min-width:0;width:100%;height:100%;padding:0 10px;border:0;background:transparent;color:var(--text);font:inherit;-moz-appearance:textfield}
+.buyamount:focus{outline:0}
+.buyamount::-webkit-inner-spin-button,.buyamount::-webkit-outer-spin-button{margin:0;-webkit-appearance:none}
+.amountcontrol:focus-within{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.amountstepper{display:grid;flex:0 0 32px;grid-template-rows:1fr 1fr;border-left:1px solid var(--line)}
+.amountstep{display:grid;place-items:center;padding:0;border:0;background:#252a26;color:var(--muted);cursor:pointer}
+.amountstep svg{width:14px;height:14px;overflow:visible;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.amountstep:first-child{border-bottom:1px solid var(--line)}
+.amountstep:hover{background:#34392f;color:var(--gold)}
+.amountstep:active{background:#403a21}
+.buyrow .buybtn{height:38px;padding:0 14px;border:1px solid #756b3d;border-radius:8px;background:transparent;color:var(--gold);font-size:.82rem;font-weight:650;box-shadow:none}
+.buyrow .buybtn:hover{border-color:var(--gold);background:#d7b94e0d;transform:none}
+.buyrow .buybtn:disabled{opacity:.6;background:transparent;cursor:wait}
 .buyresult{margin:10px 0 0;min-height:1.2em;color:var(--muted);font-size:.82rem;line-height:1.45}
 .buyresult small{color:var(--muted)}
+.advancedlens .stocksummary{margin:-7px 0 14px;color:var(--muted);font-size:.8rem;font-weight:400;line-height:1.45}
+.advancedlens .candidatestitle{margin-top:36px}
+.advancedthread .candidatestitle{margin-top:36px}
+.advancedclose{flex:none;display:grid;place-items:center;width:32px;height:32px;padding:0;border:1px solid var(--line);border-radius:50%;background:transparent;color:var(--muted);cursor:pointer}
+.advancedclose svg{width:16px;height:16px}
+.advancedclose:hover{color:var(--text);border-color:var(--muted)}
+.advancedgroup .grouphead,.advancedgroup .advancedassetrow{grid-template-columns:minmax(145px,1.4fr) repeat(6,minmax(44px,.55fr)) minmax(136px,1.1fr) 80px}
+.intermediategroup .grouphead,.intermediategroup .intermediateassetrow{grid-template-columns:minmax(145px,1.4fr) repeat(6,minmax(44px,.55fr)) minmax(136px,1.1fr) 80px}
+.rowbuy{display:flex;align-items:center;gap:6px;margin:0;padding:0;border:0;border-radius:0;background:transparent}
+.rowbuy .buyhead,.rowbuy .buylabel{display:none}
+.rowbuy .buyrow{align-items:center;gap:6px}
+.rowbuy .buyrow label{display:block}
+.rowbuy .amountcontrol{width:76px;height:32px}
+.rowbuy .buybtn{height:32px;padding:0 8px}
+.rowbuy .buyresult{display:none}
+@media(max-width:900px){.advancedgroup .grouphead{display:none}.advancedgroup .rows{border:0;overflow:visible;background:transparent;display:grid;gap:10px}.advancedgroup .advancedassetrow{grid-template-columns:1fr 1fr;gap:10px 18px;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}.advancedgroup .advancedassetrow>.tickerlink{grid-column:1/-1;padding-bottom:12px;border-bottom:1px solid var(--line)}.advancedgroup .advancedassetrow>.rowbuy,.advancedgroup .advancedassetrow>.advancedentry{grid-column:1/-1;width:100%}.advancedgroup .rowbuy{justify-content:flex-start}.advancedgroup .rowbuy .amountcontrol{width:112px}.advancedgroup .advancedthread{margin-top:-10px;border:1px solid var(--line);border-top:0;border-radius:0 0 12px 12px}}
+@media(max-width:900px){.intermediategroup .intermediateassetrow>.rowbuy{grid-column:1/-1;width:100%}.intermediategroup .rowbuy{justify-content:flex-start}.intermediategroup .rowbuy .amountcontrol{width:112px}}
+@media(max-width:700px){.advancedgroup .advancedassetrow{grid-template-columns:1fr}.advancedgroup .advancedassetrow>*{grid-column:1}.intermediategroup .intermediateassetrow>.rowbuy{grid-column:1}}
+#panelTitle{margin-bottom:36px}
+.panelmeta{margin:0}
+.panelsummary{margin:12px 0 0}
+.case>p{color:var(--muted);line-height:1.6}
+#case{padding-bottom:0}
+#case>p{margin-bottom:0}
+#case+.verdict{margin-top:12px}
+.measures+.tabs{margin-top:36px}
+.recentnews{padding:36px 0 0;margin-top:0}
+.recentnews h3{margin:0 0 24px;padding-bottom:10px;border-bottom:1px solid var(--line);font-size:.95rem}
+.recentnews .newslist{gap:8px;margin-top:0}
+.recentnews .newslist li{margin:0;line-height:1.25}
+.panel{overflow:hidden}
+.panelin{display:flex;height:100%;padding:0;overflow:hidden;flex-direction:column}
+.panelscroll{min-height:0;flex:1;overflow-y:auto;padding:28px 28px 16px}
+.panelin>.buybox{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:6px 18px;flex:none;margin:0;padding:12px 18px;border:0;border-top:1px solid var(--line);border-radius:0;background:var(--panel);box-shadow:none}
+.panelin>.buybox .buyhead{align-items:flex-start;flex-direction:column;gap:2px;margin:0}
+.panelin>.buybox .buyhead .quiet{font-size:.72rem}
+.panelin>.buybox .buyrow{align-items:center;gap:8px}
+.panelin>.buybox .buyrow label{flex-direction:row;align-items:center;gap:8px}
+.panelin>.buybox .amountcontrol{width:112px;height:34px}
+.panelin>.buybox .buybtn{height:34px;padding:0 12px}
+.panelin>.buybox .buyresult{grid-column:1/-1;margin-top:0}
+@media(max-width:700px){.panelscroll{padding:20px 16px 12px}.panelin>.buybox{grid-template-columns:1fr;padding:10px 14px}.panelin>.buybox .buyresult{grid-column:1}}
 
 /* ---- shared chrome: site bar, nav, footer (all three pages) ---- */
 body{font-family:var(--font-sans);color:var(--text)}
+body[data-profile=low]{--gold:#d7b94e;--focus:#f5d96c;--theme-glow:#2b2818;--theme-soft:#d7b94e12;--theme-border:#d7b94e3d;--theme-deep:#302b18}
+body[data-profile=medium]{--gold:#55c8bd;--focus:#82e4dc;--theme-glow:#17302d;--theme-soft:#55c8bd12;--theme-border:#55c8bd3d;--theme-deep:#17312e}
+body[data-profile=high]{--gold:#a88af4;--focus:#c3afff;--theme-glow:#29213d;--theme-soft:#a88af412;--theme-border:#a88af43d;--theme-deep:#29213d}
+body[data-profile]{background:radial-gradient(circle at 85% 0,var(--theme-glow) 0,transparent 26rem),var(--bg)}
+body[data-profile] .profileavatar,body[data-profile] .profilelargeavatar{border-color:var(--theme-border);background:var(--theme-deep);color:var(--gold)}
+body[data-profile] .assettab[aria-selected=true],body[data-profile] .tab[aria-selected=true]{border-bottom-color:var(--gold)}
+body[data-profile] .advancedentry,body[data-profile] .debateentry,body[data-profile] .buyrow .buybtn{border-color:var(--theme-border);color:var(--gold)}
+body[data-profile] .advancedentry:hover,body[data-profile] .advancedentry[aria-expanded=true],body[data-profile] .debateentry:hover,body[data-profile] .debateentry[aria-expanded=true],body[data-profile] .buyrow .buybtn:hover{border-color:var(--gold);background:var(--theme-soft)}
+body[data-profile] .verdict,body[data-profile] .moderatorchat{border-color:var(--theme-border);background:var(--theme-soft)}
+body[data-profile] .sitenav a[aria-current=page]{color:var(--gold);border-color:var(--theme-border);background:var(--theme-soft)}
+body[data-profile] .indexinfo:hover,body[data-profile] .indexinfo[aria-expanded=true]{border-color:var(--gold);color:var(--gold);background:var(--theme-soft)}
+body[data-profile] .indexlesson,body[data-profile] .debateconclusion{border-color:var(--theme-border);background:var(--theme-soft)}
+body[data-profile] .sessionform button:hover{background:var(--theme-soft)}
+body[data-profile] .amountcontrol:focus-within{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+body[data-profile] .amountstep:hover{color:var(--gold);background:var(--theme-soft)}
+body[data-profile] .news,body[data-profile] .buyresult a{color:var(--gold)}
+body[data-profile] .provbar.fixture{border-color:var(--gold);background:var(--theme-soft);color:var(--gold)}
 .sitebar{border-bottom:1px solid var(--line);background:#111413e6}
 .sitebar-in{max-width:1180px;margin:auto;padding:0 24px;height:72px;display:flex;align-items:center;gap:28px}
 .sitebar .brand{color:var(--text);text-decoration:none;font-size:1.02rem}

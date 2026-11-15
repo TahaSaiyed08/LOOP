@@ -158,3 +158,48 @@
 .thesis-news p {
   margin: 0.25rem 0 0;
 }
+
+.thesis-page[data-profile] .thesis-back,
+.thesis-page[data-profile] .thesis-news-heading a {
+  color: var(--gold);
+}
+
+.thesis-page[data-profile] .thesis-card {
+  border-color: var(--theme-border);
+}
+
+.thesis-page[data-profile] .thesis-card h2,
+.thesis-page[data-profile] .thesis-card h3 {
+  color: var(--gold);
+}
+
+.thesis-page[data-profile] .thesis-details dt {
+  color: var(--gold);
+}
+
+.thesis-page[data-profile] #thesis-tier {
+  background: var(--theme-soft);
+  color: var(--gold);
+}
+
+.thesis-page[data-profile] .thesis-checklist span {
+  color: var(--gold);
+}
+
+.thesis-page[data-profile] .btn {
+  border-color: var(--theme-border);
+  color: var(--gold);
+}
+
+.thesis-page[data-profile] .btn:hover {
+  border-color: var(--gold);
+  background: var(--theme-soft);
+}
+
+.thesis-page[data-profile] .thesis-news li + li {
+  border-color: var(--theme-border);
+}
+
+.thesis-page[data-profile] .btn:focus-visible {
+  outline-color: var(--gold);
+}
