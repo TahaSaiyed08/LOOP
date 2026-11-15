@@ -44,12 +44,23 @@ async function fundamentals(sym) {
   };
 }
 
-async function news(sym) {
+// Finnhub company-news is loosely related market noise. For single stocks keep a headline only if it
+// names the ticker (whole word, 3+ letters, case-sensitive) or the company (legal suffixes stripped).
+function isRelevantNews(headline, ticker, companyName) {
+  const h = String(headline || '');
+  if (ticker.length >= 3 && new RegExp('\\b' + ticker.replace(/[^A-Z0-9]/g, '') + '\\b').test(h)) return true;
+  const name = String(companyName || '').replace(/\b(Inc|Corp|Corporation|Co|Company|Ltd|Limited|plc|Holdings|Group|Class [A-C]|Common Stock)\b\.?/gi, '').replace(/[.,&]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  const first = name.split(' ')[0];
+  const lower = h.toLowerCase();
+  return (name.length >= 4 && lower.includes(name)) || (name.includes(' ') && first.length >= 5 && lower.includes(first));
+}
+
+async function news(sym, name, stockLike) {
   const to = new Date().toISOString().slice(0, 10);
   const from = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
   const items = await finnhub('/company-news', { symbol: sym, from, to });
-  return (Array.isArray(items) ? items : []).slice(0, 3).map((n) => ({
-    headline: n.headline, source: n.source, url: n.url, sentiment: null,
+  return (Array.isArray(items) ? items : []).filter((n) => !stockLike || isRelevantNews(n.headline, sym, name)).slice(0, 3).map((n) => ({
+    headline: n.headline, summary: typeof n.summary === 'string' && n.summary.trim() ? n.summary.trim().slice(0, 1000) : null, source: n.source, url: n.url, sentiment: null,
     datetime: new Date((n.datetime || 0) * 1000).toISOString(),
   }));
 }
@@ -70,7 +81,7 @@ async function news(sym) {
     let n = [];
     if (USE_FINNHUB && u.category !== 'crypto') {
       try { f = await fundamentals(u.ticker); } catch (e) { console.warn(`  ${u.ticker} fundamentals: ${e.message}`); }
-      try { n = await news(u.ticker); } catch (e) { console.warn(`  ${u.ticker} news: ${e.message}`); }
+      try { n = await news(u.ticker, u.companyName, /cap$|reit/.test(u.category)); } catch (e) { console.warn(`  ${u.ticker} news: ${e.message}`); }
     }
     const isStock = !u.merPct && u.category !== 'crypto' && /cap$|reit/.test(u.category);
     stocks.push({

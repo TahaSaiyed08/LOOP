@@ -21,13 +21,41 @@ const hook = http.createServer((q, r) => {
 });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Mock Gemini: answers thesis creation and news matching; everything else (sentiment, council) gets non-JSON
+// so those paths degrade exactly as with no key. The news matcher returns a SYNTHETIC "challenges" match for the
+// synthetic article below once mockChallenge is on (stance is not derived from sentiment).
+let mockChallenge = false;
+const SYNTH = { headline: 'Synthetic headline for the challenge test', summary: 'A synthetic summary that is long enough to count as an article summary for the matcher.', url: 'https://example.com/synthetic', sentiment: null };
+const gemini = http.createServer((q, r) => {
+  let b = ''; q.on('data', (d) => (b += d));
+  q.on('end', () => {
+    const msgs = JSON.parse(b).messages;
+    let content = 'not json';
+    if (/retail investor's own words/.test(msgs[0].content)) {
+      content = JSON.stringify({ goal: 'Invest $20 every two weeks', assumptions: ['Broad markets grow over ten years', 'Low fees compound over time'] });
+    } else if (/ARTICLES/.test(msgs[1].content)) {
+      const user = msgs[1].content;
+      const articles = JSON.parse(user.slice(user.lastIndexOf('<<<') + 3, user.lastIndexOf('>>>')));
+      const hit = articles.find((a) => a.headline === SYNTH.headline);
+      content = JSON.stringify({ matches: mockChallenge && hit ? [{ article: hit.n, assumptionIndex: 0, relevance: 'direct', stance: 'challenges', whyItMatters: 'The synthetic article contradicts the assumption about low fees.' }] : [] });
+    }
+    r.setHeader('content-type', 'application/json');
+    r.end(JSON.stringify({ choices: [{ message: { content } }] }));
+  });
+});
+const runHooks = [];
+const runHook = http.createServer((q, r) => { let b = ''; q.on('data', (d) => (b += d)); q.on('end', () => { runHooks.push(b); r.end('{}'); }); });
+
 async function main() {
   await new Promise((r) => hook.listen(0, r));
+  await new Promise((r) => gemini.listen(0, r));
+  await new Promise((r) => runHook.listen(0, r));
   const port = 3300 + Math.floor(Math.random() * 500);
   const base = `http://localhost:${port}`;
   const env = { ...process.env, PORT: String(port), LOOP_DB_FILE: db, INBOUND_WEBHOOK_SECRET: SECRET, NOTIFY_TO_EMAIL: 'test@example.com',
-    N8N_NOTIFY_WEBHOOK_URL: `http://localhost:${hook.address().port}/hook`, DEMO_SEED: 'false' };
-  for (const k of ['ALPACA_KEY_ID', 'ALPACA_SECRET_KEY', 'GEMINI_API_KEY']) delete env[k];
+    N8N_NOTIFY_WEBHOOK_URL: `http://localhost:${hook.address().port}/hook`, DEMO_SEED: 'false', N8N_RUN_WEBHOOK_URL: `http://localhost:${runHook.address().port}/run`,
+    GEMINI_API_KEY: 'test-key', GEMINI_BASE_URL: `http://localhost:${gemini.address().port}/v1/`, GEMINI_MODEL: 'm', LLM_MIN_GAP_MS: '0' };
+  for (const k of ['ALPACA_KEY_ID', 'ALPACA_SECRET_KEY', 'FINNHUB_KEY']) env[k] = ''; // '' (not delete): dotenv would refill from a real .env
   const srv = spawn('node', [path.join(__dirname, '..', 'server', 'index.js')], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = '';
   srv.stdout.on('data', (d) => (log += d)); srv.stderr.on('data', (d) => (log += d));
@@ -52,7 +80,7 @@ async function main() {
     assert.strictEqual((await seedIt({ stocks: 'x' })).status, 400, 'bad body');
 
     // Seed with 2 bad rows
-    const withBad = { ...seed, stocks: [...seed.stocks, { ticker: 'BAD1', category: 'nope', price: 5 }, { ticker: 'BAD2', category: 'large_cap' }] };
+    const withBad = { ...seed, stocks: [...seed.stocks.map((st, i) => (i === 0 ? { ...st, news: [SYNTH, ...(st.news || [])] } : st)), { ticker: 'BAD1', category: 'nope', price: 5 }, { ticker: 'BAD2', category: 'large_cap' }] };
     r = await seedIt(withBad);
     const ack = await r.json();
     assert.strictEqual(ack.accepted, 21); assert.strictEqual(ack.rejected.length, 2);
@@ -89,14 +117,44 @@ async function main() {
     assert((await (await get('/api/health')).json()).sentimentMissing === true);
     assert(/sentiment is null for EVERY ticker/.test(log), 'warning logged');
 
-    // Thesis (stub)
+    // Thesis (real engine, mocked Gemini)
     assert.strictEqual((await get('/api/thesis')).status, 404);
     assert.strictEqual((await post('/api/thesis', { goalsText: '  ' })).status, 400);
-    const th = await (await post('/api/thesis', { goalsText: 'I want to invest $20 every two weeks' })).json();
+    let th = await (await post('/api/thesis', { goalsText: 'I want to invest $20 every two weeks' })).json();
     assert(['low', 'medium', 'high'].includes(th.tier) && Array.isArray(th.assumptions));
     assert.deepStrictEqual(await (await get('/api/thesis')).json(), th);
+    assert(th.id && typeof th.goal === 'string' && th.assumptions.length >= 2 && th.assumptions.length <= 3 && th.assumptions.every((a) => a.length < 100), 'Contract C assumptions');
+    assert(['weekly', 'biweekly', 'monthly', 'one_time'].includes(th.budget.cadence) && th.budget.amount === 20 && Number.isFinite(th.horizonYears) && !Number.isNaN(Date.parse(th.createdAt)), 'Contract C budget/horizon/createdAt');
+    assert.strictEqual((await (await get('/api/health')).json()).thesisIsStub, false, 'thesis engine is real');
+
+    // Persisting the user-confirmed thesis from an onboarding session (getConfirmedThesis), not a fixture
+    {
+      const T = require('../server/thesis');
+      const nulls = { amount: null, cadence: null, timelineYears: null, currency: null, experience: null, riskComfort: null, purpose: null };
+      let sess = T.createOnboardingSession();
+      sess.profile = { ...nulls, amount: 50, cadence: 'monthly', timelineYears: 5, experience: 'beginner', riskComfort: 'medium', purpose: 'build long-term wealth' };
+      sess = T.confirmSelection(T.selectAssets('VOO', sess).session).session;
+      sess = (await T.createThesisDraft(sess, { forceFallback: true })).session;
+      assert.strictEqual((await post('/api/thesis', { session: sess })).status, 409, 'unconfirmed session is not saved');
+      const conf = T.confirmAssumptions(sess);
+      assert(conf.ok, conf.displayText);
+      const want = T.getConfirmedThesis(conf.session);
+      const saved = await (await post('/api/thesis', { session: conf.session })).json();
+      assert.deepStrictEqual(saved, want, 'POST returns the confirmed thesis exactly');
+      assert.deepStrictEqual(await (await get('/api/thesis')).json(), want, 'GET returns exactly what was saved');
+      assert(saved.selectedAssets.length >= 1 && saved.assumptionDetails.length >= 2 && saved.assumptions.length === saved.assumptionDetails.length, 'selectedAssets/assumptions/assumptionDetails persisted');
+      assert.notStrictEqual(saved.goal, require('../fixtures/thesis.sample.json').goal, 'not the fixture');
+      th = await (await post('/api/thesis', { goalsText: 'I want to invest $20 every two weeks' })).json(); // back to the plain thesis for the email checks
+    }
+
+    // run-pipeline: secret-guarded, forwards to N8N_RUN_WEBHOOK_URL, returns immediately
+    assert.strictEqual((await post('/api/admin/run-pipeline', {})).status, 401);
+    const run = await post('/api/admin/run-pipeline', {}, { 'x-webhook-secret': SECRET });
+    assert.strictEqual(run.status, 202); await sleep(300);
+    assert.strictEqual(runHooks.length, 1, 'n8n run webhook called once');
 
     // Contract E: first challenge, max one per day, failure does not burn the day
+    mockChallenge = true;
     hookStatus = 500;
     await seedIt(withBad); await sleep(500);
     assert.strictEqual(hooks.length, 1, 'attempted once');
@@ -122,12 +180,12 @@ async function main() {
 
     // Portfolio source header (no Alpaca keys here, so always fixture)
     assert.strictEqual((await get('/api/paper/portfolio')).headers.get('x-data-source'), 'fixture');
-    console.log('\nOK: auth, fixture fallback, scorer==endpoint, riskFit floor, 10-or-fewer, sentiment warning, thesis stub, Contract E, reset-notify');
+    console.log('\nOK: auth, fixture fallback, scorer==endpoint, riskFit floor, 10-or-fewer, sentiment warning, thesis Contract C + session save, run-pipeline, Contract E, reset-notify');
   } catch (e) {
     console.error('\nFAILED:', e.message, '\n--- server log ---\n' + log);
     process.exitCode = 1;
   } finally {
-    srv.kill(); hook.close(); try { fs.unlinkSync(db); } catch {}
+    srv.kill(); hook.close(); gemini.close(); runHook.close(); try { fs.unlinkSync(db); } catch {}
   }
 }
 main();

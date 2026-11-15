@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><link rel="icon" href="data:,">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Investment Thesis | TFSA Gold</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="thesis.css">
+  <script src="thesis.js" defer></script>
+</head>
+<body class="thesis-page">
+  <header class="sitebar"><div class="sitebar-in"><a class="brand" href="/"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 16l5-5 4 3 7-8"/><path d="M15 6h5v5"/></svg></span>TFSA Gold</a><nav class="sitenav" aria-label="Main"><a href="/">Feed</a><a href="/portfolio.html">Portfolio</a><a href="/thesis.html" aria-current="page">Thesis</a></nav><div class="headeractions"><span class="quiet">Educational research, not investment advice.</span></div></div></header>
+  <main class="thesis-layout">
+    <header class="thesis-header">
+      <h1>My Investment Thesis</h1>
+      <p class="thesis-status">Track your investment goal and the assumptions behind it.</p>
+    </header>
+
+    <section id="thesis" class="thesis-card" aria-labelledby="thesis-heading">
+      <h2 id="thesis-heading">Investment Thesis</h2>
+      <p id="thesis-status" class="thesis-status" role="status">Loading thesis…</p>
+      <div id="thesis-error-box" class="statebox error" role="alert" hidden><p id="thesis-error"></p><button id="thesis-retry" class="btn" type="button">Retry</button></div>
+      <div id="thesis-empty" class="statebox" hidden><p>No thesis saved yet.</p><p>Describe your goals in the setup step and your thesis, with the assumptions behind it, will appear here.</p><a id="thesis-start" class="btn" href="/">Start setup</a></div>
+      <div id="thesis-data" hidden>
+        <p id="thesis-goal"></p>
+        <dl class="thesis-details">
+          <div><dt>Recurring Budget</dt><dd id="thesis-budget"></dd></div>
+          <div><dt>Risk Tier</dt><dd><span id="thesis-tier" class="thesis-chip"></span></dd></div>
+          <div><dt>Investment Horizon</dt><dd id="thesis-horizon"></dd></div>
+        </dl>
+        <h3>Assumptions</h3>
+        <p id="assumptions-empty" class="thesis-status" hidden>No assumptions yet.</p>
+        <ul id="thesis-assumptions" class="thesis-checklist" role="list"></ul>
+        <h3>Recent News</h3>
+        <p id="news-empty" class="thesis-status" hidden>No thesis news yet. Matches appear after the next daily update.</p>
+        <ul id="thesis-news" class="thesis-news" role="list"></ul>
+      </div>
+    </section>
+
+    <footer class="thesis-footer sitefoot">Educational research, not investment advice.</footer>
+  </main>
+</body>
+</html>

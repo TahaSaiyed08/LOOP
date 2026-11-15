@@ -149,19 +149,46 @@ function rawNews(s) {
   return clamp01(0.5 + 0.5 * avg * Math.min(1, items.length / 3));
 }
 
-const WHY = {
-  signal: 'Notable insider activity at the company',
+// Reason text depends on what the holding is: funds are explained by fees, liquidity and diversification,
+// single stocks and REITs by insider activity, momentum and valuation. Never advice wording.
+const WHY_COMMON = {
   riskFit: 'Volatility is a close fit for this risk level',
-  cost: 'Low cost to hold relative to alternatives',
-  quality: 'Large, established holding',
   news: 'Recent news tone is positive',
 };
 
-function buildWhy(breakdown) {
+function whyFor(key, s) {
+  if (WHY_COMMON[key]) return WHY_COMMON[key];
+  const mom = isNum(s.priceChange5dPct) && s.priceChange5dPct >= 0.5;
+  if (isStockLike(s.category)) {
+    const ins = s.insider || {};
+    if (key === 'signal') {
+      if (ins.execBuyer) return 'An executive bought shares on the open market in the last 30 days';
+      if ((ins.count || 0) > 0) return 'Insiders bought shares on the open market in the last 30 days';
+      return mom ? 'Positive recent price momentum' : 'Steady recent price action';
+    }
+    if (key === 'cost') {
+      return isNum(s.peRatio) && s.peRatio > 0 ? `Reasonable valuation relative to earnings (P/E ${Math.round(s.peRatio * 10) / 10})` : 'Reasonable valuation for its category';
+    }
+    return s.category === 'reit' ? 'Large, established REIT' : 'Large, established company';
+  }
+  if (s.category === 'crypto') {
+    if (key === 'signal') return mom ? 'Positive recent price momentum' : 'Trades continuously with deep liquidity';
+    if (key === 'cost') return 'Simple, liquid way to hold the asset';
+    return 'Largest, most liquid crypto asset';
+  }
+  // ETFs: no insider data exists, so signal means momentum and liquidity
+  if (key === 'signal') return mom ? 'Positive recent price momentum and deep trading volume' : 'Deep trading volume and easy to trade';
+  if (key === 'cost') return 'Low fund fees relative to similar funds';
+  return s.category === 'thematic_etf' ? 'Focused theme in an established fund structure'
+    : s.category === 'bond_etf' ? 'Diversified across many bonds'
+    : 'Diversified across many holdings';
+}
+
+function buildWhy(breakdown, stock) {
   // Highest component wins; fixed key order breaks ties, so it is deterministic.
   let best = 'riskFit';
   for (const k of ['signal', 'riskFit', 'cost', 'quality', 'news']) if (breakdown[k] > breakdown[best]) best = k;
-  return WHY[best];
+  return whyFor(best, stock);
 }
 
 // scoreStock(stock, tier) -> { tier, matchScore, scoreBreakdown, why } | null if not eligible
@@ -192,7 +219,7 @@ function scoreStock(stock, tier) {
   // Eligibility floor: riskFit of 0 means the volatility is wrong for this tier, whatever else is strong.
   if (scoreBreakdown.riskFit === 0) return null;
   const matchScore = scoreBreakdown.signal + scoreBreakdown.riskFit + scoreBreakdown.cost + scoreBreakdown.quality + scoreBreakdown.news;
-  return { tier, matchScore, scoreBreakdown, why: buildWhy(scoreBreakdown) };
+  return { tier, matchScore, scoreBreakdown, why: buildWhy(scoreBreakdown, stock) };
 }
 
 // rankForTier(stocks, tier) -> eligible stocks scored and sorted (score desc, then ticker A-Z
