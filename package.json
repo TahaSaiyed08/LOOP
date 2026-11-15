@@ -17,6 +17,7 @@
     "demo:onboarding": "node scripts/onboarding-demo.js",
     "test:draft": "node scripts/test-thesis-draft.js",
     "test:news": "node scripts/test-news-matching.js",
+    "test:session": "node scripts/test-thesis-session.js",
     "demo:news": "node scripts/demo-news-matching.js"
   },
   "engines": {

@@ -1715,6 +1715,118 @@ async function onboardingTurn(message, session, opts = {}) {
   return finalize(text, s, fallbackAnalysis(text, s, ev), ev, 'fallback', fallbackReason);
 }
 
+// ============================================================================================
+// SESSION ACTION HANDLER: handleThesisAction(session, action, payload, opts) -> Promise<response>
+//
+// One stateless entry point for a web route (see docs/thesis-session-api.md). It only routes to the
+// existing functions above; every safeguard (explicit selection confirmation, draft needs a confirmed
+// selection, edits invalidate a confirmed thesis, criteria decision on edit) stays in those functions.
+// It never saves, monitors, emails or trades, and keeps no state: the caller loads the session from
+// trusted storage, passes it in, and stores response.session (only if response.ok and the version check
+// passes). response = { ok, action, error: null | {code, message}, session, version, changed, stage,
+// nextActions, displayText, result }. It always resolves; it never throws.
+// ============================================================================================
+const SESSION_ACTIONS = ['onboard', 'explore', 'selectAssets', 'confirmSelection', 'createDraft', 'editAssumption', 'confirmAssumptions', 'getConfirmedThesis'];
+const STAGE_ACTIONS = {
+  onboarding: ['onboard', 'explore', 'selectAssets'],
+  selecting: ['explore', 'selectAssets', 'onboard'],
+  selection_pending: ['confirmSelection', 'selectAssets', 'explore', 'onboard'],
+  drafting: ['createDraft', 'selectAssets', 'explore', 'onboard'],
+  reviewing: ['editAssumption', 'confirmAssumptions', 'createDraft'],
+  confirmed: ['getConfirmedThesis', 'editAssumption'],
+};
+// Result fields never returned: the session (returned separately, sanitised) and free-text error details
+// from the model provider (fallbackReason can echo HTTP error bodies). `source` / `model` stay.
+const RESULT_OMIT = new Set(['session', 'fallbackReason']);
+
+function sessionStage(s) {
+  if (s.thesisDraft) return s.thesisDraft.status === 'confirmed' ? 'confirmed' : 'reviewing';
+  if (s.selection.pending.length) return 'selection_pending';
+  if (s.selection.confirmed.length) return 'drafting';
+  return DRAFT_REQUIRED.every((f) => s.profile[f] != null) ? 'selecting' : 'onboarding';
+}
+const sessionVersion = (s) => (s && Number.isInteger(s.version) && s.version >= 0 ? s.version : 0);
+// JSON-safe persisted session: exactly what normalizeSession keeps, plus the version counter.
+const persistable = (s, version) => ({ ...JSON.parse(JSON.stringify(normalizeSession(s))), version });
+
+async function handleThesisAction(session, action, payload, opts = {}) {
+  try {
+    return await runThesisAction(session, action, payload, opts || {});
+  } catch (err) { // e.g. a session object whose getters throw: answer with a fresh, unsaved session
+    console.warn('[thesis] session action failed:', typeof action === 'string' ? action : '?', err && err.message);
+    const s = createOnboardingSession();
+    const stage = sessionStage(s);
+    return { ok: false, action: typeof action === 'string' ? action : null, error: { code: 'internal_error', message: 'Something went wrong. Your session was not changed; please try again.' },
+      session: persistable(s, 0), version: 0, changed: false, stage, nextActions: STAGE_ACTIONS[stage].slice(), displayText: null, result: null };
+  }
+}
+async function runThesisAction(session, action, payload, opts) {
+  const p = payload && typeof payload === 'object' && !Array.isArray(payload) ? payload : {};
+  const hasSession = session && typeof session === 'object' && !Array.isArray(session);
+  const version = hasSession ? sessionVersion(session) : 0;
+  const respond = (s, v, changed, error, result) => {
+    const stage = sessionStage(s);
+    const clean = result ? JSON.parse(JSON.stringify(Object.fromEntries(Object.entries(result).filter(([k]) => !RESULT_OMIT.has(k))))) : null;
+    return { ok: !error, action: typeof action === 'string' ? action : null, error, session: persistable(s, v), version: v, changed,
+      stage, nextActions: STAGE_ACTIONS[stage].slice(), displayText: (clean && clean.displayText) || (error && error.message) || null, result: clean };
+  };
+  const fail = (s, code, message, result) => respond(s, version, false, { code, message }, result);
+
+  if (typeof action !== 'string' || !SESSION_ACTIONS.includes(action)) {
+    return fail(normalizeSession(hasSession ? session : null), 'unknown_action', `Unknown action. Supported actions: ${SESSION_ACTIONS.join(', ')}.`);
+  }
+  if (!hasSession && action !== 'onboard') return fail(createOnboardingSession(), 'missing_session', `"${action}" needs the session returned by an earlier action. Start with "onboard".`);
+  if (opts.expectedVersion != null && opts.expectedVersion !== version) {
+    return fail(normalizeSession(hasSession ? session : null), 'version_conflict', `This session changed elsewhere (version ${version}, expected ${opts.expectedVersion}). Reload it and try again.`);
+  }
+  const s = normalizeSession(hasSession ? session : null);
+  const llmOpts = { callLLM: opts.callLLM, forceFallback: opts.forceFallback };
+
+  try {
+    let r;
+    switch (action) {
+      case 'onboard': {
+        if (typeof p.message !== 'string' || !p.message.trim()) return fail(s, 'invalid_payload', 'payload.message must be a non-empty string.');
+        if (p.message.length > MAX_MESSAGE) return fail(s, 'invalid_payload', `payload.message must be at most ${MAX_MESSAGE} characters.`);
+        r = await onboardingTurn(p.message, s, llmOpts); break;
+      }
+      case 'explore': r = await exploreInvestments(s, llmOpts); break;
+      case 'selectAssets': {
+        const sym = p.symbols;
+        const okSym = (typeof sym === 'string' && sym.trim() && sym.length <= 500) || (Array.isArray(sym) && sym.length && sym.length <= 20 && sym.every((x) => typeof x === 'string'));
+        if (!okSym) return fail(s, 'invalid_payload', 'payload.symbols must be a ticker string (e.g. "VOO, NVDA") or an array of up to 20 ticker strings.');
+        r = selectAssets(sym, s); break;
+      }
+      case 'confirmSelection': r = confirmSelection(s); break;
+      case 'createDraft': r = await createThesisDraft(s, llmOpts); break;
+      case 'editAssumption': {
+        const str = (x) => x == null || (typeof x === 'string' && x.length <= 600);
+        if (!Number.isInteger(p.number) || p.number < 1) return fail(s, 'invalid_payload', 'payload.number must be the assumption number (1, 2, ...).');
+        if (!str(p.text) || !str(p.challenge) || (p.keepChallenge != null && typeof p.keepChallenge !== 'boolean')) {
+          return fail(s, 'invalid_payload', 'payload.text and payload.challenge must be strings (max 600 characters); payload.keepChallenge must be true or false.');
+        }
+        if (p.text == null && p.challenge == null) return fail(s, 'invalid_payload', 'Give payload.text (new wording) and/or payload.challenge (new criteria).');
+        r = p.text == null ? editChallenge(s, p.number, p.challenge) : editAssumption(s, p.number, p.text, p.challenge, { keepChallenge: p.keepChallenge === true });
+        break;
+      }
+      case 'confirmAssumptions': r = confirmAssumptions(s); break;
+      case 'getConfirmedThesis': {
+        const thesis = getConfirmedThesis(s);
+        if (!thesis) return fail(s, 'not_confirmed', 'There is no confirmed thesis yet. Review the assumptions and confirm them first.');
+        return respond(s, version, false, null, { thesis, displayText: 'This is your confirmed thesis.' });
+      }
+      default: break;
+    }
+    const next = r && r.session ? normalizeSession(r.session) : s;
+    if (r && r.ok === false) return fail(s, r.reason || 'action_failed', r.displayText || 'The action could not be completed.', r);
+    const changed = JSON.stringify(next) !== JSON.stringify(s);
+    return respond(next, changed ? version + 1 : version, changed, null, r);
+  } catch (err) {
+    console.warn('[thesis] session action failed:', action, err && err.message);
+    return fail(s, 'internal_error', 'Something went wrong. Your session was not changed; please try again.');
+  }
+}
+
 module.exports = {
   createThesis,
   matchNews,
@@ -1737,6 +1849,8 @@ module.exports = {
   getConfirmedThesis,
   matchNewsDetailed,
   matchNewsHeadlines,
+  handleThesisAction,
+  SESSION_ACTIONS,
   // exposed for scripts/test-thesis-draft.js
   _news: { thesisScope, normalizeNewsItems, linkOf, validateNewsMatches, safeUrl, NOTABLE_HOLDINGS, NEWS_BATCH },
   _draft: { validateUserAssumption, parseSelectionInput, validateDraftJson, internalTier, horizonNoteFor, templateAssumption, dropSafeClaims, CATEGORY_INFO, MAX_SELECTION },
