@@ -58,6 +58,7 @@ app.post('/api/webhook/seed', async (req, res) => {
   warnIfNoSentiment(clean, `seed ${clean.runDate}`);
   console.log(`[seed] ${clean.runDate}: accepted ${clean.stocks.length}, rejected ${clean.rejected.length}, sentiment scored ${sent.scored} cached ${sent.cached}${sent.failed ? ' (FAILED)' : ''}`);
   pipeline.refreshThesisMatches(); // background: match news to the saved thesis, maybe email
+  pipeline.refreshCouncil(); // background: bull/bear/verdict text per stock; never affects ranking
   res.json({ ok: true, runDate: clean.runDate, accepted: clean.stocks.length, rejected: clean.rejected, sentiment: sent });
 });
 
