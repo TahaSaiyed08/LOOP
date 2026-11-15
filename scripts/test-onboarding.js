@@ -268,11 +268,12 @@ function assertShape(r) {
     for (const k of new Set(asked)) assert(asked.filter((x) => x === k).length <= 2, `${k} asked more than twice`);
   });
 
-  await test('17. existing contract untouched: createThesis/matchNews/IS_STUB', async () => {
+  await test('17. existing contract untouched: createThesis/matchNews/IS_STUB (matchNews now conservative without a key)', async () => {
     const t = await thesis.createThesis('anything');
     assert(['low', 'medium', 'high'].includes(t.tier) && Array.isArray(t.assumptions) && t.goal);
+    // matchNews is now the real engine: with no Gemini key it is conservative and never returns "challenges".
     const m = await thesis.matchNews(t, [{ ticker: 'VOO', headline: 'h', url: 'u', sentiment: -0.5 }]);
-    assert.strictEqual(m[0].stance, 'challenges');
+    assert(Array.isArray(m) && m.every((x) => x.stance !== 'challenges'));
     assert.strictEqual(thesis.IS_STUB, true);
     assert(_onboarding.loadPrompt('onboarding'), 'onboarding prompt not found in prompts/thesis.md');
   });
