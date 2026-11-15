@@ -56,5 +56,21 @@ const CHAIR = `## Where the Council Agrees\nx\n## Overall read\nThe evidence is 
   process.env.COUNCIL_MODE = 'bogus'; assert.strictEqual(council.normalizeMode(), 'mini');
   assert.strictEqual(council.toSentences('A one. B two. C three. D four. E five.', 4), 'A one. B two. C three. D four.');
   assert.strictEqual(council.toSentences('Buy it now.', 2), null);
+  // advice filter, both directions
+  for (const ok of ['Zero insider buying signals little conviction.', 'Net buying by executives rose last quarter.', 'Heavy selling pressure hit the sector.', 'The buy side is cautious on valuations.', 'The structural advantages balance against the headwinds of zero insider buying, executive departures in credit cards, and a fully valued 14 P/E multiple.']) {
+    assert(!council.isAdvice(ok), 'descriptive survives: ' + ok);
+    assert.strictEqual(council.toSentences(ok, 2), ok, 'kept: ' + ok);
+  }
+  for (const bad of ['Buy it.', 'Consider buying on the dip.', 'Sell now.', 'You should buy this.', 'We recommend it.', 'Investors must act.', 'Valuation is rich, then sell now.', 'It is a strong buy.']) {
+    assert(council.isAdvice(bad), 'advice stripped: ' + bad);
+    assert.strictEqual(council.toSentences(bad, 2), null, 'dropped: ' + bad);
+  }
+  assert.strictEqual(council.toSentences('Insider buying is zero. You should buy it. Margins are steady.', 3), 'Insider buying is zero. Margins are steady.');
+
+  // partial: verdict emptied by the filter, bull and bear kept
+  const CHAIR_ADVICE = '## Overall read\nYou should buy it now.\nTHESIS_STRENGTH: 3';
+  calls = 0; llm.callLLM = async () => (++calls === 1 ? MINI : CHAIR_ADVICE);
+  const part = await council.councilForStock(stock, 'mini');
+  assert(part && part.bullCase && part.bearCase && part.verdict === null, 'empty verdict keeps bull and bear');
   console.log('council tests passed');
 })().catch((e) => { console.error(e); process.exit(1); });

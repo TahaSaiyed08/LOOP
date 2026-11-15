@@ -187,7 +187,19 @@ function parseThesisStrength(chairmanText) {
 
 // ---- text helpers -------------------------------------------------------------------------
 
-const ADVICE_WORDS = /\b(recommend\w*|buy\w*|sell\w*|should|must)\b/i;
+// recommend/should/must are always advice. buy/sell only count in instruction forms, because the model
+// legitimately describes data like "zero insider buying", "heavy selling pressure" or "the buy side".
+const ADVICE_WORDS = /\b(recommend\w*|should|must)\b/i;
+const BUY_SELL_ADVICE = [
+  /^\W*(buy|sell)\b/i, // imperative at the start of a sentence: "Buy it now."
+  /(?:[,;:\u2014-]\s*|\b(?:then|just|simply)\s+)(buy|sell)\s+(it|now|more|this|these|the|some|shares|before|while|on|into|at)\b/i, // "..., then sell now"
+  /\b(consider|advise|suggest|urge|time to|worth|good time to|wise to|ought to)\s+(buying|selling|buy|sell)\b/i,
+  /\b(you|we|let's|one)\s+(can|could|may|might|would|will|ought to|need to|have to)?\s*(buy|sell)\b/i,
+  /\b(is|as|rated)\s+an?\s+(strong\s+|clear\s+|good\s+|great\s+)?(buy|sell)\b(?!\s+side)/i, // rating-style "a strong buy"
+];
+function isAdvice(sentence) {
+  return ADVICE_WORDS.test(sentence) || BUY_SELL_ADVICE.some((re) => re.test(sentence));
+}
 
 function splitSentences(text) {
   return String(text || "")
@@ -200,7 +212,7 @@ function splitSentences(text) {
 
 // Keep at most n sentences; drop any sentence that reads as advice. null if nothing is left.
 function toSentences(text, n) {
-  const kept = splitSentences(text).filter((s) => !ADVICE_WORDS.test(s)).slice(0, n);
+  const kept = splitSentences(text).filter((s) => !isAdvice(s)).slice(0, n);
   return kept.length ? kept.join(" ") : null;
 }
 
@@ -311,6 +323,7 @@ async function runCouncil(stock, mode = process.env.COUNCIL_MODE || "mini") {
 
 // councilForStock(stock, mode) -> { bullCase, bearCase, verdict } for the feed (Contract B text),
 // or null on ANY failure (no key, LLM error, unparseable reply, nothing safe to show). Never throws.
+// A part the advice filter emptied is null while the others are kept; null overall only if all three are empty.
 // bull/bear are 2-4 sentences; verdict is the chairman's "Overall read", 1-2 sentences, advice-free.
 async function councilForStock(stock, mode) {
   try {
@@ -319,16 +332,16 @@ async function councilForStock(stock, mode) {
     const bullCase = toSentences(r.bullCase, 4);
     const bearCase = toSentences(r.bearCase, 4);
     const verdict = toSentences(overallRead(r.verdict), 2);
-    if (!bullCase || !bearCase || !verdict) {
+    if (!bullCase && !bearCase && !verdict) {
       const len = (x) => String(x || "").length;
       console.log(
-        `[council][debug] ${stock && stock.ticker}: dropped by advice filter, chars before/after ` +
+        `[council][debug] ${stock && stock.ticker}: everything dropped by advice filter, chars before/after ` +
         `bull ${len(r.bullCase)}/${len(bullCase)} bear ${len(r.bearCase)}/${len(bearCase)} ` +
         `verdict ${len(overallRead(r.verdict))}/${len(verdict)}`
       );
       return null;
     }
-    return { bullCase, bearCase, verdict };
+    return { bullCase, bearCase, verdict }; // any part may be null; the feed and UI omit just that part
   } catch (err) {
     console.warn(`[council] ${stock && stock.ticker}: ${err.message}`);
     return null;
@@ -340,4 +353,4 @@ function normalizeMode() {
   return ["mini", "lite", "full"].includes(m) ? m : "mini";
 }
 
-module.exports = { runCouncil, frameStock, councilForStock, splitAdvisorSections, toSentences, overallRead, normalizeMode };
+module.exports = { isAdvice, runCouncil, frameStock, councilForStock, splitAdvisorSections, toSentences, overallRead, normalizeMode };

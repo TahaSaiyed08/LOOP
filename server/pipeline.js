@@ -82,6 +82,7 @@ async function refreshCouncil() {
       const r = await council.councilForStock(t, mode);
       if (!r) { failed++; console.warn(`[council] ${t.ticker}: no usable output, text stays null`); continue; }
       ok++;
+      if (!r.bullCase || !r.bearCase || !r.verdict) console.warn(`[council] ${t.ticker}: partial, missing ${['bullCase', 'bearCase', 'verdict'].filter((k) => !r[k]).join('/')}`);
       next[t.ticker] = { ...r, runDate: payload.runDate, mode };
       store.set('council', next);
     }
