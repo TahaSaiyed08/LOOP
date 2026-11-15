@@ -16,7 +16,12 @@ const { TIERS } = require('./scoring');
 
 const app = express();
 app.use(cors());
-app.use(express.json({ limit: '2mb' }));
+// Logs every seed attempt before body parsing and the secret check (never the secret itself), so oversized or unauthenticated posts still leave a trace.
+app.use('/api/webhook/seed', (req, res, next) => {
+  console.log(`[seed] ${req.method} content-length=${req.headers['content-length'] || 'none'} secret-header=${req.headers['x-webhook-secret'] ? 'present' : 'missing'}`);
+  next();
+});
+app.use(express.json({ limit: '10mb' }));
 
 app.get('/api/health', (req, res) => {
   const feed = store.get('feed');
