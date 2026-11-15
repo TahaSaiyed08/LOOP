@@ -62,6 +62,7 @@ const wrap = (arr) => arr.map((json) => ({ json }));
   out['Finnhub news'] = wrap([
     { headline: 'NVIDIA beats estimates', related: 'NVDA', source: 'Reuters', url: 'https://example.com/n1', datetime: 1763200000 },
     { headline: 'NVIDIA beats estimates', related: 'NVDA', source: 'Reuters', url: 'https://example.com/n1', datetime: 1763200000 }, // dup
+    { headline: 'Berkshire trims bank stakes', related: 'AAPL', source: 'AP', url: 'https://example.com/n3', datetime: 1763200050 }, // noise
     { headline: 'Fed holds rates', related: 'VOO', source: 'AP', url: 'https://example.com/n2', datetime: 1763200100 },
   ]);
   out['SEC tickers'] = wrap([{ 0: { cik_str: 1045810, ticker: 'NVDA' }, 1: { cik_str: 320193, ticker: 'AAPL' }, 2: { cik_str: 200406, ticker: 'JNJ' } }]);
@@ -102,6 +103,7 @@ const wrap = (arr) => arr.map((json) => ({ json }));
   assert.strictEqual(t['BTC/USD'].beta, null); assert(t['BTC/USD'].avgVolume > 0);
   assert.strictEqual(t.NVDA.news.length, 1, 'duplicate headline dropped'); assert.strictEqual(t.NVDA.news[0].sentiment, null);
   assert.strictEqual(t.VOO.news[0].headline, 'Fed holds rates');
+  assert.strictEqual(t.AAPL.news.length, 0, 'unrelated headline dropped for a single stock');
   assert(t.VOO.priceChange5dPct > 0 && Number.isFinite(t.VOO.priceChange5dPct));
   const low = rankForTier(clean.stocks, 'low'), high = rankForTier(clean.stocks, 'high');
   assert(low.length > 0 && high.length > 0);
