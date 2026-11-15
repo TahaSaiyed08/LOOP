@@ -27,7 +27,7 @@ async function main() {
   const base = `http://localhost:${port}`;
   const env = { ...process.env, PORT: String(port), LOOP_DB_FILE: db, INBOUND_WEBHOOK_SECRET: SECRET, NOTIFY_TO_EMAIL: 'test@example.com',
     N8N_NOTIFY_WEBHOOK_URL: `http://localhost:${hook.address().port}/hook`, DEMO_SEED: 'false' };
-  for (const k of ['ALPACA_KEY_ID', 'ALPACA_SECRET_KEY', 'GEMINI_API_KEY']) delete env[k];
+  for (const k of ['ALPACA_KEY_ID', 'ALPACA_SECRET_KEY', 'GEMINI_API_KEY', 'FINNHUB_KEY']) env[k] = ''; // '' (not delete): dotenv would refill from a real .env
   const srv = spawn('node', [path.join(__dirname, '..', 'server', 'index.js')], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = '';
   srv.stdout.on('data', (d) => (log += d)); srv.stderr.on('data', (d) => (log += d));
