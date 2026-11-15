@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="utf-8"><link rel="icon" href="data:,">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My Paper Portfolio | TFSA Gold</title>
   <link rel="stylesheet" href="styles.css">
@@ -9,9 +9,9 @@
   <script src="portfolio.js" defer></script>
 </head>
 <body class="portfolio-page">
+  <header class="sitebar"><div class="sitebar-in"><a class="brand" href="/"><span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M4 16l5-5 4 3 7-8"/><path d="M15 6h5v5"/></svg></span>TFSA Gold</a><nav class="sitenav" aria-label="Main"><a href="/">Feed</a><a href="/portfolio.html" aria-current="page">Portfolio</a><a href="/thesis.html">Thesis</a></nav><div class="headeractions"><span class="quiet">Educational research, not investment advice.</span></div></div></header>
   <main class="portfolio">
-    <header class="portfolio-header">
-      <a class="portfolio-back" href="/"><span aria-hidden="true">←</span> Back to Feed</a>
+    <div class="portfolio-header">
       <h1>My Paper Portfolio</h1>
       <button type="button" class="portfolio-avatar" aria-label="Make the portfolio mascot jump and toss decorative coins">
         <span class="portfolio-avatar-figure" aria-hidden="true">
@@ -42,10 +42,10 @@
         <span class="portfolio-avatar-coin" aria-hidden="true"></span>
         <span class="portfolio-avatar-coin" aria-hidden="true"></span>
       </button>
-    </header>
+    </div>
 
     <p id="portfolio-status" class="portfolio-status" role="status">Loading portfolio…</p>
-    <p id="portfolio-error" class="portfolio-error" role="alert"></p>
+    <div id="portfolio-error-box" class="statebox error" role="alert" hidden><p id="portfolio-error"></p><button id="portfolio-retry" class="btn" type="button">Retry</button></div>
 
     <div id="portfolio-data" hidden>
       <p id="portfolio-demo" class="portfolio-note" hidden>Demo data: sample figures, not live prices.</p>
@@ -59,7 +59,7 @@
 
       <section class="portfolio-positions" aria-labelledby="positions-heading">
         <h2 id="positions-heading">Positions <span class="portfolio-unit">(USD)</span></h2>
-        <p id="portfolio-empty" hidden>No positions yet.</p>
+        <p id="portfolio-empty" class="statebox" hidden>No paper positions yet. Open a match on the <a href="/">Feed</a> and use Buy to place a paper trade.</p>
         <div id="portfolio-table" class="portfolio-table" role="region" aria-labelledby="positions-heading" tabindex="0" hidden>
           <table aria-labelledby="positions-heading">
             <thead>
@@ -79,12 +79,12 @@
 
       <section class="portfolio-trades" aria-labelledby="trades-heading">
         <h2 id="trades-heading">Trades</h2>
-        <p id="trades-empty" hidden>No trades yet.</p>
+        <p id="trades-empty" class="statebox" hidden>No trades yet. Paper buys you place on the Feed will be listed here.</p>
         <ul id="portfolio-trades" class="portfolio-trade-list" role="list"></ul>
       </section>
     </div>
 
-    <footer class="portfolio-footer">Educational research, not investment advice.</footer>
+    <footer class="portfolio-footer sitefoot">Educational research, not investment advice.</footer>
   </main>
 </body>
 </html>

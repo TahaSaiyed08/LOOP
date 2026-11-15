@@ -312,12 +312,14 @@ async function confirmedThesis(symbols, text, challenge) {
   });
 
 
-  await test('18. merge routing: THESIS-built theses -> personalized engine; plain Contract C theses -> Taha\'s headline matcher', async () => {
+  await test('18. merge routing (main): every thesis, plain Contract C or THESIS-built, uses the personalized engine', async () => {
     const plain = { id: 't1', goal: 'Grow savings', budget: { amount: 20, cadence: 'biweekly' }, horizonYears: 10, tier: 'low', assumptions: ['Broad markets grow over ten years', 'Low fees compound over time'], createdAt: '2026-11-15T00:00:00Z' };
+    let headlinePrompts = 0;
     const srv = http.createServer((q, res) => {
       let b = ''; q.on('data', (d) => (b += d));
       q.on('end', () => {
         const sys = JSON.parse(b).messages[0].content;
+        if (/compare news headlines/.test(sys)) headlinePrompts++;
         const content = /compare news headlines/.test(sys)
           ? JSON.stringify({ matches: [{ n: 1, assumptionIndex: 0, stance: 'challenges', whyItMatters: 'Headline engine reason.' }] })
           : JSON.stringify({ matches: [{ article: 1, assumptionIndex: 0, relevance: 'direct', stance: 'challenges', whyItMatters: 'Slower AI orders directly challenge the AI demand assumption.' }] });
@@ -329,8 +331,9 @@ async function confirmedThesis(symbols, text, challenge) {
     Object.assign(process.env, { GEMINI_API_KEY: 'test-key', GEMINI_BASE_URL: `http://localhost:${srv.address().port}/v1/`, GEMINI_MODEL: 'mock' });
     try {
       const p = await matchNews(plain, [SAMPLE[0]]);
-      assert.deepStrictEqual(Object.keys(p[0]).sort(), ['assumptionIndex', 'headline', 'stance', 'ticker', 'url', 'whyItMatters'], 'plain thesis -> Taha\'s matcher output, unchanged');
-      assert.strictEqual(p[0].whyItMatters, 'Headline engine reason.');
+      assert(Array.isArray(p), 'plain thesis -> array');
+      for (const m of p) for (const k of ['ticker', 'headline', 'url', 'assumptionIndex', 'stance', 'whyItMatters']) assert(k in m, `Contract C key ${k} kept`);
+      assert.strictEqual(headlinePrompts, 0, 'the removed headline-only matcher is never used');
       const mine = await matchNews(A.thesis, [SAMPLE[0]]);
       assert.strictEqual(mine[0].analyzedBy, 'gemini', 'THESIS-built thesis -> personalized engine');
       assert.strictEqual(mine[0].relevance, 'direct');

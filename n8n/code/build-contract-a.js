@@ -34,7 +34,7 @@ for (const it of $('Finnhub news').all()) {
   if (!n || !n.headline || !n.related) continue;
   const list = (newsByTicker[n.related] = newsByTicker[n.related] || []);
   if (list.length < 10 && !list.some((x) => x.headline === n.headline)) {
-    list.push({ headline: n.headline, source: n.source || null, url: n.url || null, sentiment: null, datetime: new Date((n.datetime || 0) * 1000).toISOString() });
+    list.push({ headline: n.headline, summary: typeof n.summary === 'string' && n.summary.trim() ? n.summary.trim().slice(0, 1000) : null, source: n.source || null, url: n.url || null, sentiment: null, datetime: new Date((n.datetime || 0) * 1000).toISOString() });
   }
 }
 

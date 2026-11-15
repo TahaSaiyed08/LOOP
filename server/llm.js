@@ -6,6 +6,7 @@
 
 const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/';
 const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
+const DEFAULT_FALLBACK_MODEL = 'gemini-3.1-flash-lite'; // used once on 404 / model-unavailable; override with FALLBACK_GEMINI_MODEL
 const MIN_GAP_MS = Number(process.env.LLM_MIN_GAP_MS) >= 0 && process.env.LLM_MIN_GAP_MS ? Number(process.env.LLM_MIN_GAP_MS) : 5000; // free tier is roughly 10-15 requests/minute; env override is for tests only
 
 let lastCallAt = 0;
@@ -21,6 +22,11 @@ function makeError(code, message) {
 
 function isConfigured() {
   return Boolean(process.env.GEMINI_API_KEY);
+}
+
+// 404, or a 400 that says the model is missing/unsupported, means the model itself is gone.
+function isModelGone(status, detail) {
+  return status === 404 || (status === 400 && /model/i.test(detail) && /not found|unavailable|no longer|unsupported|not supported/i.test(detail));
 }
 
 async function doRequest(systemPrompt, userPrompt, opts) {
@@ -40,6 +46,8 @@ async function doRequest(systemPrompt, userPrompt, opts) {
   if (opts.maxTokens) body.max_tokens = opts.maxTokens;
   if (opts.json) body.response_format = { type: 'json_object' };
 
+  const fallbackModel = (process.env.FALLBACK_GEMINI_MODEL || '').trim() || DEFAULT_FALLBACK_MODEL;
+  let triedFallback = false;
   const maxAttempts = 2; // one retry on 429/5xx
   for (let attempt = 1; ; attempt++) {
     const ctrl = new AbortController();
@@ -70,12 +78,25 @@ async function doRequest(systemPrompt, userPrompt, opts) {
       continue;
     }
     const detail = (await res.text().catch(() => '')).slice(0, 200);
+    // Model retired / unavailable (Google retired ours mid-build): one retry on the fallback model, then give up
+    // gracefully with null (callers treat null as "no answer" and use their offline path).
+    if (!opts.noModelFallback && isModelGone(res.status, detail)) {
+      if (!triedFallback && fallbackModel && fallbackModel !== body.model) {
+        console.warn(`[llm] model ${body.model} unavailable (HTTP ${res.status}); retrying once with ${fallbackModel}`);
+        triedFallback = true;
+        body.model = fallbackModel;
+        attempt--;
+        continue;
+      }
+      console.warn(`[llm] model unavailable and fallback exhausted (HTTP ${res.status}); returning null`);
+      return null;
+    }
     throw makeError(res.status === 429 ? 'LLM_RATE_LIMIT' : 'LLM_HTTP', `LLM HTTP ${res.status}: ${detail}`);
   }
 }
 
-// callLLM(systemPrompt, userPrompt, opts) -> Promise<string>
-// opts: { model, temperature, maxTokens, json, timeoutMs }
+// callLLM(systemPrompt, userPrompt, opts) -> Promise<string | null>  (null only when the model is gone and the fallback model also failed)
+// opts: { model, temperature, maxTokens, json, timeoutMs, noModelFallback }
 // Calls are serialized and spaced MIN_GAP_MS apart, even if callers fire in parallel.
 function callLLM(systemPrompt, userPrompt, opts = {}) {
   if (!isConfigured()) return Promise.reject(makeError('NO_API_KEY', 'GEMINI_API_KEY is not set'));
