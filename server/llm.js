@@ -5,8 +5,8 @@
 // (callers catch and fall back); it never crashes the process.
 
 const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/';
-const DEFAULT_MODEL = 'gemini-2.5-flash-lite';
-const MIN_GAP_MS = 5000; // free tier is roughly 10-15 requests/minute
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
+const MIN_GAP_MS = Number(process.env.LLM_MIN_GAP_MS) >= 0 && process.env.LLM_MIN_GAP_MS ? Number(process.env.LLM_MIN_GAP_MS) : 5000; // free tier is roughly 10-15 requests/minute; env override is for tests only
 
 let lastCallAt = 0;
 let queue = Promise.resolve();

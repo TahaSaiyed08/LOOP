@@ -276,7 +276,7 @@ async function confirmedThesis(symbols, text, challenge) {
   await test('15. createThesis unchanged; matchNews never loads store/notify/paper code', async () => {
     const t = await thesis.createThesis('anything');
     assert.deepStrictEqual(Object.keys(t).sort(), ['assumptions', 'budget', 'createdAt', 'goal', 'horizonYears', 'id', 'tier'].sort());
-    assert.strictEqual(thesis.IS_STUB, true);
+    assert.strictEqual(thesis.IS_STUB, false, 'createThesis and matchNews are both real after the merge with main');
     assert.strictEqual(thesis.matchNews.length, 2, 'pipeline-facing arity stays (thesis, newsItems)');
   });
 
@@ -309,6 +309,32 @@ async function confirmedThesis(symbols, text, challenge) {
       assert.strictEqual(matches[0].model, 'backup-m');
       assert(/primary-m: malformed JSON/.test(stats.attempts[0]) && stats.attempts[1] === 'backup-m: ok', stats.attempts.join(' | '));
     } finally { delete process.env.GEMINI_MODEL; delete process.env.FALLBACK_GEMINI_MODEL; }
+  });
+
+
+  await test('18. merge routing: THESIS-built theses -> personalized engine; plain Contract C theses -> Taha\'s headline matcher', async () => {
+    const plain = { id: 't1', goal: 'Grow savings', budget: { amount: 20, cadence: 'biweekly' }, horizonYears: 10, tier: 'low', assumptions: ['Broad markets grow over ten years', 'Low fees compound over time'], createdAt: '2026-11-15T00:00:00Z' };
+    const srv = http.createServer((q, res) => {
+      let b = ''; q.on('data', (d) => (b += d));
+      q.on('end', () => {
+        const sys = JSON.parse(b).messages[0].content;
+        const content = /compare news headlines/.test(sys)
+          ? JSON.stringify({ matches: [{ n: 1, assumptionIndex: 0, stance: 'challenges', whyItMatters: 'Headline engine reason.' }] })
+          : JSON.stringify({ matches: [{ article: 1, assumptionIndex: 0, relevance: 'direct', stance: 'challenges', whyItMatters: 'Slower AI orders directly challenge the AI demand assumption.' }] });
+        res.setHeader('content-type', 'application/json');
+        res.end(JSON.stringify({ choices: [{ message: { content } }] }));
+      });
+    });
+    await new Promise((r) => srv.listen(0, r));
+    Object.assign(process.env, { GEMINI_API_KEY: 'test-key', GEMINI_BASE_URL: `http://localhost:${srv.address().port}/v1/`, GEMINI_MODEL: 'mock' });
+    try {
+      const p = await matchNews(plain, [SAMPLE[0]]);
+      assert.deepStrictEqual(Object.keys(p[0]).sort(), ['assumptionIndex', 'headline', 'stance', 'ticker', 'url', 'whyItMatters'], 'plain thesis -> Taha\'s matcher output, unchanged');
+      assert.strictEqual(p[0].whyItMatters, 'Headline engine reason.');
+      const mine = await matchNews(A.thesis, [SAMPLE[0]]);
+      assert.strictEqual(mine[0].analyzedBy, 'gemini', 'THESIS-built thesis -> personalized engine');
+      assert.strictEqual(mine[0].relevance, 'direct');
+    } finally { srv.close(); for (const k of ['GEMINI_API_KEY', 'GEMINI_BASE_URL', 'GEMINI_MODEL']) delete process.env[k]; }
   });
 
   const failed = results.filter(([ok]) => !ok);

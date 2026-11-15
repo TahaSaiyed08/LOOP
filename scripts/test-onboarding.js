@@ -271,10 +271,11 @@ function assertShape(r) {
   await test('17. existing contract untouched: createThesis/matchNews/IS_STUB (matchNews now conservative without a key)', async () => {
     const t = await thesis.createThesis('anything');
     assert(['low', 'medium', 'high'].includes(t.tier) && Array.isArray(t.assumptions) && t.goal);
-    // matchNews is now the real engine: with no Gemini key it is conservative and never returns "challenges".
+    // createThesis is real (Taha). A plain Contract C thesis is routed to Taha's headline matcher, which
+    // returns [] without an LLM; THESIS-built theses use the personalized engine (covered in test-news-matching.js).
     const m = await thesis.matchNews(t, [{ ticker: 'VOO', headline: 'h', url: 'u', sentiment: -0.5 }]);
-    assert(Array.isArray(m) && m.every((x) => x.stance !== 'challenges'));
-    assert.strictEqual(thesis.IS_STUB, true);
+    assert.deepStrictEqual(m, [], 'matchNews degrades to no matches without an LLM'); // also: never "challenges"
+    assert.strictEqual(thesis.IS_STUB, false);
     assert(_onboarding.loadPrompt('onboarding'), 'onboarding prompt not found in prompts/thesis.md');
   });
 

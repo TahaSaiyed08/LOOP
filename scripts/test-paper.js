@@ -52,7 +52,7 @@ async function startServer(extraEnv) {
   const port = 3700 + Math.floor(Math.random() * 250);
   const db = path.join(os.tmpdir(), `loop-paper-${process.pid}-${port}.json`);
   dbs.push(db);
-  const env = { ...process.env, PORT: String(port), LOOP_DB_FILE: db, DEMO_SEED: 'false', ...extraEnv };
+  const env = { ...process.env, PORT: String(port), LOOP_DB_FILE: db, DEMO_SEED: 'false', ALPACA_KEY_ID: '', ALPACA_SECRET_KEY: '', GEMINI_API_KEY: '', FINNHUB_KEY: '', N8N_NOTIFY_WEBHOOK_URL: '', ...extraEnv };
   const srv = spawn('node', [path.join(__dirname, '..', 'server', 'index.js')], { env, stdio: ['ignore', 'pipe', 'pipe'] });
   let log = '';
   srv.stdout.on('data', (d) => (log += d)); srv.stderr.on('data', (d) => (log += d));

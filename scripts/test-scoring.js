@@ -64,4 +64,23 @@ assert(stk({ priceChange5dPct: 4 }) > stk({ priceChange5dPct: -4 }), 'stock mome
 assert(stk({ insider: { count: 4, execBuyer: true, totalUsd: 800000 } }) > stk({ insider: { count: 0, execBuyer: false, totalUsd: 0 } }), 'insider buying raises stock signal');
 assert(sig({ priceChange5dPct: null, avgVolume: null }) >= 0, 'null momentum/volume tolerated');
 
+// why-text is category-aware: no insider talk for funds, no fee talk for single stocks
+{
+  const { buildFeed } = require('../server/feed');
+  const mk = (ticker, category, extra) => ({ ticker, companyName: ticker, category, price: 100, beta: 1.0, dividendYieldPct: 1, priceChange5dPct: 2, avgVolume: 5e6, usListed: true,
+    merPct: /etf/.test(category) ? 0.05 : null, peRatio: /etf/.test(category) ? null : 18, marketCapB: /etf/.test(category) ? null : 500, insider: { count: 0, execBuyer: false, totalUsd: 0 }, news: [], ...extra });
+  const rows = [];
+  for (const tier of ['low', 'medium', 'high']) for (const r of rankForTier([mk('XLK', 'sector_etf'), mk('VOO', 'index_etf'), mk('MSFT', 'large_cap'), mk('NVDA', 'large_cap', { insider: { count: 3, execBuyer: true, totalUsd: 9e5 } })], tier)) rows.push(r);
+  for (const r of rows) {
+    const etf = /etf/.test(r.stock.category);
+    if (etf) assert(!/insider|executive|P\/E|valuation|company/i.test(r.why), `ETF why has stock wording: ${r.stock.ticker} "${r.why}"`);
+    else assert(!/fund fees|fund|diversified/i.test(r.why), `stock why has fund wording: ${r.stock.ticker} "${r.why}"`);
+    assert(!/\b(buy|sell|recommend|should)\b/i.test(r.why), 'no advice wording');
+  }
+  // stance fallback from market sentiment when there is no thesis match
+  const payload = { stocks: [mk('VOO', 'index_etf', { news: [{ headline: 'a', sentiment: 0.8, url: 'u' }, { headline: 'b', sentiment: -0.7, url: 'u' }, { headline: 'c', sentiment: 0.1, url: 'u' }] })] };
+  const tags = buildFeed(payload, 'low')[0].newsTags.map((t) => t.stance);
+  assert.deepStrictEqual(tags, ['supports', 'challenges', 'neutral'], 'sentiment maps to stance');
+}
+
 console.log('\nOK: components 0-20, sums match, deterministic, riskFit floor, top-10-or-fewer, spread >= 12, tiers reorder, tiebreak, beta gate, signal inputs.');

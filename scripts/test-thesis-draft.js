@@ -293,10 +293,11 @@ function assertDraftContract(r) {
   await test('17. existing exports unchanged: createThesis / matchNews / IS_STUB / onboardingTurn', async () => {
     const t = await thesis.createThesis('anything');
     assert.deepStrictEqual(Object.keys(t).sort(), ['assumptions', 'budget', 'createdAt', 'goal', 'horizonYears', 'id', 'tier'].sort());
-    // matchNews is now the real engine: with no Gemini key it is conservative and never returns "challenges".
+    // createThesis is real (Taha). A plain Contract C thesis is routed to Taha's headline matcher, which
+    // returns [] without an LLM; THESIS-built theses use the personalized engine (covered in test-news-matching.js).
     const m = await thesis.matchNews(t, [{ ticker: 'VOO', headline: 'h', url: 'u', sentiment: -0.5 }]);
-    assert(Array.isArray(m) && m.every((x) => x.stance !== 'challenges'));
-    assert.strictEqual(thesis.IS_STUB, true);
+    assert.deepStrictEqual(m, [], 'matchNews degrades to no matches without an LLM'); // also: never "challenges"
+    assert.strictEqual(thesis.IS_STUB, false);
     assert.strictEqual(typeof onboardingTurn, 'function');
     const old = { history: [], profile: nulls, askedFields: [], activeFlow: null, tickers: [], lastQuestionField: null }; // pre-feature session
     assert.deepStrictEqual(selectAssets('VOO', old).session.selection, { pending: ['VOO'], confirmed: [] }, 'old sessions still work');

@@ -17,13 +17,23 @@ $('Finnhub metric').all().forEach((it, idx) => {
   if (m && stockTickers[idx]) metrics[stockTickers[idx]] = m;
 });
 
+// Finnhub company-news is loosely related market noise. For single stocks keep a headline only if it
+// names the ticker (whole word, 3+ letters, case-sensitive) or the company (legal suffixes stripped).
+function isRelevantNews(headline, ticker, companyName) {
+  const h = String(headline || '');
+  if (ticker.length >= 3 && new RegExp('\\b' + ticker.replace(/[^A-Z0-9]/g, '') + '\\b').test(h)) return true;
+  const name = String(companyName || '').replace(/\b(Inc|Corp|Corporation|Co|Company|Ltd|Limited|plc|Holdings|Group|Class [A-C]|Common Stock)\b\.?/gi, '').replace(/[.,&]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+  const first = name.split(' ')[0];
+  const lower = h.toLowerCase();
+  return (name.length >= 4 && lower.includes(name)) || (name.includes(' ') && first.length >= 5 && lower.includes(first));
+}
 // Finnhub news: arrays are flattened into items; each item names its ticker in `related`
 const newsByTicker = {};
 for (const it of $('Finnhub news').all()) {
   const n = it.json;
   if (!n || !n.headline || !n.related) continue;
   const list = (newsByTicker[n.related] = newsByTicker[n.related] || []);
-  if (list.length < 3 && !list.some((x) => x.headline === n.headline)) {
+  if (list.length < 10 && !list.some((x) => x.headline === n.headline)) {
     list.push({ headline: n.headline, source: n.source || null, url: n.url || null, sentiment: null, datetime: new Date((n.datetime || 0) * 1000).toISOString() });
   }
 }
@@ -86,7 +96,7 @@ for (const u of universe) {
     peRatio: isStock ? (num(m.peTTM) ?? num(m.peBasicExclExtraTTM)) : null,
     marketCapB: isStock && cap !== null ? round(cap / 1000, 2) : null,
     insider: isStock ? (insiderByTicker[u.ticker] || { count: 0, execBuyer: false, totalUsd: 0 }) : { count: 0, execBuyer: false, totalUsd: 0 },
-    news: newsByTicker[u.ticker] || [],
+    news: (newsByTicker[u.ticker] || []).filter((n) => !isStock || isRelevantNews(n.headline, u.ticker, u.companyName)).slice(0, 3),
   });
 }
 
