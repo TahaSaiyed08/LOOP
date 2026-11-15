@@ -175,7 +175,14 @@ router.patch('/theses/:id', handle(async (req, res, db) => {
 
 router.get('/theses/:id/matches', handle(async (req, res, db) => {
   const { user, t } = await ownThesis(req, res, db); if (!t) return;
-  res.json((await repo.listMatches(db, user.userId, t.thesis_id, { limit: 200 })).map(repo.matchOut));
+  const rows = (await repo.listMatches(db, user.userId, t.thesis_id, { limit: 200 })).map(repo.matchOut);
+  // Additive: mark articles that come from the prepared demo snapshot (real articles, not live n8n delivery).
+  const snap = user.userId === pipeline.DEMO_EVIDENCE_USER ? await pipeline.preparedSnapshot() : null;
+  if (snap) {
+    const urls = new Set(snap.payload.stocks.flatMap((x) => (x.news || []).map((n) => n.url)));
+    for (const m of rows) m.article.prepared = urls.has(m.article.url);
+  }
+  res.json(rows);
 }));
 
 router.get('/theses/:id/notifications', handle(async (req, res, db) => {

@@ -10,7 +10,6 @@
 .skiplink { position: absolute; left: -999px; top: 8px; background: var(--gold); color: #1b190f; padding: 8px 12px; border-radius: 8px; z-index: 10; }
 .skiplink:focus { left: 8px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.app-disclaimer { margin: 0; padding: 6px 16px; text-align: center; font-size: .8rem; color: var(--muted); border-bottom: 1px solid var(--line); background: var(--panel); }
 .app-view { padding-top: 28px; padding-bottom: 12px; outline: none; }
 .app-view h1 { font-size: clamp(1.6rem, 4vw, 2.3rem); line-height: 1.15; margin: 6px 0 12px; letter-spacing: -.02em; }
 .app-view h2 { font-size: 1.15rem; margin: 0; }
@@ -296,3 +295,33 @@ a.card:hover { border-color: #77745d; }
 .sectionstatus { margin: 8px 0; }
 .section-embed .app-view { padding-bottom: 0; }
 @media (max-width: 640px) { .sectionpill { white-space: normal; } .sectionhead { padding-bottom: 12px; } }
+
+/* ---------- News evidence: thesis-specific stance, detail view, same article across theses ---------- */
+.evcard { cursor: pointer; border-left: 4px solid var(--line); transition: border-color .15s, background .15s; }
+.evcard:hover { background: var(--panel2); }
+.evcard.ev-challenges, .evdetail.ev-challenges { border-left-color: var(--chal, #e3b341); }
+.evcard.ev-supports, .evdetail.ev-supports { border-left-color: var(--green); }
+.evcard.ev-challenges { background: linear-gradient(90deg, #2b241033, transparent 40%); }
+.evcard .evheadline a { color: inherit; text-decoration: none; }
+.evcard .evheadline a:hover { text-decoration: underline; }
+.evtop { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.evjudged { margin: 8px 0; padding: 8px 12px; border-radius: 8px; background: var(--panel2); font-size: .92rem; }
+.evjudged q { quotes: "“" "”"; color: var(--text); }
+.pill.prepared { border: 1px solid #756b3d; background: #302b18; color: var(--gold); border-radius: 999px; padding: 2px 10px; font-size: .75rem; font-weight: 650; }
+.evdetail { border-left: 4px solid var(--line); display: grid; gap: 10px; }
+.evdetail h2.evheadline { font-size: clamp(1.2rem, 2.4vw, 1.5rem); line-height: 1.25; margin: 4px 0 0; }
+.evassume { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel2); }
+.evassume p { margin: 4px 0; }
+.evverdict { font-size: 1.02rem; }
+.evdetail .label, .evassume .label { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 4px; }
+.evothers { margin-top: 16px; }
+.evotherlist { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 10px; }
+.evotherlist li { padding: 12px 14px; border-radius: 10px; border: 1px solid var(--line); border-left: 4px solid var(--line); }
+.evotherlist li.ev-challenges { border-left-color: var(--chal, #e3b341); }
+.evotherlist li.ev-supports { border-left-color: var(--green); }
+.addidea { list-style: none; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 10px 0; }
+
+/* Decorative "G" badge beside the header disclaimer (matches the TFSA Gold header; not a button, no profile). */
+.app-page .brandbadge { width: 42px; height: 42px; flex: none; display: grid; place-items: center; font-size: 1rem; line-height: 1; cursor: default; user-select: none; }
+.app-page .brandbadge:hover { background: #302b18; border-color: #756b3d; }
+@media (max-width: 640px) { .app-page .brandbadge { width: 36px; height: 36px; font-size: .9rem; } }

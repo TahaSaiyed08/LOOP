@@ -127,10 +127,45 @@ const isIdle = () => !running;
 async function matchStoredFeedFor(thesisId) {
   while (current) await current.catch(() => {});
   const payload = store.get('feed');
-  if (!payload || !persistence.isEnabled()) return { skipped: true };
+  if (!persistence.isEnabled()) return { skipped: true };
+  const prepared = await preparedSnapshotFor(thesisId);
+  if (!payload && !prepared) return { skipped: true };
   running = true;
   currentKind = 'thesis';
-  current = runPersisted(payload, { thesisId, notify: false }).finally(() => { running = false; current = null; currentKind = null; });
+  // A demo-user thesis is evaluated against the prepared snapshot only, so the recording shows exactly the
+  // prepared real articles; everyone else gets the stored Feed exactly as before.
+  current = (prepared ? runPersisted(prepared.payload, { thesisId, notify: false }).then((r) => ({ ...r, prepared: true }))
+    : runPersisted(payload, { thesisId, notify: false })).finally(() => { running = false; current = null; currentKind = null; });
+  return current;
+}
+
+// ---------- prepared demo news (scripts/demo-evidence.js) ----------
+// A snapshot of real, published articles saved for the recorded demo. It is NOT the Feed and never reaches it,
+// daily n8n runs or emails. It is applied ONLY to theses of the dedicated demo user, on save (above) or when
+// the demo script asks (matchPreparedNews). Every other user's thesis is matched exactly as before.
+const PREPARED_KEY = 'preparedNewsSnapshot';
+const DEMO_EVIDENCE_USER = 'usr_thesis_demo';
+async function preparedSnapshot() {
+  if (!persistence.isEnabled()) return null;
+  try {
+    const v = await repo.getKvFresh(persistence.getDb(), PREPARED_KEY);
+    return v && v.payload && Array.isArray(v.payload.stocks) ? v : null;
+  } catch (err) { console.warn('[pipeline] prepared snapshot unavailable:', persistence.redact(err.message)); return null; }
+}
+async function preparedSnapshotFor(thesisId) {
+  const snap = await preparedSnapshot();
+  if (!snap) return null;
+  const { rows } = await persistence.getDb().query('SELECT user_id FROM theses WHERE thesis_id = $1', [thesisId]);
+  return rows[0] && rows[0].user_id === DEMO_EVIDENCE_USER ? snap : null;
+}
+// Demo script: evaluate the prepared snapshot for one demo-user thesis, same lock and same code path as a save.
+async function matchPreparedNews(thesisId) {
+  while (current) await current.catch(() => {});
+  const snap = await preparedSnapshotFor(thesisId);
+  if (!snap) return { skipped: true, reason: 'no prepared snapshot, or not a demo-user thesis' };
+  running = true;
+  currentKind = 'thesis';
+  current = runPersisted(snap.payload, { thesisId, notify: false }).finally(() => { running = false; current = null; currentKind = null; });
   return current;
 }
 
@@ -249,4 +284,4 @@ async function refreshCouncil() {
   }
 }
 
-module.exports = { refreshThesisMatches, collectNews, refreshCouncil, councilTargets, refreshPersisted, matchStoredFeedFor, whenIdle, isIdle, notificationOutcome };
+module.exports = { PREPARED_KEY, DEMO_EVIDENCE_USER, preparedSnapshot, matchPreparedNews, refreshThesisMatches, collectNews, refreshCouncil, councilTargets, refreshPersisted, matchStoredFeedFor, whenIdle, isIdle, notificationOutcome };

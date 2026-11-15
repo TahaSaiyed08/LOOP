@@ -58,3 +58,22 @@ Onboarding stores one contribution amount (`profile.amount`, plus `cadence`). If
   - static checks: every `/api/v2` call in `app.js` has a route; wording rules;
   - the full journey with mock Gemini on in-memory PostgreSQL, including a restart;
   - the original site still works.
+
+## Prepared real-news demo: same news, different meaning (`scripts/demo-evidence.js`)
+Shows that THESIS judges news against each thesis's own confirmed assumptions. Nine real, published articles (`scripts/demo/same-news-scenarios.json`: headline, publisher, date, original link and a short factual summary written for the snapshot, never the article text) are stored once and assessed separately for each thesis by the normal `matchNewsDetailed`.
+- **Scope:** the snapshot (`kv_store` key `preparedNewsSnapshot`) applies ONLY to theses of the demo user `usr_thesis_demo`. On save, a demo-user thesis is matched against the snapshot instead of the live Feed. Every other user is matched against the Feed exactly as before.
+- **Never:** the Feed tab, n8n or email. Challenges are recorded as "shown in the app, not emailed".
+- **Commands:**
+  - `npm run demo:dry-run`: real Gemini, in memory, writes nothing.
+  - `demo:prepare`: idempotent; saves Scenario A.
+  - `demo:verify`: read-only.
+  - `demo:reset-b -- <th_… | ses_…>`: removes exactly those recording attempts; Scenario A is refused.
+  - `demo:reset`: all demo-user records plus the snapshot.
+  - `demo:unload`: snapshot key only.
+  - All of them except the dry run require TigerData schema `thesis_dev`.
+- **UI:**
+  - An evidence card opens `#/thesis/:id/evidence/:matchId`. The detail view shows the stance, the exact assumption it was judged against, why it matters, the summary and "Read original article" (real links only; `example.com` and other placeholders are never shown as links).
+  - "Ask Research Chat" pre-fills a stance-aware question.
+  - "Same article in your other theses" shows the same article's assessment in the user's other theses.
+- **Session API:** `addAssumption` (reviewing stage, at most 4 ideas) lets a user add their own idea when the draft leaves out a selected investment.
+- **Tests:** `npm run test:demo-evidence` (offline).

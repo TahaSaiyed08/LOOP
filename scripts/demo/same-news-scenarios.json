@@ -1,0 +1,114 @@
+{
+  "label": "Prepared real-news snapshot",
+  "provenance": "Real, published articles saved as a snapshot for the recorded demo. Not delivered by n8n and not a live alert. THESIS stores only the headline, publisher, date, link and a short factual summary written for this snapshot, never the article text.",
+  "verifiedAt": "2026-11-15",
+  "runDate": "2026-11-15",
+  "articles": [
+    {
+      "ticker": "NVDA",
+      "kind": "company-reported results (quarter ended July 26, 2026)",
+      "headline": "NVIDIA Announces Financial Results for Second Quarter Fiscal 2027",
+      "source": "NVIDIA Newsroom (company press release)",
+      "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027",
+      "datetime": "2026-08-26T12:00:00Z",
+      "dateOnly": true,
+      "summary": "NVIDIA reported quarterly revenue of $96.2 billion, with data-center revenue of $89.0 billion, up 117% from a year earlier. It guided to about $108 billion of revenue for the next quarter, assuming no data-center compute sales to China. These are reported results and company guidance from August 2026."
+    },
+    {
+      "ticker": "NVDA",
+      "kind": "analyst forecast",
+      "headline": "Baird downgrades Nvidia to Neutral on potential slowdown, lack of visibility",
+      "source": "TipRanks (The Fly)",
+      "url": "https://www.tipranks.com/news/the-fly/baird-downgrades-nvidia-to-neutral-on-potential-slowdown-lack-of-visibility-thefly-news",
+      "datetime": "2026-11-11T11:45:57Z",
+      "summary": "Analyst firm Baird cut its rating on Nvidia to Neutral and lowered its price target from $500 to $200. Baird says visibility into 2027 data-center demand is limited and expects large cloud companies' AI spending growth to slow to about 40% or a little less in 2027. It also notes that demand for Nvidia's newest chips still exceeds supply. This is an analyst forecast, not reported sales."
+    },
+    {
+      "ticker": "NVDA",
+      "kind": "market news and outlook risk",
+      "headline": "AI stocks hammered by midterm shock as data center buildout becomes a 'war of attrition'",
+      "source": "CNBC",
+      "url": "https://www.cnbc.com/2026/11/06/ai-data-center-midterms-selloff.html",
+      "datetime": "2026-11-06T12:00:00Z",
+      "summary": "Nvidia shares fell about 9% after the U.S. midterm elections as investors worried that political pressure and local restrictions on new data centers could slow or raise the cost of the AI buildout. Analysts quoted disagree on the impact: one says pushback makes the buildout more expensive rather than stopping it, another says big tech spending growth may peak in 2027. It reports investor concern, not a measured drop in orders."
+    },
+    {
+      "ticker": "NVDA",
+      "kind": "market commentary",
+      "headline": "Nvidia Volatility Puts Nasdaq Stock And Trading Platforms In Focus",
+      "source": "Simply Wall St (via Yahoo Finance)",
+      "url": "https://finance.yahoo.com/markets/stocks/articles/nvidia-volatility-puts-nasdaq-stock-190836991.html",
+      "datetime": "2026-11-15T19:08:00Z",
+      "summary": "The article says recent swings in Nvidia and other AI-chip shares have increased trading activity, and it looks at trading-related companies such as Nasdaq, MarketAxess and WisdomTree that can benefit from busier markets. It does not discuss whether AI data-center spending is growing or slowing."
+    },
+    {
+      "ticker": "MSFT",
+      "kind": "company-reported results and guidance",
+      "headline": "Microsoft's cloud growth accelerates, and so too does the spending",
+      "source": "Fortune",
+      "url": "https://fortune.com/2026/10/28/microsofts-cloud-growth-accelerates-and-so-too-does-the-spending/",
+      "datetime": "2026-10-28T20:38:00Z",
+      "summary": "Microsoft reported quarterly revenue of $92.3 billion, up 19%, with its Azure cloud business growing 48%. It spent $45.2 billion on capital projects in the quarter, expects more than $50 billion next quarter and about $170 billion in calendar 2026, and guided operating margins slightly lower. Microsoft said it expects to stay free-cash-flow positive."
+    },
+    {
+      "ticker": "MSFT",
+      "kind": "company guidance",
+      "headline": "AI buildout hits snag as Google and Microsoft put off raising capex forecasts",
+      "source": "CNBC",
+      "url": "https://www.cnbc.com/2026/10/29/microsoft-google-ai-capex-estimates.html",
+      "datetime": "2026-10-29T11:30:00Z",
+      "summary": "Microsoft trimmed its 2026 capital spending forecast to $170 billion from $175 billion and Alphabet kept its guidance unchanged, both below what some analysts expected. Microsoft said delays at third-party chip suppliers push some data-center capacity into early 2027, and it expects spending to speed up again then."
+    },
+    {
+      "ticker": "MSFT",
+      "kind": "company guidance and bank forecasts",
+      "headline": "Fears over $828 billion AI capex spending spree help erase $1 trillion in market value",
+      "source": "Fortune",
+      "url": "https://fortune.com/2026/10/31/big-tech-ai-capital-spending-spree/",
+      "datetime": "2026-10-31T10:44:00Z",
+      "summary": "Fortune adds up the latest company guidance from Amazon, Alphabet, Microsoft, Meta and SpaceX to as much as $828 billion of capital spending in 2026, much of it on AI data centers, with banks forecasting about $1 trillion in 2027. Investors reacted by selling shares, worried about negative free cash flow and heavy borrowing; Microsoft was the only one of the group still free-cash-flow positive."
+    },
+    {
+      "ticker": "VOO",
+      "kind": "reported market data",
+      "headline": "Magnificent 7 loses $1 trillion. The most eye-popping stats from Thursday's tech stock plunge",
+      "source": "CNBC",
+      "url": "https://www.cnbc.com/2026/11/05/stock-market-selloff-ai-fears.html",
+      "datetime": "2026-11-05T22:10:00Z",
+      "summary": "On November 5 the S&P 500 fell more than 4%, its worst day since April 2025, while the Nasdaq dropped into a correction and the seven largest tech companies lost over $1 trillion in market value, Nvidia alone more than $440 billion. All 11 S&P sectors fell, led by technology, as investors worried the AI data-center buildout could slow after the midterm elections."
+    },
+    {
+      "ticker": "BND",
+      "kind": "reported market data and market-implied expectations",
+      "headline": "10-year Treasury yield creeps higher even as Fed keeps rates the same",
+      "source": "CNBC",
+      "url": "https://www.cnbc.com/2026/10/28/us-treasurys-bonds-yields-federal-reserve.html",
+      "datetime": "2026-10-28T09:22:00Z",
+      "summary": "The Federal Reserve held interest rates steady on October 28, while the 10-year Treasury yield rose to about 5.03% and the 30-year to about 5.35%. Futures markets priced roughly an 86% chance of a rate increase at the December meeting. Rising yields usually mean falling prices for existing bonds."
+    }
+  ],
+  "scenarios": {
+    "A": {
+      "id": "demo:same-news-scenario-a",
+      "profile": { "amount": 100, "cadence": "monthly", "timelineYears": 5, "riskComfort": "medium", "experience": "beginner", "purpose": "learn how AI spending affects big companies" },
+      "symbols": "NVDA, MSFT, VOO",
+      "assumptions": [
+        { "ticker": "NVDA", "text": "I'm exploring NVIDIA because I think big technology companies will keep spending heavily on AI data centers, creating demand for NVIDIA's chips over the next few years.", "challenge": "News suggesting major customers are slowing AI spending, postponing data-center construction, or reducing demand for NVIDIA chips." },
+        { "ticker": "MSFT", "text": "I'm researching Microsoft because I think its cloud business, Azure, gains when companies want AI tools, so its heavy AI data-center spending can pay off over time.", "challenge": "News that Azure growth is slowing, or that Microsoft is cutting back its AI spending because the demand isn't there." },
+        { "ticker": "VOO", "text": "I'm looking at VOO because I expect a fund spread across about 500 large U.S. companies to swing less than a single stock like NVIDIA, even though big tech companies are a large part of it.", "challenge": "News of the whole S&P 500 falling about as sharply as individual tech stocks, showing a few large companies can pull the entire index down." }
+      ]
+    },
+    "B": {
+      "onboarding": [
+        "I keep hearing AI spending is huge, but I think it might start to cool down. I'd like to put about $50 a month into learning about this over the next three years.",
+        "Medium. I'm a beginner."
+      ],
+      "symbols": "NVDA, MSFT, BND",
+      "assumptions": [
+        { "ticker": "NVDA", "text": "I'm researching NVIDIA because I expect the growth in AI data-center spending to slow down from its recent very fast pace, and I want to see whether NVIDIA can keep growing if its big customers become more careful.", "challenge": "News showing AI spending and NVIDIA's data-center sales are still growing very strongly, without meaningful signs of customers pulling back." },
+        { "ticker": "MSFT", "text": "I'm researching Microsoft because I expect its heavy AI spending to squeeze its costs and profits for a while before its AI business pays off.", "challenge": "News that Microsoft's cloud and AI revenue is growing fast enough to cover its rising spending, with profit margins holding up." },
+        { "ticker": "BND", "text": "I'm looking at BND to learn how a bond fund behaves, because I expect bond prices to struggle while interest rates stay high or might rise.", "challenge": "News that interest rates are falling or are expected to be cut soon, which usually helps bond prices." }
+      ]
+    }
+  }
+}

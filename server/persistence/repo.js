@@ -452,7 +452,15 @@ async function thesisTimeline(db, userId, thesisId) {
   return ev.sort((a, b) => a.at.localeCompare(b.at) || ORDER.indexOf(a.type) - ORDER.indexOf(b.type));
 }
 
+// One kv_store value read straight from the database (the server's kv cache is loaded once at boot, so a value
+// written by a separate script, e.g. the prepared demo news snapshot, is only visible this way).
+async function getKvFresh(db, key) {
+  const { rows } = await db.query('SELECT value FROM kv_store WHERE key = $1', [key]);
+  return rows[0] ? rows[0].value : null;
+}
+
 module.exports = {
+  getKvFresh,
   savedThesisIdForSession,
   newId, ConflictError, isUniqueViolation,
   createUser, getUser,

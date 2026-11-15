@@ -1844,13 +1844,13 @@ async function onboardingTurn(message, session, opts = {}) {
 // passes). response = { ok, action, error: null | {code, message}, session, version, changed, stage,
 // nextActions, displayText, result }. It always resolves; it never throws.
 // ============================================================================================
-const SESSION_ACTIONS = ['onboard', 'explore', 'selectAssets', 'confirmSelection', 'createDraft', 'editAssumption', 'confirmAssumptions', 'getConfirmedThesis'];
+const SESSION_ACTIONS = ['onboard', 'explore', 'selectAssets', 'confirmSelection', 'createDraft', 'editAssumption', 'addAssumption', 'confirmAssumptions', 'getConfirmedThesis'];
 const STAGE_ACTIONS = {
   onboarding: ['onboard', 'explore', 'selectAssets'],
   selecting: ['explore', 'selectAssets', 'onboard'],
   selection_pending: ['confirmSelection', 'selectAssets', 'explore', 'onboard'],
   drafting: ['createDraft', 'selectAssets', 'explore', 'onboard'],
-  reviewing: ['editAssumption', 'confirmAssumptions', 'createDraft'],
+  reviewing: ['editAssumption', 'addAssumption', 'confirmAssumptions', 'createDraft'],
   confirmed: ['getConfirmedThesis', 'editAssumption'],
 };
 // Result fields never returned: the session (returned separately, sanitised) and free-text error details
@@ -1926,6 +1926,11 @@ async function runThesisAction(session, action, payload, opts) {
         if (p.text == null && p.challenge == null) return fail(s, 'invalid_payload', 'Give payload.text (new wording) and/or payload.challenge (new criteria).');
         r = p.text == null ? editChallenge(s, p.number, p.challenge) : editAssumption(s, p.number, p.text, p.challenge, { keepChallenge: p.keepChallenge === true });
         break;
+      }
+      case 'addAssumption': { // the user's own extra idea, e.g. for a selected investment the draft left out (max 4)
+        const ok = (x) => typeof x === 'string' && x.trim() && x.length <= 600;
+        if (!ok(p.text) || !ok(p.challenge)) return fail(s, 'invalid_payload', 'payload.text and payload.challenge must be non-empty strings (max 600 characters).');
+        r = addAssumption(s, p.text, p.challenge); break;
       }
       case 'confirmAssumptions': r = confirmAssumptions(s); break;
       case 'getConfirmedThesis': {

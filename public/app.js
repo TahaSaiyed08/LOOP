@@ -28,7 +28,13 @@ function h(tag, props, ...kids) {
 }
 // Replace an element's content. Flattens arrays and skips null/false (replaceChildren would print "null").
 function put(el, ...kids) { el.replaceChildren(...kids.flat(Infinity).filter((k) => k != null && k !== false).map((k) => (k instanceof Node ? k : document.createTextNode(String(k))))); return el; }
-const safeUrl = (u) => (/^https?:\/\//i.test(String(u || '')) ? String(u) : null);
+// A working original link: http(s) and not a placeholder/test host (sample data used example.com links).
+const PLACEHOLDER_HOST = /(^|\.)(example\.(com|org|net)|example|test|invalid|localhost)$/i;
+const safeUrl = (u) => {
+  const str = String(u || '');
+  if (!/^https?:\/\//i.test(str)) return null;
+  try { const host = new URL(str).hostname; return PLACEHOLDER_HOST.test(host) || /^[\d.]+$|^\[/.test(host) ? null : str; } catch { return null; }
+};
 function extLink(url, text, cls) {
   const u = safeUrl(url);
   return u ? h('a', { href: u, target: '_blank', rel: 'noopener noreferrer', class: cls }, text, h('span', { class: 'sr-only' }, ' (opens in a new tab)')) : h('span', { class: cls }, text);
@@ -608,6 +614,28 @@ function draftPanel(ui) {
       h('p', { class: 'atext' }, h('span', { class: 'sr-only' }, `Research idea ${n}: `), a.text),
       h('div', { class: 'achal' }, h('span', { class: 'label' }, 'What would challenge it'), h('p', {}, a.whatWouldChallengeIt || 'not set')));
   });
+  // Selected investments no idea covers yet (a draft can group or skip one): offer the user's own extra idea.
+  const covered = new Set((d.assumptions || []).flatMap((a) => a.tickers || []));
+  const uncovered = (d.selectedAssets || []).map((a) => a.symbol).filter((x) => !covered.has(x));
+  const canAdd = ui.s.stage === 'reviewing' && (d.assumptions || []).length < 4;
+  let adder = null;
+  if (canAdd && ui.editing === 'new') {
+    const text = h('textarea', { rows: '3', maxlength: '400', 'aria-label': 'New research idea', placeholder: uncovered.length ? `For example, an idea about ${uncovered[0]}` : '' });
+    const chal = h('textarea', { rows: '2', maxlength: '400', 'aria-label': 'What would challenge the new idea' });
+    adder = h('li', { class: 'assumption editing' },
+      h('label', {}, h('span', { class: 'label' }, `Research idea ${(d.assumptions || []).length + 1} (your own)`), text),
+      h('label', {}, h('span', { class: 'label' }, 'What would challenge it (the news to watch for)'), chal),
+      h('div', { class: 'row' },
+        h('button', { class: 'btn primary', type: 'button', disabled: busy, onclick: async () => {
+          const out = await ui.act('addAssumption', { text: text.value.trim(), challenge: chal.value.trim() });
+          if (out) { ui.editing = null; ui.confirmChecked = false; ui.redraw(); }
+        } }, busy ? 'Saving…' : 'Add idea'),
+        h('button', { class: 'btn', type: 'button', disabled: busy, onclick: () => { ui.editing = null; ui.notice = null; ui.redraw(); } }, 'Cancel')));
+  } else if (canAdd && ui.editing == null) {
+    adder = h('li', { class: 'addidea' },
+      uncovered.length ? h('p', { class: 'quiet' }, `No research idea covers ${uncovered.join(', ')} yet.`) : null,
+      h('button', { class: 'btn small', type: 'button', disabled: busy, onclick: () => { ui.editing = 'new'; ui.notice = null; ui.redraw(); } }, '+ Add a research idea'));
+  }
   const check = h('input', { type: 'checkbox', id: 'confirmcheck', checked: ui.confirmChecked || null, disabled: busy || ui.editing != null, onchange: (e) => { ui.confirmChecked = e.target.checked; confirmBtn.disabled = busy || !ui.confirmChecked; } });
   const confirmBtn = h('button', { class: 'btn primary', type: 'button', disabled: busy || !ui.confirmChecked || ui.editing != null, onclick: () => ui.act('confirmAssumptions') }, busy ? 'Confirming…' : 'Confirm research ideas');
   const confirmedStage = ui.s.stage === 'confirmed';
@@ -618,7 +646,7 @@ function draftPanel(ui) {
     h('section', { class: 'card' },
       h('div', { class: 'cardtop' }, h('h2', { class: 'cardh' }, 'Research ideas to check against the news'), h('span', { class: 'quiet' }, `${(d.assumptions || []).length} ideas`)),
       h('p', { class: 'quiet' }, 'Each idea is something worth finding out, not a prediction. After you save, THESIS shows which news supports or challenges each one.'),
-      h('ol', { class: 'assumptions' }, list)),
+      h('ol', { class: 'assumptions' }, list, adder)),
     d.risks && d.risks.length ? h('section', { class: 'card risks' },
       h('div', { class: 'cardtop' }, h('h2', { class: 'cardh' }, 'Risks to keep in mind'), h('span', { class: 'quiet' }, `${d.risks.length}`)),
       riskList(d.risks)) : null,
@@ -658,6 +686,7 @@ async function renderWorkspace(root, live, id, tab, sub, query) {
       h('div', { class: 'wsstatus' }, h('span', { class: `pill ${monitoring ? 'on' : 'off'}` }, monitoring ? 'Following the news' : 'Monitoring paused'), toggle)),
     h('nav', { class: 'tabs wstabs', 'aria-label': 'Thesis sections' }, tabs.map(([key, label, suffix]) => h('a', { href: `#/thesis/${id}${suffix}`, class: 'tab', 'aria-current': tab === key ? 'page' : null }, label))),
     body);
+  if (tab === 'evidence' && sub) return renderEvidenceDetail(body, live, t, sub);
   if (tab === 'evidence') return renderEvidence(body, live, t, query);
   if (tab === 'chat') return renderChat(body, live, t, sub, query);
   return renderOverview(body, live, t, data);
@@ -720,19 +749,90 @@ async function renderEvidence(body, live, t, query) {
   const focus = query.get('focus');
   put(body, intro, [...groups.keys()].sort((a, b) => a - b).map((k) => h('section', { class: 'evgroup' },
     h('h2', { class: 'cardh' }, k >= 0 ? `Assumption ${k + 1}` : 'Other news', k >= 0 && assumptions[k] ? h('span', { class: 'quiet evassumption' }, assumptions[k].text) : null),
-    groups.get(k).map((m) => evidenceCard(t, m, m.matchId === focus)))));
+    groups.get(k).slice().sort((x, y) => (STANCE_ORDER[x.stance] ?? 3) - (STANCE_ORDER[y.stance] ?? 3)).map((m) => evidenceCard(t, m, m.matchId === focus)))));
   if (focus) { const el = document.getElementById(`ev-${focus}`); if (el) { el.scrollIntoView({ block: 'center' }); el.focus({ preventScroll: true }); } }
+}
+const STANCE_ORDER = { challenges: 0, supports: 1, neutral: 2 };
+const STANCE_LINE = { challenges: 'Challenges your assumption', supports: 'Supports your assumption', neutral: 'Neutral for your assumption' };
+const STANCE_Q = { challenges: 'Why does this article challenge my thesis?', supports: 'Why does this article support my thesis?', neutral: 'Why is this article neutral for my thesis?' };
+const evidenceHref = (t, m) => `#/thesis/${t.thesisId}/evidence/${encodeURIComponent(m.matchId)}`;
+const chatHref = (t, m) => `#/thesis/${t.thesisId}/chat/new?match=${encodeURIComponent(m.matchId)}&q=${encodeURIComponent(STANCE_Q[m.stance] || STANCE_Q.neutral)}`;
+const preparedPill = (a) => (a && a.prepared ? h('span', { class: 'pill prepared', title: 'Real published article saved as a snapshot for this demo. Not a live alert and not delivered by the daily news run.' }, 'Prepared real-news snapshot') : null);
+// The assumption a match was judged against: its saved wording, plus the current challenge text when unchanged.
+function judgedAssumption(t, m) {
+  const cur = Array.isArray(t.assumptions) && Number.isInteger(m.assumptionIndex) ? t.assumptions[m.assumptionIndex] : null;
+  const text = m.assumptionText || (cur && cur.text) || null;
+  return { number: Number.isInteger(m.assumptionIndex) ? m.assumptionIndex + 1 : null, text, challenge: cur && cur.text === text ? cur.whatWouldChallengeIt : null };
+}
+function sourceLine(a) {
+  return h('p', { class: 'quiet evsource' }, a.publisher || 'Unknown publisher', a.publishedAt ? [' · ', timeTag(a.publishedAt, 'published')] : null);
 }
 function evidenceCard(t, m, focused) {
   const a = m.article || {};
-  return h('article', { class: `card evcard${focused ? ' focused' : ''}`, id: `ev-${m.matchId}`, tabindex: '-1' },
-    h('div', { class: 'evtop' }, stanceChip(m.stance), a.ticker ? h('span', { class: 'assetchip' }, a.ticker) : null),
-    h('h3', { class: 'evheadline' }, extLink(a.url, a.headline || 'Untitled article')),
-    h('p', { class: 'quiet' }, a.publisher || 'Unknown publisher', a.publishedAt ? [' · ', timeTag(a.publishedAt, 'published')] : null),
-    a.summary ? h('p', { class: 'evsummary' }, a.summary) : h('p', { class: 'quiet' }, 'Only the headline is available for this article.'),
+  const j = judgedAssumption(t, m);
+  const open = () => { location.hash = evidenceHref(t, m); };
+  return h('article', { class: `card evcard ev-${m.stance || 'neutral'}${focused ? ' focused' : ''}`, id: `ev-${m.matchId}`, tabindex: '-1',
+    onclick: (e) => { if (!e.target.closest('a,button')) open(); } },
+    h('div', { class: 'evtop' }, stanceChip(m.stance), a.ticker ? h('span', { class: 'assetchip' }, a.ticker) : null, preparedPill(a)),
+    h('h3', { class: 'evheadline' }, h('a', { href: evidenceHref(t, m) }, a.headline || 'Untitled article')),
+    sourceLine(a),
+    j.text ? h('p', { class: 'evjudged' }, h('b', {}, `${STANCE_LINE[m.stance] || STANCE_LINE.neutral}${j.number ? ` ${j.number}` : ''}: `), h('q', {}, j.text)) : null,
     m.whyItMatters ? h('p', {}, h('b', {}, 'Why it matters: '), m.whyItMatters) : null,
-    h('p', { class: 'quiet small' }, m.unanalyzed ? 'Quick first-pass check (the AI was unavailable); it will be checked again.' : 'Checked by AI', ' · ', timeTag(m.assessedAt, 'assessed')),
-    h('div', { class: 'row' }, h('a', { class: 'btn small primary', href: `#/thesis/${t.thesisId}/chat/new?match=${encodeURIComponent(m.matchId)}` }, 'Investigate with AI'), safeUrl(a.url) ? extLink(a.url, 'Open original source', 'btn small') : null));
+    h('div', { class: 'row' },
+      h('a', { class: 'btn small primary', href: chatHref(t, m) }, 'Investigate in Research Chat'),
+      h('a', { class: 'btn small', href: evidenceHref(t, m) }, 'View details'),
+      safeUrl(a.url) ? extLink(a.url, 'Read original article', 'btn small') : h('span', { class: 'quiet small' }, 'No original link for this article')));
+}
+
+async function renderEvidenceDetail(body, live, t, matchId) {
+  put(body, loading('Opening the article…'));
+  let matches;
+  try { matches = (await api('GET', `/theses/${t.thesisId}/matches`)).body; } catch (err) { if (live()) put(body, errorBox(err, render)); return; }
+  if (!live()) return;
+  const m = matches.find((x) => x.matchId === matchId);
+  const back = h('p', { class: 'crumbs' }, h('a', { href: `#/thesis/${t.thesisId}/evidence` }, '← All news evidence'));
+  if (!m) { put(body, back, statebox(['That news item was not found for this thesis.'])); return; }
+  const a = m.article || {};
+  const j = judgedAssumption(t, m);
+  const others = h('div', {});
+  put(body, back, h('article', { class: `card evdetail ev-${m.stance || 'neutral'}` },
+    h('div', { class: 'evtop' }, stanceChip(m.stance), a.ticker ? h('span', { class: 'assetchip' }, a.ticker) : null, preparedPill(a)),
+    h('h2', { class: 'evheadline' }, a.headline || 'Untitled article'),
+    sourceLine(a),
+    j.text ? h('div', { class: 'evassume' },
+      h('p', { class: 'label' }, `Evaluated against your assumption${j.number ? ` ${j.number}` : ''}`),
+      h('p', {}, h('q', {}, j.text)),
+      j.challenge ? h('p', { class: 'quiet' }, h('b', {}, 'What would challenge it: '), j.challenge) : null) : null,
+    h('p', { class: 'evverdict' }, h('b', {}, `${STANCE_LINE[m.stance] || STANCE_LINE.neutral}. `), m.whyItMatters || ''),
+    a.summary ? h('div', {}, h('p', { class: 'label' }, 'What the article reports'), h('p', { class: 'evsummary' }, a.summary)) : h('p', { class: 'quiet' }, 'Only the headline is available for this article.'),
+    h('p', { class: 'quiet small' }, 'THESIS read the headline and a short summary, not the full article. ',
+      m.unanalyzed ? 'Quick first-pass check (the AI was unavailable).' : 'Assessed by AI against this thesis', ' · ', timeTag(m.assessedAt, 'assessed'),
+      a.prepared ? ' · Real published article saved as a snapshot for this demo, not a live alert.' : null),
+    h('div', { class: 'row' },
+      h('a', { class: 'btn primary', href: chatHref(t, m) }, `Ask Research Chat: “${STANCE_Q[m.stance] || STANCE_Q.neutral}”`),
+      safeUrl(a.url) ? extLink(a.url, 'Read original article', 'btn') : h('span', { class: 'quiet' }, 'No original link is available for this article.'))),
+  others);
+  // The same article in this user's other theses: one article, a separate judgement per thesis.
+  try {
+    const list = (await api('GET', '/theses')).body.filter((x) => x.thesisId !== t.thesisId);
+    const found = [];
+    for (const x of list) {
+      const ms = (await api('GET', `/theses/${x.thesisId}/matches`)).body.filter((y) => y.articleId === m.articleId);
+      for (const y of ms) found.push({ x, y });
+    }
+    if (!live() || !found.length) return;
+    put(others, h('section', { class: 'card evothers' },
+      h('h2', { class: 'cardh' }, 'Same article in your other theses'),
+      h('p', { class: 'quiet' }, 'The same news can mean different things for different research ideas. Each thesis is assessed on its own assumptions.'),
+      h('ul', { class: 'evotherlist' }, found.map(({ x, y }) => {
+        const jj = judgedAssumption(x, y);
+        return h('li', { class: `ev-${y.stance || 'neutral'}` },
+          h('div', { class: 'evtop' }, stanceChip(y.stance), h('b', {}, x.goal || 'Untitled thesis')),
+          jj.text ? h('p', { class: 'evjudged' }, h('b', {}, `${STANCE_LINE[y.stance] || STANCE_LINE.neutral}${jj.number ? ` ${jj.number}` : ''}: `), h('q', {}, jj.text)) : null,
+          y.whyItMatters ? h('p', {}, y.whyItMatters) : null,
+          h('a', { class: 'btn small', href: evidenceHref(x, y) }, 'Open in that thesis'));
+      }))));
+  } catch { /* the comparison is optional */ }
 }
 
 // ---------- Research chat ----------
@@ -774,7 +874,8 @@ async function renderChat(body, live, t, convId, query) {
     if (!focus) { put(main, statebox(['That news item was not found for this thesis.'], { action: h('a', { class: 'btn', href: `#/thesis/${t.thesisId}/evidence` }, 'Back to evidence') })); return; }
   }
   if (!convId && convs.length) { location.replace(`#/thesis/${t.thesisId}/chat/${convs[0].conversationId}`); return; }
-  drawConversation(main, live, t, { conversationId: null, matchId, focus, messages: [] });
+  const prefill = matchId ? (query.get('q') || '').slice(0, 300) : '';
+  drawConversation(main, live, t, { conversationId: null, matchId, focus, messages: [], prefill });
 }
 
 async function openConversation(main, live, t, convId) {
@@ -791,7 +892,7 @@ async function openConversation(main, live, t, convId) {
 }
 
 function drawConversation(main, live, t, conv) {
-  const state = { sending: false, pending: null, error: null };
+  const state = { sending: false, pending: null, error: null, draft: conv.prefill || '' };
   const isInvestigation = Boolean(conv.matchId);
   const draw = () => {
     const last = [...conv.messages].reverse().find((m) => m.role === 'assistant');
