@@ -64,10 +64,22 @@ const ctx = {};
 test('1.1 app.html, app.js and app.css are served; the page keeps the disclaimer and the original site is linked', async () => {
   const page = await call('GET', '/app.html');
   assert.strictEqual(page.status, 200);
-  for (const s of ['/app.js', '/app.css', '/styles.css', 'Educational research, not investment advice.', 'THESIS', 'href="/"', 'href="/portfolio.html"']) assert(page.text.includes(s), s);
+  for (const s of ['/app.js', '/app.css', '/styles.css', 'Educational research, not investment advice.', 'THESIS', 'href="/"', 'href="#/portfolio"', 'href="#/feed"', '/sections/legacy-host.js']) assert(page.text.includes(s), s);
+  assert(!/href="#\/explore"|>Practice</.test(page.text), 'Explore and Practice are no longer top-level tabs');
   const js = await call('GET', '/app.js'); const css = await call('GET', '/app.css');
   assert(js.status === 200 && /javascript/.test(js.headers.get('content-type')) && css.status === 200 && /css/.test(css.headers.get('content-type')));
   new vm.Script(read('public/app.js'), { filename: 'app.js' }); // parses
+});
+
+test('1.1b Portfolio and Feed sections: adapter served, and it points at the unchanged teammate pages', async () => {
+  for (const f of ['/sections/legacy-host.js', '/sections/legacy-embed.css']) assert.strictEqual((await call('GET', f)).status, 200, f);
+  const sandbox = { window: {}, document: {}, location: {} };
+  new vm.Script(read('public/sections/legacy-host.js')).runInNewContext(sandbox);
+  const { SECTIONS } = sandbox.window.LegacySections;
+  assert.deepStrictEqual(Object.keys(SECTIONS).sort(), ['feed', 'portfolio']);
+  for (const k of Object.keys(SECTIONS)) assert.strictEqual((await call('GET', SECTIONS[k].src)).status, 200, SECTIONS[k].src);
+  assert(/virtual money/i.test(SECTIONS.portfolio.pill) && /not recommendations/i.test(SECTIONS.feed.pill));
+  assert(/'portfolio'|"portfolio"/.test(read('public/app.js')) && read('public/app.js').includes('LegacySections.mount'), 'router mounts the sections');
 });
 
 test('1.2 every /api/v2 call in app.js matches a route in server/routes/v2.js', async () => {

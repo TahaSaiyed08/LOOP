@@ -19,13 +19,25 @@ open http://localhost:3000/app.html
 | `#/thesis/:id` | **Workspace overview**: goal, contribution, time frame, chosen investments (explained), confirmed assumptions, risks, alerts, recent activity, pause/resume monitoring |
 | `#/thesis/:id/evidence` | **News evidence** grouped by assumption: stance, why it matters, publisher, published and assessed times, original link, "Investigate with AI" |
 | `#/thesis/:id/chat[/:conversationId]` | **Research chat**: general or article investigation (`/chat/new?match=…`), clickable `[n]` citations that jump to source cards with links to the evidence, follow-up chips, conversation history |
-| `#/explore` | Taha's ranked feed (Contract B) with beginner explanations, scores and the council's case for and against |
-| `/portfolio.html` | Dianne's paper portfolio ("Practice"), unchanged |
+| `#/portfolio` | **Portfolio** tab: Dianne's paper portfolio (`portfolio.html/js/css`, unchanged) hosted inside THESIS, labelled virtual money |
+| `#/feed` | **Feed** tab: Anne's feed (`index.html` + `feed.js`, unchanged) hosted inside THESIS, including paper Buy |
+| `#/explore` | Older THESIS view of the ranked list; still reachable, no longer in the nav. Explore & Learn inside New Thesis is separate and unchanged |
 
 ## Data rules
 - **The server is the source of truth.** The browser stores only `thesis.userId` (a demo id, **not a login**) and the Explore risk-level choice. Theses, sessions, evidence and chats always come from `/api/v2`.
 - **Unknown id:** if the stored id is unknown to the database, the app creates a new demo profile. `?user=usr_…` in the URL adopts an existing id (e.g. on another device).
 - **Conflicts:** session actions send `expectedVersion`. A 409 reloads the latest version.
+
+## Portfolio and Feed sections (for teammates)
+The top nav is **My Theses | Portfolio | Feed**. Portfolio and Feed are the original pages, each loaded unchanged in a same-origin frame by `public/sections/legacy-host.js`. The adapter:
+- hides their own header and footer (`public/sections/legacy-embed.css`, loaded only inside the frame);
+- sizes the frame to its content, so there is one page scroll;
+- keeps the Feed's detail panel in view;
+- sends internal links (`/`, `/portfolio.html`, `/thesis.html`) to THESIS routes, and opens external links in a new tab.
+
+It also skips the Feed's email/passcode screen by calling the page's own `showDash()`. No account, email or thesis is written, and the Feed's risk-level picker stays its filter.
+
+**To update a section:** keep editing `index.html`/`feed.js`/`styles.css` or `portfolio.*` as before; THESIS shows the new version automatically. If a page is renamed, change its `src` in `SECTIONS` at the top of `legacy-host.js`. The standalone pages (`/`, `/portfolio.html`) still work as a fallback.
 
 ## Known limitation: contribution amounts are single values
 Onboarding stores one contribution amount (`profile.amount`, plus `cadence`). If the user says a range ("$50 to $100 a month"), only one number is kept and the range is lost. Risk comfort is likewise one value. Only the time frame keeps the user's wording (`profileDetails.timelineText`, e.g. "2–3 years"). The Research Chat is told these details may be approximate and to say "about", but it cannot recover a range that was never stored. Changing this needs an onboarding schema change, which is not planned yet.

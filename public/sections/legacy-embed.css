@@ -1,0 +1,18 @@
+/* Loaded ONLY inside the THESIS section frames (public/sections/legacy-host.js). Teammate files are not edited:
+   this hides their site chrome and lines their content up with the THESIS shell. Standalone pages are unaffected. */
+html.in-thesis { background: transparent; }
+html.in-thesis body { min-height: 0 !important; min-block-size: 0 !important; background: transparent !important; overflow: hidden; }
+html.in-thesis .sitebar, html.in-thesis .sitefoot, html.in-thesis #profileAvatar { display: none !important; }
+
+/* Feed: the THESIS section header already titles the page; keep the legacy content edge to edge. */
+html.in-thesis .shell { max-width: none; padding-left: 0; padding-right: 0; }
+html.in-thesis .dashboard { padding-bottom: 24px; }
+html.in-thesis .dashhead h1 { display: none; }
+html.in-thesis .dashhead { margin-top: 0; padding-top: 0; }
+
+/* Portfolio: THESIS supplies the title and gutters. */
+html.in-thesis .portfolio { max-inline-size: none; padding: 0 0 24px; }
+html.in-thesis .portfolio-header h1 { display: none; }
+html.in-thesis .portfolio-header { display: flex; justify-content: flex-end; margin-block-end: -44px; pointer-events: none; }
+html.in-thesis .portfolio-avatar { pointer-events: auto; transform: scale(.7); transform-origin: right bottom; }
+html.in-thesis #portfolio-status, html.in-thesis #portfolio-demo { min-height: 44px; margin-top: 0; padding-right: 90px; }

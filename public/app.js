@@ -150,12 +150,18 @@ async function render() {
   const live = () => token === renderToken;
   const { parts, query } = parseRoute();
   const root = view();
+  document.body.classList.remove('section-embed');
   try {
     if (!parts.length) { setNav('home'); return await renderHome(root, live); }
     if (parts[0] === 'new') { setNav('home'); return renderNew(root); }
     if (parts[0] === 'create' && ID_RE.test(parts[1] || '')) { setNav('home'); return await renderCreate(root, live, parts[1]); }
     if (parts[0] === 'thesis' && ID_RE.test(parts[1] || '')) { setNav('home'); return await renderWorkspace(root, live, parts[1], parts[2] || 'overview', parts[3] || null, query); }
-    if (parts[0] === 'explore') { setNav('explore'); return await renderExplore(root, live); }
+    if (parts[0] === 'explore') { setNav(null); return await renderExplore(root, live); }
+    if (parts[0] === 'portfolio' || parts[0] === 'feed') { // teammate sections, hosted unchanged (public/sections/)
+      setNav(parts[0]); setTitle(parts[0] === 'feed' ? 'Feed' : 'Paper portfolio');
+      document.body.classList.add('section-embed');
+      return window.LegacySections.mount(root, parts[0]);
+    }
     setNav(null);
     put(root, statebox(['This page does not exist.'], { action: h('a', { class: 'btn', href: '#/' }, 'Go to my theses') }));
   } catch (err) {
@@ -183,7 +189,7 @@ async function renderHome(root, live) {
       h('p', { class: 'lead' }, 'THESIS listens to your goal, helps you explore investments, turns your choices into a few personal research ideas, and then follows the news against each one, with sources you can open.'),
       h('div', { class: 'hero-actions' },
         h('a', { class: 'btn primary', href: '#/new' }, 'Create a new thesis'),
-        h('a', { class: 'btn', href: '#/explore' }, 'Explore market candidates'))),
+        h('a', { class: 'btn', href: '#/feed' }, 'Browse the market feed'))),
     h('ol', { class: 'howitworks', 'aria-label': 'How it works' },
       h('li', {}, h('b', {}, 'Talk'), h('span', {}, 'Tell us your goal in your own words. No long forms.')),
       h('li', {}, h('b', {}, 'Choose'), h('span', {}, 'Explore investments explained simply, and pick the ones you want to research.')),
@@ -886,7 +892,7 @@ async function renderExplore(root, live) {
       h('p', { class: 'eyebrow' }, 'Explore'),
       h('h1', {}, 'Market candidates'),
       h('p', { class: 'lead' }, 'A daily list ranked by a fixed scoring model (no AI decides the ranking). An AI council then writes a plain-language case for and against each one. These are candidates to research, not recommendations.'),
-      h('div', { class: 'row' }, h('a', { class: 'btn primary', href: '#/new' }, 'Research one in a new thesis'), h('a', { class: 'btn', href: '/portfolio.html' }, 'Practice with paper money'))),
+      h('div', { class: 'row' }, h('a', { class: 'btn primary', href: '#/new' }, 'Research one in a new thesis'), h('a', { class: 'btn', href: '#/portfolio' }, 'Open paper portfolio'))),
     h('div', { class: 'tierbar', role: 'group', 'aria-label': 'Risk level of the list' }, Object.entries(TIER_LABEL).map(([k, label]) => h('button', { class: `chip${k === tier ? ' on' : ''}`, type: 'button', 'aria-pressed': String(k === tier), onclick: () => { store.set(EXPLORE_TIER_KEY, k); render(); } }, label))),
     prov, listBox);
   let rows; let source; let health = null;

@@ -285,3 +285,14 @@ a.card:hover { border-color: #77745d; }
   .bubble { max-width: 100%; }
   .row.spread .btn { width: 100%; }
 }
+
+/* ---------- Portfolio and Feed sections (teammate pages hosted by public/sections/legacy-host.js) ---------- */
+.sectionhost { display: flex; flex-direction: column; gap: 14px; }
+.sectionhead { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+.sectionhead h1 { margin-bottom: 6px; }
+.sectionhead .lead { margin: 0; max-width: 72ch; color: var(--muted); }
+.sectionpill { border: 1px solid #756b3d; background: #302b18; color: var(--gold); border-radius: 999px; padding: 6px 12px; font-size: .82rem; font-weight: 650; white-space: nowrap; }
+.sectionframe { display: block; width: 100%; min-height: 320px; border: 0; background: transparent; color-scheme: dark; }
+.sectionstatus { margin: 8px 0; }
+.section-embed .app-view { padding-bottom: 0; }
+@media (max-width: 640px) { .sectionpill { white-space: normal; } .sectionhead { padding-bottom: 12px; } }
