@@ -83,4 +83,9 @@ assert(sig({ priceChange5dPct: null, avgVolume: null }) >= 0, 'null momentum/vol
   assert.deepStrictEqual(tags, ['supports', 'challenges', 'neutral'], 'sentiment maps to stance');
 }
 
+{ // Contract A: news summary survives validateSeed
+  const { validateSeed } = require('../server/feed');
+  const v = validateSeed({ stocks: [{ ticker: 'VOO', category: 'index_etf', price: 1, news: [{ headline: 'h', summary: '  a summary  ' }, { headline: 'g' }] }] });
+  assert.strictEqual(v.stocks[0].news[0].summary, 'a summary'); assert.strictEqual(v.stocks[0].news[1].summary, null);
+}
 console.log('\nOK: components 0-20, sums match, deterministic, riskFit floor, top-10-or-fewer, spread >= 12, tiers reorder, tiebreak, beta gate, signal inputs.');

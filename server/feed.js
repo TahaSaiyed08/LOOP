@@ -45,7 +45,7 @@ function validateSeed(body) {
       news: (Array.isArray(s.news) ? s.news : [])
         .filter((n) => n && typeof n.headline === 'string' && n.headline)
         .slice(0, 10)
-        .map((n) => ({ headline: n.headline, source: n.source || null, url: n.url || null, sentiment: numOrNull(n.sentiment), datetime: n.datetime || null })),
+        .map((n) => ({ headline: n.headline, summary: typeof n.summary === 'string' && n.summary.trim() ? n.summary.trim().slice(0, 1000) : null, source: n.source || null, url: n.url || null, sentiment: numOrNull(n.sentiment), datetime: n.datetime || null })),
     });
   }
   const runDate = typeof body.runDate === 'string' ? body.runDate : new Date().toISOString().slice(0, 10);

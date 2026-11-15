@@ -77,6 +77,23 @@ app.get('/api/stocks', (req, res) => {
 
 // Contract C: thesis (engine is Vamsi's; server/thesis.js is a stub until his file lands)
 app.post('/api/thesis', async (req, res) => {
+  // Two ways in. { session }: persist the user-confirmed thesis from the onboarding session exactly as Vamsi's
+  // getConfirmedThesis(session) returns it (selectedAssets, assumptions, assumptionDetails included).
+  // { goalsText }: build a plain Contract C thesis from free text.
+  if (req.body && req.body.session && typeof req.body.session === 'object') {
+    try {
+      const confirmed = thesisEngine.getConfirmedThesis(req.body.session);
+      if (!confirmed) return res.status(409).json({ error: 'no confirmed thesis in this session; confirm the assumptions first' });
+      if (!TIERS.includes(confirmed.tier) || !Array.isArray(confirmed.assumptions)) return res.status(502).json({ error: 'confirmed thesis is invalid' });
+      store.set('thesis', confirmed);
+      store.set('thesisMatches', []);
+      pipeline.refreshThesisMatches();
+      return res.json(confirmed);
+    } catch (err) {
+      console.warn('[thesis/session]', err.message);
+      return res.status(400).json({ error: 'could not read the onboarding session' });
+    }
+  }
   const goalsText = req.body && typeof req.body.goalsText === 'string' ? req.body.goalsText.trim() : '';
   if (!goalsText || goalsText.length > 2000) return res.status(400).json({ error: 'goalsText is required (max 2000 characters)' });
   try {
@@ -143,6 +160,21 @@ app.post('/api/admin/reset-notify', (req, res) => {
   store.set('notifyLastSentDate', null);
   console.log(`[admin] reset-notify (was ${previous})`);
   res.json({ ok: true, previous });
+});
+
+// Admin: trigger the n8n daily workflow from the UI without exposing its URL to the browser.
+// Guarded by x-webhook-secret. Returns immediately; the workflow posts its seed to /api/webhook/seed when done.
+app.post('/api/admin/run-pipeline', async (req, res) => {
+  if (!process.env.INBOUND_WEBHOOK_SECRET) return res.status(503).json({ error: 'INBOUND_WEBHOOK_SECRET is not configured on the server' });
+  if (!secretOk(req)) return res.status(401).json({ error: 'bad or missing x-webhook-secret' });
+  const url = process.env.N8N_RUN_WEBHOOK_URL;
+  if (!url) return res.status(503).json({ error: 'N8N_RUN_WEBHOOK_URL is not set on the server, so the pipeline cannot be started from here' });
+  // Fire and forget: n8n's webhook may not answer until the whole workflow finishes (about 2 minutes).
+  fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ source: 'loop-admin', requestedAt: new Date().toISOString() }) })
+    .then((r) => { if (!r.ok) console.warn(`[admin] run-pipeline: n8n answered HTTP ${r.status}`); })
+    .catch((err) => console.warn('[admin] run-pipeline: could not reach n8n:', err.message));
+  console.log('[admin] run-pipeline requested');
+  res.status(202).json({ ok: true, started: true, previousRunDate: (store.get('feed') || {}).runDate || null });
 });
 
 app.use(express.static(path.join(__dirname, '..', 'public')));

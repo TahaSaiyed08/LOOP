@@ -60,7 +60,7 @@ async function news(sym, name, stockLike) {
   const from = new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10);
   const items = await finnhub('/company-news', { symbol: sym, from, to });
   return (Array.isArray(items) ? items : []).filter((n) => !stockLike || isRelevantNews(n.headline, sym, name)).slice(0, 3).map((n) => ({
-    headline: n.headline, source: n.source, url: n.url, sentiment: null,
+    headline: n.headline, summary: typeof n.summary === 'string' && n.summary.trim() ? n.summary.trim().slice(0, 1000) : null, source: n.source, url: n.url, sentiment: null,
     datetime: new Date((n.datetime || 0) * 1000).toISOString(),
   }));
 }

@@ -8,7 +8,8 @@ delete process.env.GEMINI_API_KEY;
 delete process.env.GEMINI_MODEL;
 delete process.env.FALLBACK_GEMINI_MODEL;
 const thesis = require('../server/thesis');
-const { createOnboardingSession, exploreInvestments, selectAssets, confirmSelection, createThesisDraft, onboardingTurn, _draft } = thesis;
+const { createOnboardingSession, exploreInvestments, selectAssets, confirmSelection, createThesisDraft, onboardingTurn, _draft,
+  viewAssumptions, editAssumption, editChallenge, suggestChallenge, addAssumption, removeAssumption, regenerateAssumptions, confirmAssumptions, getConfirmedThesis, matchNewsDetailed } = thesis;
 const UNIVERSE = require('./universe');
 const { TIERS } = require('../server/scoring');
 
@@ -292,12 +293,215 @@ function assertDraftContract(r) {
   await test('17. existing exports unchanged: createThesis / matchNews / IS_STUB / onboardingTurn', async () => {
     const t = await thesis.createThesis('anything');
     assert.deepStrictEqual(Object.keys(t).sort(), ['assumptions', 'budget', 'createdAt', 'goal', 'horizonYears', 'id', 'tier'].sort());
+    // matchNews is now the real engine: with no Gemini key it is conservative and never returns "challenges".
     const m = await thesis.matchNews(t, [{ ticker: 'VOO', headline: 'h', url: 'u', sentiment: -0.5 }]);
-    assert.deepStrictEqual(m, [], 'matchNews degrades to no matches without an LLM');
+    assert(Array.isArray(m) && m.every((x) => x.stance !== 'challenges'));
     assert.strictEqual(thesis.IS_STUB, false);
     assert.strictEqual(typeof onboardingTurn, 'function');
     const old = { history: [], profile: nulls, askedFields: [], activeFlow: null, tickers: [], lastQuestionField: null }; // pre-feature session
     assert.deepStrictEqual(selectAssets('VOO', old).session.selection, { pending: ['VOO'], confirmed: [] }, 'old sessions still work');
+  });
+
+
+  console.log('--- assumption review: accept, edit, regenerate, confirm');
+  const drafted = async (syms = 'VOO, NVDA') => (await createThesisDraft(confirmed(syms), { callLLM: fakeLLM([goodDraft()]) })).session;
+
+  await test('18. a new draft is only PROPOSED: not confirmed, not usable for news matching', async () => {
+    const s = await drafted();
+    assert.strictEqual(s.thesisDraft.status, 'proposed');
+    assert.strictEqual(s.thesisDraft.draft.assumptionStatus, 'proposed');
+    assert.strictEqual(getConfirmedThesis(s), null);
+    const v = viewAssumptions(s);
+    assert(/Proposed assumptions \(not confirmed yet\)/.test(v.displayText));
+    assert(/Could be challenged by:/.test(v.displayText) && /\[VOO\]/.test(v.displayText));
+    const m = await matchNewsDetailed(s.thesisDraft.draft, [{ ticker: 'VOO', headline: 'S&P 500 earnings fall', url: 'https://example.com/a' }], { callLLM: fakeLLM([]) });
+    assert.strictEqual(m.stats.reason, 'assumptions_not_confirmed');
+    assert.strictEqual(viewAssumptions(createOnboardingSession()).reason, 'no_draft');
+  });
+
+  await test('19. edit in your own words: replaces text, keeps tickers (and criteria only when the user says keep), keeps profile and assets', async () => {
+    const s = await drafted();
+    const before = s.thesisDraft.draft;
+    const r = editAssumption(s, 2, 'AI chip demand from cloud companies keeps growing for the next couple of years.', null, { keepChallenge: true });
+    assert(r.ok, r.displayText);
+    const a = r.session.thesisDraft.draft.assumptionDetails[1];
+    assert.strictEqual(a.text, 'AI chip demand from cloud companies keeps growing for the next couple of years.');
+    assert.deepStrictEqual(a.tickers, ['NVDA'], 'no ticker named: keeps the original assumption\'s asset');
+    assert.strictEqual(a.whatWouldChallengeIt, before.assumptionDetails[1].whatWouldChallengeIt);
+    assert.strictEqual(a.origin, 'user');
+    assert.strictEqual(r.session.thesisDraft.draft.assumptions[1], a.text, 'Contract C strings stay in sync');
+    assert.deepStrictEqual(r.session.thesisDraft.draft.selectedAssets, before.selectedAssets);
+    assert.deepStrictEqual(r.session.thesisDraft.draft.profileSnapshot, before.profileSnapshot);
+    assert.deepStrictEqual(r.session.profile, s.profile);
+    const withChallenge = editAssumption(r.session, 1, 'VOO companies keep growing earnings across most sectors.', 'Several quarters of falling S&P 500 earnings.');
+    assert.strictEqual(withChallenge.session.thesisDraft.draft.assumptionDetails[0].whatWouldChallengeIt, 'Several quarters of falling S&P 500 earnings.');
+  });
+
+  await test('20. invalid edits are rejected and change nothing', async () => {
+    const s = await drafted();
+    const cases = [
+      ['Buy more NVDA whenever it dips below its average.', /can't tell anyone to buy/],
+      ['NVDA is a safe investment for the next two years.', /safe/],
+      ['Apple keeps growing iPhone sales in China.', /AAPL isn't one of this thesis's selected investments/],
+      ['Stocks go up', /full sentence/],
+      ['I\'ll track NVDA and alert me when demand slows down.', /can't tell anyone/],
+    ];
+    for (const [text, re] of cases) {
+      const r = editAssumption(s, 1, text);
+      assert.strictEqual(r.ok, false, `accepted: ${text}`);
+      assert(re.test(r.displayText), `${text} -> ${r.displayText}`);
+      assert.deepStrictEqual(r.session.thesisDraft, s.thesisDraft, 'draft must be unchanged');
+    }
+    assert.strictEqual(editAssumption(s, 9, 'Valid text about VOO earnings growth.').reason, 'bad_index');
+    assert.strictEqual(addAssumption(s, 'VOO earnings keep growing every single year.').ok, false, 'a new assumption needs its challenge evidence');
+  });
+
+  await test('21. keep 2-4: add up to 4, remove down to 2', async () => {
+    let s = await drafted();
+    s = addAssumption(s, 'VOO dividends keep rising slowly over time.', 'Dividend cuts across large S&P 500 companies.').session;
+    s = addAssumption(s, 'NVDA keeps its lead in AI chips against rivals.', 'Rivals winning large AI chip contracts from NVIDIA customers.').session;
+    assert.strictEqual(s.thesisDraft.draft.assumptionDetails.length, 4);
+    assert.strictEqual(addAssumption(s, 'VOO keeps tracking the US market closely.', 'Tracking error news.').reason, 'too_many');
+    s = removeAssumption(s, 4).session;
+    s = removeAssumption(s, 3).session;
+    assert.strictEqual(removeAssumption(s, 1).reason, 'too_few');
+  });
+
+  await test('22. regenerate: new proposals for the same assets/profile; failure leaves them unchanged', async () => {
+    const s = await drafted();
+    const alt = { assumptions: [
+      { text: 'Profit margins of the large companies in VOO stay near current levels.', tickers: ['VOO'], whatWouldChallengeIt: 'Widespread margin compression in earnings reports.' },
+      { text: 'Cloud providers keep raising AI capital spending that flows to NVIDIA.', tickers: ['NVDA'], whatWouldChallengeIt: 'Cloud providers cutting capital expenditure plans.' },
+    ] };
+    const llm = fakeLLM([alt]);
+    const r = await regenerateAssumptions(s, { callLLM: llm });
+    assert(r.ok, r.displayText);
+    assert.deepStrictEqual(r.session.thesisDraft.draft.assumptions, alt.assumptions.map((a) => a.text));
+    assert.strictEqual(r.session.thesisDraft.status, 'proposed');
+    assert(llm.calls[0].user.includes('PREVIOUS ASSUMPTIONS'), 'previous assumptions must be sent so new ones differ');
+    assert(llm.calls[0].user.includes(s.thesisDraft.draft.assumptions[0]));
+    assert.deepStrictEqual(r.session.thesisDraft.draft.selectedAssets, s.thesisDraft.draft.selectedAssets);
+    assert.deepStrictEqual(r.session.thesisDraft.draft.budget, s.thesisDraft.draft.budget);
+    const same = await regenerateAssumptions(s, { callLLM: fakeLLM([{ assumptions: s.thesisDraft.draft.assumptionDetails }]) });
+    assert.strictEqual(same.ok, false, 'identical assumptions are not "new"');
+    const down = await regenerateAssumptions(s, { callLLM: fakeLLM([mkErr('LLM_HTTP', 'LLM HTTP 400: bad')]) });
+    assert.strictEqual(down.ok, false);
+    assert.deepStrictEqual(down.session.thesisDraft, s.thesisDraft, 'unchanged on failure');
+  });
+
+  await test('23. explicit confirmation; editing after confirmation invalidates it', async () => {
+    const s = await drafted();
+    const c = confirmAssumptions(s);
+    assert(c.ok && c.status === 'confirmed', c.displayText);
+    assert.strictEqual(c.session.thesisDraft.status, 'confirmed');
+    assert(typeof c.session.thesisDraft.confirmedAt === 'string');
+    const t = getConfirmedThesis(c.session);
+    assert.strictEqual(t.assumptionStatus, 'confirmed');
+    assert.deepStrictEqual(t.assumptions, s.thesisDraft.draft.assumptions);
+    assert.strictEqual(t.status, 'draft', 'confirmed assumptions, but the thesis itself is still an unsaved draft');
+    assert(/Nothing has been saved, monitored or emailed/.test(c.displayText));
+    const e = editAssumption(c.session, 1, 'VOO companies keep growing earnings across most sectors.', 'Several quarters of falling S&P 500 earnings.');
+    assert.strictEqual(e.confirmationCleared, true);
+    assert.strictEqual(e.session.thesisDraft.status, 'proposed');
+    assert.strictEqual(getConfirmedThesis(e.session), null);
+    assert(/confirmation was cleared/.test(e.displayText));
+    const again = confirmAssumptions(e.session);
+    assert.strictEqual(getConfirmedThesis(again.session).assumptions[0], 'VOO companies keep growing earnings across most sectors.');
+    const redraft = await createThesisDraft(again.session, { callLLM: fakeLLM([goodDraft()]) });
+    assert.strictEqual(redraft.session.thesisDraft.status, 'proposed', 'a fresh draft needs a fresh confirmation');
+  });
+
+
+  console.log('--- regression: JSON parsing, backup on malformed replies, diagnostics, challenge criteria');
+  const { extractJson } = thesis._onboarding;
+
+  await test('24. JSON extraction tolerates fences, prose (even with braces) and trailing commas; reports cut-off replies', async () => {
+    assert.deepStrictEqual(extractJson('```json\n{"a":1}\n```').obj, { a: 1 });
+    assert.deepStrictEqual(extractJson('Here you go: {"a":"x}y"} Note: {this} is prose.').obj, { a: 'x}y' });
+    assert.deepStrictEqual(extractJson('{"a":[1,2,],}').obj, { a: [1, 2] });
+    assert(/cut off/.test(extractJson('{"goal":"Build wealth","assumptions":[{"text":"VOO').error));
+    assert(/no JSON object/.test(extractJson('Sorry, I cannot.').error));
+    const r = await createThesisDraft(confirmed('VOO, NVDA'), { callLLM: fakeLLM([JSON.stringify(goodDraft()) + '\nNote: {assumptions} are educational.']) });
+    assert.strictEqual(r.source, 'gemini', `trailing prose with braces must not cause a fallback: ${r.fallbackReason}`);
+  });
+
+  await test('25. malformed reply from the primary model -> backup model is tried (draft, exploration, onboarding)', async () => {
+    Object.assign(process.env, { GEMINI_MODEL: 'primary-m', FALLBACK_GEMINI_MODEL: 'backup-m' });
+    try {
+      const models = [];
+      const llm = async (s, u, o) => { models.push(o.model); return o.model === 'primary-m' ? 'Here is your draft: "goal": "Build wealth"' : JSON.stringify(goodDraft()); };
+      const r = await createThesisDraft(confirmed('VOO, NVDA'), { callLLM: llm });
+      assert.deepStrictEqual(models, ['primary-m', 'backup-m']);
+      assert.strictEqual(r.source, 'gemini');
+      assert.strictEqual(r.model, 'backup-m');
+      assert(/primary-m: malformed JSON/.test(r.diagnostics.attempts[0]) && r.diagnostics.attempts[1] === 'backup-m: ok', r.diagnostics.attempts.join(' | '));
+      const both = await createThesisDraft(confirmed('VOO, NVDA'), { callLLM: async () => '{"goal": "Build wealth", "assumptions": [' });
+      assert.strictEqual(both.source, 'fallback');
+      assert(/primary-m: malformed JSON .*cut off.*; backup-m: malformed JSON/.test(both.fallbackReason), both.fallbackReason);
+      const ex = []; await exploreInvestments(profileSession(), { callLLM: async (s, u, o) => { ex.push(o.model); return o.model === 'primary-m' ? 'nope' : '{"intro":"Here is an overview. The choice is yours."}'; } });
+      assert.deepStrictEqual(ex, ['primary-m', 'backup-m']);
+      const ob = []; const turn = await onboardingTurn('What is an ETF?', null, { callLLM: async (s, u, o) => { ob.push(o.model); return o.model === 'primary-m' ? '{"intent":"learning"}' : JSON.stringify({ intent: 'learning', reply: 'An ETF is a basket of investments.', profileUpdates: {}, tickers: [], ambiguities: [], nextQuestion: null }); } });
+      assert.deepStrictEqual(ob, ['primary-m', 'backup-m'], 'wrong-shape onboarding JSON also tries the backup');
+      assert.strictEqual(turn.model, 'backup-m');
+    } finally { delete process.env.GEMINI_MODEL; delete process.env.FALLBACK_GEMINI_MODEL; }
+    const single = []; await createThesisDraft(confirmed('VOO'), { callLLM: async (s, u, o) => { single.push(o.model); return 'nope'; } });
+    assert.strictEqual(single.length, 1, 'no backup configured -> one attempt');
+  });
+
+  await test('26. valid JSON whose assumptions all fail validation is reported as such, with reasons', async () => {
+    const llm = fakeLLM([goodDraft({ assumptions: [
+      { text: 'Cloud giants like Microsoft and Amazon keep buying NVIDIA chips for AI.', tickers: ['NVDA'], whatWouldChallengeIt: 'Cloud giants cutting AI capital spending.' },
+      { text: 'VOO keeps tracking the market closely over time.', tickers: ['VOO'] },
+    ] })]);
+    const r = await createThesisDraft(confirmed('VOO, NVDA'), { callLLM: llm });
+    assert.strictEqual(r.source, 'fallback');
+    assert(/valid JSON, but none of its assumptions passed validation/.test(r.fallbackReason), r.fallbackReason);
+    assert(r.diagnostics.droppedAssumptions.some((x) => /tickers you did not select \(MSFT, AMZN\)/.test(x)), r.diagnostics.droppedAssumptions.join(' | '));
+    assert(r.diagnostics.droppedAssumptions.some((x) => /whatWouldChallengeIt/.test(x)));
+    assert(!/not valid JSON/.test(r.fallbackReason), 'must not be reported as invalid JSON');
+  });
+
+  await test('27. editing wording requires an explicit criteria decision: new, keep, or suggested', async () => {
+    const s = await drafted();
+    const old = s.thesisDraft.draft.assumptionDetails[1].whatWouldChallengeIt;
+    const text = 'NVIDIA keeps winning most AI chip orders from big cloud companies.';
+    const ask = editAssumption(s, 2, text);
+    assert.strictEqual(ask.ok, false);
+    assert.strictEqual(ask.reason, 'challenge_decision_needed');
+    assert.strictEqual(ask.currentChallenge, old);
+    assert.deepStrictEqual(ask.session.thesisDraft, s.thesisDraft, 'nothing changes until the user decides');
+    assert.strictEqual(editAssumption(s, 2, 'Buy NVDA on every dip please').reason, 'invalid_assumption', 'wording is checked before asking about criteria');
+    const kept = editAssumption(s, 2, text, null, { keepChallenge: true });
+    assert.strictEqual(kept.challengeKept, true);
+    assert.strictEqual(kept.session.thesisDraft.draft.assumptionDetails[1].whatWouldChallengeIt, old);
+    assert(/you chose to keep/.test(kept.displayText));
+    const fresh = editAssumption(s, 2, text, 'NVIDIA losing major cloud orders to rival chipmakers.');
+    assert.strictEqual(fresh.challengeKept, false);
+    assert.strictEqual(fresh.session.thesisDraft.draft.assumptionDetails[1].whatWouldChallengeIt, 'NVIDIA losing major cloud orders to rival chipmakers.');
+    assert.strictEqual(editAssumption(s, 2, text, 'Sell NVDA if it drops.').ok, false, 'criteria are validated too');
+    const onlyCrit = editChallenge(s, 1, 'Two quarters in a row of falling S&P 500 earnings.');
+    assert(onlyCrit.ok, onlyCrit.displayText);
+    assert.strictEqual(onlyCrit.session.thesisDraft.draft.assumptionDetails[0].text, s.thesisDraft.draft.assumptionDetails[0].text);
+    assert.strictEqual(onlyCrit.session.thesisDraft.draft.assumptionDetails[0].whatWouldChallengeIt, 'Two quarters in a row of falling S&P 500 earnings.');
+    const confirmedS = confirmAssumptions(s).session;
+    assert.strictEqual(editChallenge(confirmedS, 1, 'Two quarters in a row of falling S&P 500 earnings.').confirmationCleared, true, 'changing criteria also clears confirmation');
+  });
+
+  await test('28. suggestChallenge: Gemini suggestion for the new wording, validated, template fallback, session untouched', async () => {
+    const s = await drafted();
+    const text = 'NVIDIA keeps winning most AI chip orders from big cloud companies.';
+    const llm = fakeLLM([{ whatWouldChallengeIt: 'Reports that cloud companies are shifting AI chip orders away from NVIDIA to rivals.' }]);
+    const g = await suggestChallenge(s, 2, text, { callLLM: llm });
+    assert.strictEqual(g.source, 'gemini');
+    assert(/shifting AI chip orders/.test(g.suggestion));
+    assert(llm.calls[0].user.includes(text), 'suggestion must be for the NEW wording');
+    assert.deepStrictEqual(g.session.thesisDraft, s.thesisDraft, 'suggesting never edits');
+    const bad = await suggestChallenge(s, 2, text, { callLLM: fakeLLM([{ whatWouldChallengeIt: 'Apple and AAPL beating NVIDIA in AI chips.' }]) });
+    assert.strictEqual(bad.source, 'fallback', 'suggestion naming unselected tickers is rejected');
+    assert(/NVIDIA/.test(bad.suggestion));
+    const off = await suggestChallenge(s, 2, text, { forceFallback: true });
+    assert.strictEqual(off.source, 'fallback');
+    assert(off.suggestion.length > 10);
   });
 
   const failed = results.filter(([ok]) => !ok);
