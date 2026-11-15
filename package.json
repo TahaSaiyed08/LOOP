@@ -14,7 +14,8 @@
     "test:sentiment": "node scripts/test-sentiment.js",
     "preflight": "node scripts/preflight.js",
     "test:onboarding": "node scripts/test-onboarding.js",
-    "demo:onboarding": "node scripts/onboarding-demo.js"
+    "demo:onboarding": "node scripts/onboarding-demo.js",
+    "test:draft": "node scripts/test-thesis-draft.js"
   },
   "engines": {
     "node": ">=18"
