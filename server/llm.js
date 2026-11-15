@@ -5,7 +5,7 @@
 // (callers catch and fall back); it never crashes the process.
 
 const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta/openai/';
-const DEFAULT_MODEL = 'gemini-2.5-flash-lite';
+const DEFAULT_MODEL = 'gemini-3.5-flash-lite';
 const MIN_GAP_MS = 5000; // free tier is roughly 10-15 requests/minute
 
 let lastCallAt = 0;
