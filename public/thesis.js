@@ -1,4 +1,4 @@
-const THESIS_URL = 'fixtures/thesis.sample.json'; // Taha swaps to '/api/thesis' at integration
+const THESIS_URL = '/api/thesis';
 
 // The project uses USD for both portfolio and thesis amounts.
 const currency = new Intl.NumberFormat('en-US', {

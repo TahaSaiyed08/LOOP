@@ -1,4 +1,4 @@
-const PORTFOLIO_URL = 'fixtures/portfolio.sample.json'; // Taha swaps to '/api/paper/portfolio'
+const PORTFOLIO_URL = '/api/paper/portfolio';
 
 const currencyOptions = { style: 'currency', currency: 'USD' };
 const percentOptions = { style: 'percent', maximumFractionDigits: 2 };
