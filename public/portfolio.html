@@ -48,6 +48,7 @@
     <p id="portfolio-error" class="portfolio-error" role="alert"></p>
 
     <div id="portfolio-data" hidden>
+      <p id="portfolio-demo" class="portfolio-note" hidden>Demo data: sample figures, not live prices.</p>
       <dl class="portfolio-stats">
         <div><dt>Portfolio Value <span class="portfolio-unit">(USD)</span></dt><dd id="portfolio-value"></dd></div>
         <div><dt>Return Percentage</dt><dd id="portfolio-return"></dd></div>
@@ -74,6 +75,12 @@
             <tbody id="portfolio-rows"></tbody>
           </table>
         </div>
+      </section>
+
+      <section class="portfolio-trades" aria-labelledby="trades-heading">
+        <h2 id="trades-heading">Trades</h2>
+        <p id="trades-empty" hidden>No trades yet.</p>
+        <ul id="portfolio-trades" class="portfolio-trade-list" role="list"></ul>
       </section>
     </div>
 

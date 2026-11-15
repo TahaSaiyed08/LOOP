@@ -15,17 +15,23 @@ function renderChange(element, value, formatter) {
   if (value < 0) element.classList.add('is-negative');
 }
 
-function tickerRow(symbol) {
+function tickerRow(symbol, note) {
   const row = document.createElement('tr');
   const ticker = document.createElement('th');
   ticker.scope = 'row';
   ticker.textContent = symbol;
+  if (note) {
+    const small = document.createElement('small');
+    small.className = 'portfolio-note';
+    small.textContent = note;
+    ticker.append(document.createElement('br'), small);
+  }
   row.append(ticker);
   return row;
 }
 
 function renderPosition(position) {
-  const row = tickerRow(position.ticker);
+  const row = tickerRow(position.ticker, position.fillNote);
 
   for (const value of [
     number.format(position.qty),
@@ -57,6 +63,22 @@ function validatePortfolio(portfolio) {
   }
 }
 
+const tradeDate = new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+
+function renderTrade(trade) {
+  const item = document.createElement('li');
+  const when = Number.isNaN(Date.parse(trade.at)) ? '' : ` · ${tradeDate.format(new Date(trade.at))}`;
+  const side = trade.side === 'sell' ? 'Sold' : 'Bought';
+  item.textContent = `${side} ${number.format(trade.qty)} ${trade.ticker} at ${currency.format(trade.price)}${when}`;
+  if (trade.fillNote) {
+    const small = document.createElement('small');
+    small.className = 'portfolio-note';
+    small.textContent = trade.fillNote;
+    item.append(document.createElement('br'), small);
+  }
+  return item;
+}
+
 async function loadPortfolio() {
   const status = document.getElementById('portfolio-status');
   try {
@@ -69,6 +91,14 @@ async function loadPortfolio() {
     renderChange(document.getElementById('portfolio-return'), portfolio.returnPct, signedPercent);
     document.getElementById('portfolio-count').textContent = number.format(portfolio.positions.length);
     document.getElementById('portfolio-what-if').textContent = portfolio.whatIfLine;
+
+    document.getElementById('portfolio-demo').hidden = response.headers.get('X-Data-Source') !== 'fixture';
+
+    const trades = (Array.isArray(portfolio.trades) ? portfolio.trades : [])
+      .slice()
+      .sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    document.getElementById('portfolio-trades').append(...trades.map(renderTrade));
+    document.getElementById('trades-empty').hidden = trades.length > 0;
 
     document.getElementById('portfolio-rows').append(...portfolio.positions.map(renderPosition));
     document.getElementById('portfolio-empty').hidden = portfolio.positions.length > 0;

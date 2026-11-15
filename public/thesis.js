@@ -10,40 +10,28 @@ const cadenceLabels = new Map([
   ['weekly', 'every week'],
   ['biweekly', 'every two weeks'],
   ['monthly', 'every month'],
+  ['one_time', 'one time'],
 ]);
-
-const RECENT_NEWS = [
-  {
-    ticker: 'VOO',
-    headline: 'Vanguard S&P 500 ETF',
-    url: 'https://investor.vanguard.com/investment-products/etfs/profile/voo',
-    assumptionIndex: 0,
-    stance: 'supports',
-    whyItMatters: 'One broad fund can spread a small recurring deposit across many companies.',
-  },
-  {
-    ticker: 'ARKK',
-    headline: 'ARK Innovation ETF',
-    url: 'https://www.ark-funds.com/funds/arkk',
-    assumptionIndex: 1,
-    stance: 'neutral',
-    whyItMatters: 'A fund profile gives a point of comparison for fees without settling the ten-year return question.',
-  },
-  {
-    ticker: 'VOO',
-    headline: 'S&P 500 index overview',
-    url: 'https://www.spglobal.com/spdji/en/indices/equity/sp-500/',
-    assumptionIndex: 0,
-    stance: 'challenges',
-    whyItMatters: 'Market-cap weighting can leave a broad index heavily exposed to its largest companies.',
-  },
-];
 
 const horizon = new Intl.NumberFormat('en-US', { style: 'unit', unit: 'year', unitDisplay: 'long' });
 
-function renderThesisNews(assumptions) {
+// Real matches from the backend (Contract C match shape). Empty until a seed has been matched to the thesis.
+async function renderThesisNews(assumptions) {
   const list = document.getElementById('thesis-news');
-  for (const news of RECENT_NEWS) {
+  const empty = document.getElementById('news-empty');
+  let matches = [];
+  try {
+    const response = await fetch('/api/thesis/news');
+    if (response.ok) matches = await response.json();
+  } catch (error) {
+    console.error(error);
+  }
+  if (!Array.isArray(matches) || matches.length === 0) {
+    empty.hidden = false;
+    return;
+  }
+  empty.hidden = true;
+  for (const news of matches) {
     const assumption = assumptions[news.assumptionIndex];
 
     const item = document.createElement('li');
@@ -54,7 +42,7 @@ function renderThesisNews(assumptions) {
     ticker.textContent = news.ticker;
 
     const headline = document.createElement('a');
-    headline.href = news.url;
+    if (/^https?:\/\//i.test(String(news.url || ''))) headline.href = news.url;
     headline.textContent = news.headline;
 
     const stance = document.createElement('span');
@@ -122,7 +110,7 @@ async function loadThesis() {
       checklist.append(item);
     }
 
-    renderThesisNews(thesis.assumptions);
+    await renderThesisNews(thesis.assumptions);
     document.getElementById('thesis-data').hidden = false;
   } catch (error) {
     console.error(error);
