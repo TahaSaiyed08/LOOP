@@ -1,18 +1,22 @@
 .portfolio-page {
+  --portfolio-bg: #111413;
+  --portfolio-panel: #181c1a;
+  --portfolio-panel-raised: #1e2320;
+  --portfolio-border: #303731;
+  --portfolio-text: #f4f1e8;
+  --portfolio-muted: #a9b0a8;
+  --portfolio-gold: #d7b94e;
+  --portfolio-gain: #73c998;
+  --portfolio-loss: #ef8c82;
   margin: 0;
   min-block-size: 100vh;
-  background: var(--background, var(--bg, #f6f8f7));
-  color: var(--text, #172521);
-  font-family: var(--font-sans, system-ui, sans-serif);
+  background: radial-gradient(circle at 85% 0, #2b2818 0, transparent 26rem), var(--portfolio-bg);
+  color: var(--portfolio-text);
+  font-family: Arial, sans-serif;
   line-height: 1.5;
 }
 
 .portfolio {
-  --portfolio-surface: var(--surface, #fff);
-  --portfolio-border: var(--border, #dce5df);
-  --portfolio-muted: var(--muted, #4e625a);
-  --portfolio-gain: var(--positive, #14683f);
-  --portfolio-loss: var(--negative, #a52535);
   box-sizing: border-box;
   max-inline-size: 72rem;
   margin-inline: auto;
@@ -33,6 +37,10 @@
   text-underline-offset: 0.2em;
 }
 
+.portfolio-back:hover {
+  color: var(--portfolio-text);
+}
+
 .portfolio h1 {
   margin: 0.65rem 0 0;
   font-size: clamp(2rem, 5vw, 3.25rem);
@@ -50,8 +58,8 @@
 .portfolio-stats > div,
 .portfolio-positions {
   border: 1px solid var(--portfolio-border);
-  border-radius: var(--radius, 0.875rem);
-  background: var(--portfolio-surface);
+  border-radius: 12px;
+  background: var(--portfolio-panel);
 }
 
 .portfolio-stats > div {
@@ -83,8 +91,9 @@
 .portfolio-banner {
   margin-block: 1rem;
   padding: 1rem 1.25rem;
-  border-radius: var(--radius, 0.875rem);
-  background: var(--success-bg, #d7f2e2);
+  border: 1px solid #d7b94e3d;
+  border-radius: 12px;
+  background: #d7b94e0d;
   color: var(--portfolio-gain);
   font-size: clamp(1rem, 2.5vw, 1.25rem);
   font-weight: 700;
@@ -125,12 +134,23 @@
   text-align: end;
 }
 
+.portfolio th {
+  font-weight: 650;
+}
+
 .portfolio th:first-child {
   text-align: start;
 }
 
 .portfolio thead {
   color: var(--portfolio-muted);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.portfolio tbody tr:hover {
+  background: var(--portfolio-panel-raised);
 }
 
 .portfolio tbody tr:last-child > * {

@@ -1,18 +1,22 @@
 .thesis-page {
+  --thesis-bg: #111413;
+  --thesis-panel: #181c1a;
+  --thesis-panel-raised: #1e2320;
+  --thesis-border: #303731;
+  --thesis-text: #f4f1e8;
+  --thesis-muted: #a9b0a8;
+  --thesis-gold: #d7b94e;
+  --thesis-gain: #73c998;
+  --thesis-loss: #ef8c82;
   margin: 0;
   min-block-size: 100vh;
-  background: var(--background, var(--bg, #f6f8f7));
-  color: var(--text, #172521);
-  font-family: var(--font-sans, system-ui, sans-serif);
+  background: radial-gradient(circle at 85% 0, #2b2818 0, transparent 26rem), var(--thesis-bg);
+  color: var(--thesis-text);
+  font-family: Arial, sans-serif;
   line-height: 1.5;
 }
 
 .thesis-layout {
-  --thesis-surface: var(--surface, #fff);
-  --thesis-border: var(--border, #dce5df);
-  --thesis-muted: var(--muted, #4e625a);
-  --thesis-gain: var(--positive, #14683f);
-  --thesis-loss: var(--negative, #a52535);
   box-sizing: border-box;
   max-inline-size: 58rem;
   margin-inline: auto;
@@ -31,6 +35,10 @@
   color: var(--thesis-muted);
   font-size: 0.875rem;
   text-underline-offset: 0.2em;
+}
+
+.thesis-back:hover {
+  color: var(--thesis-text);
 }
 
 .thesis-layout h1 {
@@ -68,8 +76,8 @@
 .thesis-card {
   padding: clamp(1rem, 4vw, 2rem);
   border: 1px solid var(--thesis-border);
-  border-radius: var(--radius, 0.875rem);
-  background: var(--thesis-surface);
+  border-radius: 12px;
+  background: var(--thesis-panel);
   overflow-wrap: anywhere;
 }
 
@@ -106,7 +114,7 @@
   display: inline-block;
   padding: 0.125rem 0.625rem;
   border-radius: 999px;
-  background: var(--background, var(--bg, #f6f8f7));
+  background: var(--thesis-panel-raised);
   color: var(--thesis-muted);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -115,12 +123,12 @@
 
 #thesis-tier[data-tier="low"],
 .thesis-chip[data-stance="supports"] {
-  background: var(--success-bg, #d7f2e2);
+  background: #73c99818;
   color: var(--thesis-gain);
 }
 
 .thesis-chip[data-stance="challenges"] {
-  background: var(--danger-bg, #fce8ec);
+  background: #ef8c8218;
   color: var(--thesis-loss);
 }
 
