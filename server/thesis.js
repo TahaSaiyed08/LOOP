@@ -63,7 +63,7 @@ async function createThesis(goalsText) {
       console.warn('[thesis] createThesis LLM failed, using plain fallback:', String(err.message).slice(0, 160));
     }
   }
-  if (!goal) goal = (f.purpose ? capFirst(String(f.purpose)) : 'Grow savings over time') + (fact.horizonYears ? ` over about ${fact.horizonYears} years` : '');
+  if (!goal) goal = (f.purpose ? capFirst(String(f.purpose)) : 'Grow savings') + (fact.horizonYears ? ` over about ${fact.horizonYears} years` : '');
   if (assumptions.length < 2) {
     assumptions = [
       'The markets I invest in grow over my time horizon',
