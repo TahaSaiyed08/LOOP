@@ -293,8 +293,8 @@ function assertDraftContract(r) {
     const t = await thesis.createThesis('anything');
     assert.deepStrictEqual(Object.keys(t).sort(), ['assumptions', 'budget', 'createdAt', 'goal', 'horizonYears', 'id', 'tier'].sort());
     const m = await thesis.matchNews(t, [{ ticker: 'VOO', headline: 'h', url: 'u', sentiment: -0.5 }]);
-    assert.strictEqual(m[0].stance, 'challenges');
-    assert.strictEqual(thesis.IS_STUB, true);
+    assert.deepStrictEqual(m, [], 'matchNews degrades to no matches without an LLM');
+    assert.strictEqual(thesis.IS_STUB, false);
     assert.strictEqual(typeof onboardingTurn, 'function');
     const old = { history: [], profile: nulls, askedFields: [], activeFlow: null, tickers: [], lastQuestionField: null }; // pre-feature session
     assert.deepStrictEqual(selectAssets('VOO', old).session.selection, { pending: ['VOO'], confirmed: [] }, 'old sessions still work');

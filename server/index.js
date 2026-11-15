@@ -100,6 +100,11 @@ app.get('/api/thesis', (req, res) => {
   res.json(thesis);
 });
 
+// Thesis news matches (Contract C match shape). Empty until a thesis exists and a seed has been matched.
+app.get('/api/thesis/news', (req, res) => {
+  res.json(store.get('thesis') ? store.get('thesisMatches', []) : []);
+});
+
 // Contract D: paper trading
 app.post('/api/paper/buy', async (req, res) => {
   const ticker = String((req.body && req.body.ticker) || '').trim().toUpperCase();

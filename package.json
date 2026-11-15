@@ -7,7 +7,7 @@
     "start": "node server/index.js",
     "test:scoring": "node scripts/test-scoring.js",
     "test:endpoints": "node scripts/test-endpoints.js",
-    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment && npm run test:paper && npm run test:council",
+    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment && npm run test:paper && npm run test:council && npm run test:onboarding && npm run test:draft",
     "test:paper": "node scripts/test-paper.js",
     "test:council": "node scripts/test-council.js",
     "test:n8n": "node scripts/test-n8n.js",

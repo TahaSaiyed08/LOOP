@@ -272,8 +272,8 @@ function assertShape(r) {
     const t = await thesis.createThesis('anything');
     assert(['low', 'medium', 'high'].includes(t.tier) && Array.isArray(t.assumptions) && t.goal);
     const m = await thesis.matchNews(t, [{ ticker: 'VOO', headline: 'h', url: 'u', sentiment: -0.5 }]);
-    assert.strictEqual(m[0].stance, 'challenges');
-    assert.strictEqual(thesis.IS_STUB, true);
+    assert.deepStrictEqual(m, [], 'matchNews degrades to no matches without an LLM');
+    assert.strictEqual(thesis.IS_STUB, false);
     assert(_onboarding.loadPrompt('onboarding'), 'onboarding prompt not found in prompts/thesis.md');
   });
 
