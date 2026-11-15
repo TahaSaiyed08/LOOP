@@ -40,10 +40,14 @@ async function refreshThesisMatches() {
 
 // Unique tickers across all three tier top-10s, with the scorer's output attached (first tier wins).
 function councilTargets(payload) {
+  // Ordered so every tier's top 3 come first (the calls are serialized, ~5s apart), then the rest of each top 10.
   const seen = new Map();
-  for (const tier of TIERS) {
-    for (const r of rankForTier(payload.stocks, tier).slice(0, 10)) {
-      if (!seen.has(r.stock.ticker)) seen.set(r.stock.ticker, { ...r.stock, tier, matchScore: r.matchScore, scoreBreakdown: r.scoreBreakdown });
+  const ranked = TIERS.map((tier) => [tier, rankForTier(payload.stocks, tier).slice(0, 10)]);
+  for (const [from, to] of [[0, 3], [3, 10]]) {
+    for (const [tier, rows] of ranked) {
+      for (const r of rows.slice(from, to)) {
+        if (!seen.has(r.stock.ticker)) seen.set(r.stock.ticker, { ...r.stock, tier, matchScore: r.matchScore, scoreBreakdown: r.scoreBreakdown });
+      }
     }
   }
   return [...seen.values()];
@@ -73,14 +77,15 @@ async function refreshCouncil() {
       else todo.push(t);
     }
     store.set('council', next);
+    console.log(`[council] ${payload.runDate} (${mode}): starting, ${todo.length} to run, ${Object.keys(next).length} reused (about ${Math.ceil(todo.length * 5 / 60)} min)`);
     for (const t of todo) {
       const r = await council.councilForStock(t, mode);
-      if (!r) { failed++; continue; }
+      if (!r) { failed++; console.warn(`[council] ${t.ticker}: no usable output, text stays null`); continue; }
       ok++;
       next[t.ticker] = { ...r, runDate: payload.runDate, mode };
       store.set('council', next);
     }
-    console.log(`[council] ${payload.runDate} (${mode}): ${ok} done, ${failed} failed, ${Object.keys(next).length - ok} reused`);
+    console.log(`[council] ${payload.runDate} (${mode}): finished, ${ok} done, ${failed} failed, ${Object.keys(next).length - ok} reused`);
     return { ok, failed };
   } catch (err) {
     console.warn('[council] run failed:', err.message);
