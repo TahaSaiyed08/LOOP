@@ -48,7 +48,7 @@ async function renderThesisNews(assumptions) {
     const stance = document.createElement('span');
     stance.className = 'thesis-chip';
     stance.dataset.stance = news.stance;
-    stance.textContent = news.stance;
+    stance.textContent = ({ supports: '▲ ', challenges: '▼ ', neutral: '● ' }[news.stance] ?? '') + news.stance;
 
     const explanation = document.createElement('p');
     explanation.textContent = `Why it matters: ${news.whyItMatters}`;
@@ -66,6 +66,10 @@ async function renderThesisNews(assumptions) {
 
 async function loadThesis() {
   const status = document.getElementById('thesis-status');
+  status.hidden = false;
+  for (const id of ['thesis-error-box', 'thesis-empty', 'thesis-data', 'news-empty']) document.getElementById(id).hidden = true;
+  document.getElementById('thesis-assumptions').replaceChildren();
+  document.getElementById('thesis-news').replaceChildren();
   try {
     const response = await fetch(THESIS_URL);
     if (response.status === 204 || (response.status === 404 && THESIS_URL === '/api/thesis')) {
@@ -92,12 +96,14 @@ async function loadThesis() {
     }
 
     document.getElementById('thesis-goal').textContent = thesis.goal;
-    document.getElementById('thesis-budget').textContent =
-      `${currency.format(thesis.budget.amount)} USD ${cadenceLabels.get(thesis.budget.cadence) ?? thesis.budget.cadence}`;
+    // A budget or horizon of 0 means the user did not state one; say so rather than show $0.
+    document.getElementById('thesis-budget').textContent = thesis.budget.amount > 0
+      ? `${currency.format(thesis.budget.amount)} USD ${cadenceLabels.get(thesis.budget.cadence) ?? thesis.budget.cadence}`
+      : 'Not stated';
     const tier = document.getElementById('thesis-tier');
     tier.textContent = thesis.tier;
     tier.dataset.tier = thesis.tier;
-    document.getElementById('thesis-horizon').textContent = horizon.format(thesis.horizonYears);
+    document.getElementById('thesis-horizon').textContent = thesis.horizonYears > 0 ? horizon.format(thesis.horizonYears) : 'Not stated';
 
     document.getElementById('assumptions-empty').hidden = thesis.assumptions.length > 0;
     const checklist = document.getElementById('thesis-assumptions');
@@ -114,10 +120,15 @@ async function loadThesis() {
     document.getElementById('thesis-data').hidden = false;
   } catch (error) {
     console.error(error);
-    document.getElementById('thesis-error').textContent = 'Could not load your investment thesis. Refresh to try again.';
+    document.getElementById('thesis-error').textContent = `Could not load your investment thesis (${error.message}).`;
+    document.getElementById('thesis-error-box').hidden = false;
   } finally {
     status.hidden = true;
   }
 }
 
+document.getElementById('thesis-retry').addEventListener('click', loadThesis);
+document.getElementById('thesis-start').addEventListener('click', () => {
+  try { localStorage.removeItem('thesis'); } catch (error) { /* storage unavailable: setup still opens if it has no saved thesis */ }
+});
 loadThesis();

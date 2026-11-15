@@ -81,6 +81,11 @@ function renderTrade(trade) {
 
 async function loadPortfolio() {
   const status = document.getElementById('portfolio-status');
+  status.hidden = false;
+  document.getElementById('portfolio-error-box').hidden = true;
+  document.getElementById('portfolio-data').hidden = true;
+  document.getElementById('portfolio-rows').replaceChildren();
+  document.getElementById('portfolio-trades').replaceChildren();
   try {
     const response = await fetch(PORTFOLIO_URL);
     if (!response.ok) throw new Error(`Portfolio request failed (${response.status})`);
@@ -106,12 +111,14 @@ async function loadPortfolio() {
     document.getElementById('portfolio-data').hidden = false;
   } catch (error) {
     console.error(error);
-    document.getElementById('portfolio-error').textContent = 'Could not load your paper portfolio. Refresh to try again.';
+    document.getElementById('portfolio-error').textContent = `Could not load your paper portfolio (${error.message}).`;
+    document.getElementById('portfolio-error-box').hidden = false;
   } finally {
     status.hidden = true;
   }
 }
 
+document.getElementById('portfolio-retry').addEventListener('click', loadPortfolio);
 loadPortfolio();
 
 function initializePortfolioAvatar(button) {

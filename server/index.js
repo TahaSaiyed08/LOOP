@@ -26,6 +26,7 @@ app.get('/api/health', (req, res) => {
     alpacaConfigured: alpaca.hasCredentials(),
     thesisIsStub: Boolean(thesisEngine.IS_STUB),
     feedRunDate: feed ? feed.runDate : null,
+    feedReceivedAt: feed ? feed.receivedAt : null,
     sentimentMissing: feed ? feedLib.sentimentMissing(feed.stocks) : null,
   });
 });
