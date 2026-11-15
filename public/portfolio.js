@@ -83,3 +83,45 @@ async function loadPortfolio() {
 }
 
 loadPortfolio();
+
+function initializePortfolioAvatar(button) {
+  const figure = button.querySelector('.portfolio-avatar-figure');
+  const coins = button.querySelectorAll('.portfolio-avatar-coin');
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const trajectories = [
+    [-24, -22], [-13, -34], [0, -39], [13, -34], [24, -22],
+  ];
+  let effects = [];
+
+  button.addEventListener('click', () => {
+    effects.forEach((effect) => effect.cancel());
+    const still = reducedMotion.matches;
+
+    effects = Array.from(coins, (coin, index) => {
+      const [x, y] = trajectories[index];
+      const peak = `translate(${x}px, ${y}px)`;
+      return coin.animate(still ? [
+        { opacity: 1, transform: peak },
+        { opacity: 1, transform: peak },
+      ] : [
+        { opacity: 0, transform: 'translate(0, 0) scale(0.6)' },
+        { opacity: 1, transform: `${peak} rotate(${x}deg)`, offset: 0.55 },
+        { opacity: 0, transform: `translate(${x}px, ${y + 15}px) rotate(${x * 2}deg)` },
+      ], { duration: still ? 230 : 520, easing: 'ease-out' });
+    });
+
+    if (!still) {
+      effects.push(figure.animate([
+        { transform: 'translateY(0)' },
+        { transform: 'translateY(-12px)', offset: 0.44 },
+        { transform: 'translateY(0)' },
+      ], { duration: 380, easing: 'ease-in-out' }));
+    }
+  });
+
+  reducedMotion.addEventListener('change', () => {
+    effects.forEach((effect) => effect.cancel());
+  });
+}
+
+initializePortfolioAvatar(document.querySelector('.portfolio-avatar'));
