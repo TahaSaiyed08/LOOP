@@ -856,7 +856,7 @@ async function askGemini(name, user, opts = {}) {
   else if (!configured) reason = 'GEMINI_API_KEY not set';
   if (reason) return { json: null, model: null, reason, attempts: [] };
   try {
-    const out = await callJsonWithModelFallback(call, system, user, { json: true, temperature: opts.temperature ?? 0.3, timeoutMs: 45000 }, parseJsonObject);
+    const out = await callJsonWithModelFallback(call, system, user, { json: true, temperature: opts.temperature ?? 0.3, timeoutMs: 45000 }, opts.parse || parseJsonObject);
     if (!out.value) {
       reason = `Gemini reply was not valid JSON [${out.attempts.join('; ')}]`;
       console.warn(`[${name}] using fallback: ${reason}`);
@@ -1484,6 +1484,7 @@ function makeMatch(item, f) {
     evidence: item.summary ? 'headline_and_summary' : 'headline_only', provisional: !item.summary,
     unanalyzed: Boolean(f.unanalyzed), analyzedBy: f.analyzedBy, model: f.model || null,
     publisher: item.publisher, datetime: item.datetime,
+    summary: item.summary, // additive, source-derived (article text, or null); used to ground thesis chat, never by matching
   };
 }
 
@@ -1782,6 +1783,324 @@ async function runThesisAction(session, action, payload, opts) {
   }
 }
 
+// ============================================================================================
+// THESIS CHAT: thesisChat(thesis, history, message, context, opts) -> Promise<ChatResult>
+//
+// One stateless research chat for any saved thesis. Contract: docs/thesis-chat-api.md.
+//   general mode        context.focus not set: thesis questions, with any supplied evidence as background.
+//   investigation mode  context.focus = index into context.evidence: that article becomes E1, with its
+//                       summary and the earlier news-check assessment.
+// Evidence gets internal ids (E1..E8); URLs never reach Gemini. Gemini answers in segments
+// { text, basis: thesis|evidence|general, sources: ["E2"] }; the server keeps only ids from this turn,
+// replaces evidence claims with no valid source by an uncertainty line, attributes every evidence claim to
+// the headline/summary it came from, and numbers citations [1], [2]... in order of first use.
+// Pure: never saves, edits/confirms assumptions, monitors, emails or trades. The caller stores `history`.
+// ============================================================================================
+const CHAT_MAX_EVIDENCE = 8;
+const CHAT_MAX_SEGMENTS = 10;
+const CHAT_SEGMENT_MAX = 800;
+const CHAT_DISCLAIMER = 'Educational research, not investment advice.';
+const CHAT_BASES = ['thesis', 'evidence', 'general'];
+const UNSUPPORTED_LINE = "I don't have a source in the evidence available here that supports that point, so I can't present it as fact.";
+const URL_IN_TEXT = /\bhttps?:\/\/\S+|\bwww\.\S+/gi;
+const MARKER_IN_TEXT = /\s*\[\s*(?:E?\d+(?:\s*,\s*E?\d+)*)\s*\]/gi;
+// Sentences claiming research or verification the engine never did (it only has headlines and summaries).
+const RESEARCH_CLAIM = /\b(i|we)\s+(have\s+|just\s+)?(verified|confirmed|checked|looked up|searched|browsed|googled|fetched|pulled up|researched)\b|\b(i|we)\s+(have\s+)?read\s+the\s+(full|whole|entire)\b|\b(this|that|it)\s+(is|has been)\s+(independently\s+)?(verified|confirmed)\b|\bverified\s+(fact|facts|source|report)s?\b|\b(i|we)\s+(have\s+|just\s+)?(reviewed|consulted|analy[sz]ed|read|went through|looked at|looked through)\s+(the\s+|its\s+|their\s+|[A-Z][\w.&-]*'s\s+)?(latest\s+|recent\s+|most recent\s+|new\s+)?(earnings|annual|quarterly|10-k|10-q|sec|filings?|reports?|releases?|transcripts?|fact sheets?|statements?)\b/i;
+const ATTRIBUTED = /\b(according to|based on|per the|reportedly|the (article|headline|summary|report|story)'?s?|(headline|summary|article|report)s?\s+(say|says|said|report|reports|reported|suggest|suggests|mention|mentions|state|states|note|notes|describe|describes|indicate|indicates|claim|claims))\b/i;
+// First words that are ordinary English (safe to lowercase after "According to the summary, ..."). Anything
+// else, e.g. "Nvidia", "VOO", "S&P", keeps its capital.
+const SOFT_LOWER = new Set(['The', 'This', 'That', 'These', 'Those', 'It', 'Its', 'A', 'An', 'There', 'Some', 'Several', 'Many', 'Most', 'One', 'Two', 'Both',
+  'Demand', 'Sales', 'Revenue', 'Earnings', 'Profit', 'Profits', 'Growth', 'Prices', 'Price', 'Shares', 'Stocks', 'Customers', 'Companies', 'Analysts',
+  'Investors', 'Orders', 'Chip', 'Chips', 'Export', 'Exports', 'Cloud', 'Large', 'Interest', 'Rates', 'Inflation', 'Supply', 'Spending', 'Quarterly',
+  'Record', 'New', 'Higher', 'Lower', 'Slower', 'Faster', 'Strong', 'Weak', 'Big', 'Major', 'Rising', 'Falling', 'Data-center', 'Data']);
+// Leading transitions: the attribution goes after them ("At the same time, according to the summary, ...").
+const TRANSITION = /^(at the same time|however|meanwhile|also|in addition|additionally|still|but|and|yet|on the other hand|separately|similarly|by contrast|in contrast|even so|that said|overall|first|second|third|finally|on top of that)(\s*,)?\s+/i;
+// Judgment questions get one short closing reminder (unless the answer already has one); other answers don't.
+const JUDGMENT_Q = /\b(weak(est)?|strong(est)?|riskiest|biggest risk|most (uncertain|important|likely|risky|worrying)|which (risk|assumption)s?|could go wrong|might go wrong|go wrong|does (this|that|it)( article| news| story| headline)? (really |actually )?(mean|challenge|change|hurt|break|matter)|is my thesis (still )?(wrong|right|valid|ok|okay|broken)|am i (wrong|right)|should i (be )?(worried|concerned)|how (bad|serious|significant|worried|worrying)|how much does (this|that|it) matter)\b/i;
+const JUDGMENT_NOTE = 'This is my assessment based on your thesis, not a prediction. Check the evidence before making investment decisions.';
+const HAS_CAVEAT = /not a prediction|interpretation,? not a (fact|prediction|forecast)|not a forecast/i;
+const CHAT_FOLLOWUPS = ['What would have to happen for my first assumption to be wrong?', 'How does my time horizon change how much short-term news matters?', 'What other evidence would help me check my assumptions?'];
+
+// Internal evidence ids (E1, E2...) belong in "sources" only; any that leak into the text become plain words
+// ("the summary for E1" -> "the article's summary", "Article E1 shows" -> "The article shows").
+const EID = 'E\\d{1,2}';
+const EID_LIST = `${EID}(?:\\s*(?:,|and|&)\\s*${EID})*`;
+// Rules run in order; "name(id)" is "the article" when the text mentions one distinct id, otherwise
+// "one article" / "another article" / "a third article" so different articles stay distinguishable.
+const ORDINAL_ARTICLE = ['one article', 'another article', 'a third article'];
+const eidRules = (name) => [
+  [new RegExp(`\\s*\\(\\s*(?:see\\s+)?(?:article\\s+|source\\s+|item\\s+)?${EID_LIST}\\s*\\)`, 'g'), ''],
+  [new RegExp(`\\b(?:the\\s+)?(summaries|headlines)\\s+(?:for|of|in|from)\\s+(?:articles?\\s+|items?\\s+|sources?\\s+)?${EID}(?:\\s*(?:,|and|&)\\s*${EID})+\\b`, 'gi'), (m, w) => `the articles' ${w.toLowerCase()}`],
+  [new RegExp(`\\b(?:the\\s+)?(summary|headline)\\s+(?:for|of|in|from)\\s+(?:article\\s+|item\\s+|source\\s+)?(${EID})\\b`, 'gi'), (m, w, id) => `${name(id)}'s ${w.toLowerCase()}`],
+  [new RegExp(`\\b(?:the\\s+)?(${EID})(?:'s)?\\s+(summary|headline)`, 'gi'), (m, id, w) => `${name(id)}'s ${w.toLowerCase()}`],
+  [new RegExp(`\\b(?:the\\s+)?(${EID})\\s+(?:article|story|item)\\b`, 'gi'), (m, id) => name(id)],
+  [new RegExp(`\\b(both)\\s+${EID}\\s*(?:,|and|&)\\s*${EID}\\b`, 'gi'), (m, b) => `${b} articles`],
+  [new RegExp(`\\b(?:the\\s+)?(?:articles?|items?|sources?|evidence|stor(?:y|ies)|news items?)\\s+${EID}(?:\\s*(?:,|and|&)\\s*${EID})+\\b`, 'gi'), 'these articles'],
+  [new RegExp(`\\b${EID}(?:\\s*(?:,|and|&)\\s*${EID})+\\b`, 'g'), 'these articles'],
+  [new RegExp(`\\b(?:the\\s+)?(?:article|item|source|evidence|story|news item)\\s+(${EID})\\b`, 'gi'), (m, id) => name(id)],
+  [new RegExp(`\\b(${EID})\\b`, 'g'), (m, id) => name(id)],
+];
+function scrubEvidenceIds(text) {
+  let t = String(text);
+  const ids = [...new Set((t.match(new RegExp(`\\b${EID}\\b`, 'gi')) || []).map((x) => x.toUpperCase()))];
+  const name = (id) => (ids.length <= 1 ? 'the article' : ORDINAL_ARTICLE[Math.min(Math.max(ids.indexOf(id.toUpperCase()), 0), 2)]);
+  for (const [re, to] of eidRules(name)) t = t.replace(re, to);
+  return t.replace(/\s{2,}/g, ' ').replace(/\s+([,.;:!?])/g, '$1').replace(/(^|[.!?]\s+)(the|these|one|another|a|both) /g, (m, p, w) => `${p}${w[0].toUpperCase()}${w.slice(1)} `).trim();
+}
+
+const softLower = (t) => (SOFT_LOWER.has(t.split(/\s/, 1)[0]) ? lowerFirst(t) : t);
+const dropResearchClaims = (t) => splitSentences(t).filter((s) => !RESEARCH_CLAIM.test(s)).join('').trim();
+const chatStr = (v, n) => (typeof v === 'string' && v.trim() ? v.replace(/\s+/g, ' ').trim().slice(0, n) : null);
+
+// The user's own thesis, as Gemini sees it. User-supplied information: never cited as evidence.
+function chatThesisBlock(t) {
+  const scope = thesisScope(t);
+  const p = t.profileSnapshot && typeof t.profileSnapshot === 'object' ? t.profileSnapshot : {};
+  const years = isNum(t.horizonYears) && t.horizonYears > 0 ? t.horizonYears : isNum(p.timelineYears) ? p.timelineYears : null;
+  const b = t.budget && typeof t.budget === 'object' ? t.budget : null;
+  return {
+    goal: chatStr(scope.goal, 300),
+    purpose: chatStr(p.purpose, 120),
+    budget: b ? { amount: isNum(b.amount) ? b.amount : null, cadence: chatStr(b.cadence, 20) } : null,
+    timeHorizon: chatStr(t.horizon && t.horizon.text, 60) || chatStr(p.timelineText, 60) || (years ? `${years} years` : 'not stated'),
+    riskComfort: chatStr(p.riskComfort, 20) || 'not stated',
+    experience: chatStr(p.experience, 20) || 'not stated',
+    investments: scope.assets.map((a) => `${a.symbol} (${a.name}, ${a.category})`),
+    confirmedAssumptions: scope.assumptions.map((a, i) => ({ number: i + 1, text: a.text, tickers: a.tickers, whatWouldChallengeIt: a.whatWouldChallengeIt })),
+    knownRisks: (Array.isArray(t.risks) ? t.risks : []).slice(0, 6)
+      .map((r) => (typeof r === 'string' ? chatStr(r, 360) : r && typeof r.title === 'string' ? chatStr(`${r.title}: ${r.explanation || ''}`, 360) : null)).filter(Boolean),
+    horizonNote: chatStr(t.horizonNote, 400),
+  };
+}
+
+// Accepts saved news matches (matchNewsDetailed shape) or raw news items. Same cleaning rules as the
+// matcher (http(s) URLs only, summaries >= MIN_SUMMARY chars, dedupe by ticker+headline).
+function chatEvidence(list) {
+  const items = [];
+  const byKey = new Map();
+  const indexMap = new Map(); // raw index -> item, so context.focus can address the caller's own array
+  (Array.isArray(list) ? list : []).slice(0, MAX_NEWS_INPUT).forEach((n, raw) => {
+    if (!n || typeof n !== 'object' || typeof n.headline !== 'string' || !n.headline.trim()) return;
+    const ticker = typeof n.ticker === 'string' ? n.ticker.trim().toUpperCase().slice(0, 12) : null;
+    const headline = chatStr(n.headline, 300);
+    const key = `${ticker || ''}|${headline.toLowerCase()}`;
+    if (byKey.has(key)) { indexMap.set(raw, byKey.get(key)); return; }
+    const summary = typeof n.summary === 'string' && n.summary.trim().length >= MIN_SUMMARY ? chatStr(n.summary, 1000) : null;
+    const assessment = STANCES.includes(n.stance) ? {
+      assumptionIndex: Number.isInteger(n.assumptionIndex) && n.assumptionIndex >= 0 ? n.assumptionIndex : null,
+      stance: n.stance,
+      assessedStance: STANCES.includes(n.assessedStance) ? n.assessedStance : null,
+      relevance: ['direct', 'indirect'].includes(n.relevance) ? n.relevance : null,
+      whyItMatters: chatStr(n.whyItMatters, 400),
+      analyzedByAI: n.analyzedBy === 'gemini',
+    } : null;
+    const item = { key, ticker, headline, summary, url: safeUrl(n.url), publisher: chatStr(n.publisher, 80) || chatStr(n.source, 80), datetime: chatStr(n.datetime, 40), assessment };
+    byKey.set(key, item);
+    items.push(item);
+    indexMap.set(raw, item);
+  });
+  return { items, indexMap };
+}
+
+// History in -> sanitized history (all entries tagged with this thesis). Another thesis's history is refused.
+function chatHistory(history, thesisId) {
+  if (history == null) return { list: [] };
+  if (!Array.isArray(history)) return { error: 'invalid_history' };
+  const list = [];
+  for (const h of history) {
+    if (!h || typeof h !== 'object' || (h.role !== 'user' && h.role !== 'assistant') || typeof h.content !== 'string') continue;
+    if (h.thesisId != null && h.thesisId !== thesisId) return { error: 'history_thesis_mismatch' };
+    const e = { role: h.role, content: h.content.slice(0, 4000), thesisId, at: chatStr(h.at, 40) };
+    if (h.role === 'assistant') {
+      e.citations = (Array.isArray(h.citations) ? h.citations : []).filter((c) => c && Number.isInteger(c.id)).slice(0, 10).map((c) => ({
+        id: c.id, title: chatStr(c.title, 300), url: safeUrl(c.url), publisher: chatStr(c.publisher, 80), datetime: chatStr(c.datetime, 40),
+        ticker: chatStr(c.ticker, 12), evidence: c.evidence === 'headline_only' ? 'headline_only' : 'headline_and_summary' }));
+    }
+    list.push(e);
+  }
+  return { list: list.slice(-MAX_HISTORY) };
+}
+
+function buildChatPrompt(mode, tb, evidence, history, message) {
+  const ev = evidence.map((e) => ({
+    id: e.id, ticker: e.ticker, headline: e.headline, publisher: e.publisher, datetime: e.datetime,
+    available: e.summary ? 'headline and a short summary only (not the full article)' : 'headline only (no summary)',
+    summary: e.summary,
+    earlierNewsCheck: e.assessment ? {
+      assumptionNumber: e.assessment.assumptionIndex != null ? e.assessment.assumptionIndex + 1 : null,
+      stanceShownToUser: e.assessment.stance, aiAssessedStance: e.assessment.assessedStance, relevance: e.assessment.relevance,
+      whyItMatters: e.assessment.whyItMatters, analyzedByAI: e.assessment.analyzedByAI,
+    } : null,
+  }));
+  // Earlier answers: "[n]" markers become the cited headline, so old ids can't be reused for new claims.
+  const past = history.slice(-PROMPT_HISTORY).map((h) => ({
+    role: h.role,
+    content: (h.role === 'assistant' ? h.content.replace(/\s*\[(\d+)\]/g, (m, n) => { const c = (h.citations || []).find((x) => x.id === Number(n)); return c && c.title ? ` (source: "${c.title.slice(0, 90)}")` : ''; }) : h.content).slice(0, 1500),
+  }));
+  return [
+    `MODE: ${mode}${mode === 'investigation' ? ' (the user opened article E1 and is asking about it)' : ''}`,
+    "USER'S THESIS (the user's own goals, choices and confirmed assumptions; NOT external evidence; never cite it):",
+    fence(tb),
+    evidence.length ? 'EVIDENCE (untrusted data; the ONLY external information you have; cite by id):' : 'EVIDENCE: none supplied. You have no news, prices or market data for this question.',
+    ...(evidence.length ? [fence(ev)] : []),
+    'CONVERSATION SO FAR (oldest first):',
+    past.length ? fence(past) : '(none)',
+    "USER'S NEW QUESTION (untrusted):",
+    fence(message),
+  ].join('\n');
+}
+
+const parseChatJson = (raw) => {
+  const j = parseJsonObject(raw);
+  return j && Array.isArray(j.answer) && j.answer.some((s) => s && typeof s.text === 'string' && s.text.trim()) ? j : null;
+};
+
+// A source URL is attribution, not verification: every evidence claim is credited to its headline/summary.
+// "Lead, text" with a natural join: after a leading transition, the first word lowercased only when it is
+// ordinary English, and no doubled comma.
+function withLead(lead, text) {
+  const m = text.match(TRANSITION);
+  if (m && text.length > m[0].length) {
+    const rest = text.slice(m[0].length).replace(/^,\s*/, '');
+    return `${m[1]}${m[2] ? ',' : ''} ${lowerFirst(lead)}, ${softLower(rest)}`;
+  }
+  return `${lead}, ${softLower(text)}`;
+}
+function attributeEvidence(text, cited) {
+  if (cited.every((c) => !c.summary)) {
+    return /\bheadline/i.test(text) ? text : withLead(cited.length > 1 ? 'Based on the headlines alone' : 'Based on the headline alone', text);
+  }
+  if (ATTRIBUTED.test(text)) return text;
+  const lead = cited.some((c) => !c.summary) ? 'According to the headlines and summaries provided' : cited.length > 1 ? 'According to the article summaries' : "According to the article's summary";
+  return withLead(lead, text);
+}
+
+const citationOf = (e, n) => ({ id: n, evidenceId: e.id, title: e.headline, url: e.url, publisher: e.publisher, datetime: e.datetime, ticker: e.ticker, evidence: e.summary ? 'headline_and_summary' : 'headline_only' });
+
+function validateChatReply(json, evidence) {
+  if (!json || !Array.isArray(json.answer)) return null;
+  const byId = new Map(evidence.map((e) => [e.id, e]));
+  const segments = [];
+  const order = [];
+  let droppedCitations = 0;
+  let removedClaims = 0;
+  for (const seg of json.answer.slice(0, CHAT_MAX_SEGMENTS)) {
+    if (!seg || typeof seg.text !== 'string') continue;
+    let basis = CHAT_BASES.includes(seg.basis) ? seg.basis : 'general';
+    const raw = Array.isArray(seg.sources) ? seg.sources.slice(0, 6) : [];
+    const ids = [];
+    for (const s of raw) {
+      const id = typeof s === 'string' ? s.trim().toUpperCase() : Number.isInteger(s) ? `E${s}` : null;
+      if (id && byId.has(id)) { if (!ids.includes(id)) ids.push(id); } else droppedCitations++;
+    }
+    if (basis === 'thesis') { droppedCitations += ids.length; ids.length = 0; } // the user's own thesis is never "sourced"
+    else if (raw.length) basis = 'evidence'; // claimed a source: it is an evidence claim, valid or not
+    let text = cleanLLMText(scrubEvidenceIds(seg.text.replace(URL_IN_TEXT, '').replace(MARKER_IN_TEXT, '')), CHAT_SEGMENT_MAX);
+    text = text ? dropResearchClaims(text) : null;
+    if (!text) continue;
+    if (basis === 'evidence' && !ids.length) { // unsupported factual claim: removed, not relabelled
+      removedClaims++;
+      if (!segments.length || segments[segments.length - 1].text !== UNSUPPORTED_LINE) segments.push({ text: UNSUPPORTED_LINE, basis: 'uncertain', citations: [] });
+      continue;
+    }
+    if (basis === 'evidence') {
+      text = attributeEvidence(text, ids.map((id) => byId.get(id)));
+      for (const id of ids) if (!order.includes(id)) order.push(id);
+    }
+    segments.push({ text, basis, citations: ids.map((id) => order.indexOf(id) + 1) });
+  }
+  if (!segments.length) return null; // nothing usable left: caller falls back
+  const followUps = (Array.isArray(json.followUps) ? json.followUps : []).slice(0, 3)
+    .map((q) => (typeof q === 'string' ? cleanLLMText(scrubEvidenceIds(q.replace(URL_IN_TEXT, '').replace(MARKER_IN_TEXT, '')), 200) : null)).filter(Boolean);
+  return {
+    segments,
+    citations: order.map((id, i) => citationOf(byId.get(id), i + 1)),
+    followUps,
+    insufficientEvidence: json.insufficientEvidence === true || removedClaims > 0,
+    droppedCitations,
+    removedClaims,
+  };
+}
+
+// Both models failed / no key / offline: a plain recap of the user's own thesis (and the opened article).
+function chatFallback(tb, evidence, mode) {
+  const segments = [{ text: 'The AI research assistant is unavailable right now, so this is a plain summary of your thesis as you confirmed it, not an answer to your question.', basis: 'general', citations: [] }];
+  const about = [tb.goal ? `Your goal: ${tb.goal.replace(/[.\s]+$/, '')}.` : null, `Time horizon: ${tb.timeHorizon}.`, tb.investments.length ? `Investments in this thesis: ${tb.investments.join(', ')}.` : null];
+  segments.push({ text: about.filter(Boolean).join(' '), basis: 'thesis', citations: [] });
+  if (tb.confirmedAssumptions.length) {
+    segments.push({ text: `Your confirmed assumptions: ${tb.confirmedAssumptions.map((a) => `${a.number}) ${a.text.replace(/[.\s]+$/, '')}${a.whatWouldChallengeIt ? ` (what would challenge it: ${a.whatWouldChallengeIt.replace(/[.\s]+$/, '')})` : ''}`).join('; ')}.`, basis: 'thesis', citations: [] });
+  }
+  const citations = [];
+  const e = mode === 'investigation' ? evidence[0] : null;
+  if (e) {
+    citations.push(citationOf(e, 1));
+    segments.push({ text: e.summary ? `According to the article's summary: "${e.summary}"` : `Only the headline is available for this article: "${e.headline}".`, basis: 'evidence', citations: [1] });
+    const a = e.assessment;
+    if (a && a.analyzedByAI && a.whyItMatters) {
+      segments.push({ text: `The earlier news check linked it to assumption ${a.assumptionIndex != null ? a.assumptionIndex + 1 : '?'} and noted: ${a.whyItMatters}`, basis: 'evidence', citations: [1] });
+    }
+  }
+  return { segments, citations, followUps: CHAT_FOLLOWUPS.slice(), insufficientEvidence: Boolean(e && !e.summary), droppedCitations: 0, removedClaims: 0 };
+}
+
+const renderReply = (segments) => segments.map((s) => (s.citations.length ? `${s.text} ${s.citations.map((n) => `[${n}]`).join('')}` : s.text)).join('\n\n');
+// Coarse, non-sensitive reason codes; the details are logged by askGemini.
+const chatFallbackCode = (reason) => (!reason ? 'unusable_reply' : /offline/.test(reason) ? 'offline' : /not set|prompt missing/.test(reason) ? 'not_configured' : /not valid JSON/.test(reason) ? 'unusable_reply' : 'ai_error');
+
+async function thesisChat(thesis, history, message, context = {}, opts = {}) {
+  const echo = () => { try { return Array.isArray(history) ? JSON.parse(JSON.stringify(history)) : []; } catch { return []; } };
+  const fail = (code, msg, extra = {}) => ({ ok: false, mode: null, thesisId: null, reply: null, displayText: null, segments: [], citations: [], followUps: [],
+    insufficientEvidence: false, history: echo(), source: null, model: null, fallbackReason: null, droppedCitations: 0, removedClaims: 0,
+    disclaimer: CHAT_DISCLAIMER, error: { code, message: msg }, ...extra });
+  try {
+    if (typeof message !== 'string' || !message.trim()) return fail('invalid_message', 'message must be a non-empty string.');
+    if (message.length > MAX_MESSAGE) return fail('invalid_message', `message must be at most ${MAX_MESSAGE} characters.`);
+    let t = null;
+    try { t = JSON.parse(JSON.stringify(thesis)); } catch { t = null; } // a private copy: the caller's thesis is never touched
+    if (!t || typeof t !== 'object' || Array.isArray(t)) return fail('invalid_thesis', 'A saved thesis is required.');
+    if (t.assumptionStatus && t.assumptionStatus !== 'confirmed') return fail('thesis_not_confirmed', 'This thesis has assumptions that are not confirmed yet. Confirm them before chatting about it.');
+    const thesisId = chatStr(t.id, 80);
+    if (!thesisId) return fail('invalid_thesis', 'The thesis has no id.');
+    const tb = chatThesisBlock(t);
+    if (!tb.goal && !tb.confirmedAssumptions.length) return fail('invalid_thesis', 'The thesis has no goal or assumptions to discuss.', { thesisId });
+    const h = chatHistory(history, thesisId);
+    if (h.error === 'history_thesis_mismatch') return fail(h.error, 'This conversation belongs to a different thesis. Start a new conversation for this thesis.', { thesisId });
+    if (h.error) return fail(h.error, 'history must be the array returned by the previous turn (or empty).', { thesisId });
+    const ctx = context && typeof context === 'object' && !Array.isArray(context) ? context : {};
+    let raw = [];
+    try { raw = Array.isArray(ctx.evidence) ? JSON.parse(JSON.stringify(ctx.evidence)) : []; } catch { raw = []; }
+    const { items, indexMap } = chatEvidence(raw);
+    let focus = null;
+    if (ctx.focus != null) {
+      if (!Number.isInteger(ctx.focus) || !indexMap.has(ctx.focus)) return fail('invalid_focus', 'context.focus must be the index of a usable article in context.evidence.', { thesisId });
+      focus = indexMap.get(ctx.focus);
+    }
+    const evidence = (focus ? [focus, ...items.filter((i) => i !== focus)] : items).slice(0, CHAT_MAX_EVIDENCE).map((e, i) => ({ ...e, id: `E${i + 1}` }));
+    const mode = focus ? 'investigation' : 'general';
+
+    const g = await askGemini('chat', buildChatPrompt(mode, tb, evidence, h.list, message.trim()), { callLLM: opts.callLLM, forceFallback: opts.forceFallback, temperature: 0.3, parse: parseChatJson });
+    let out = g.json ? validateChatReply(g.json, evidence) : null;
+    const source = out ? 'gemini' : 'fallback';
+    if (!out) out = chatFallback(tb, evidence, mode);
+    if (source === 'gemini' && JUDGMENT_Q.test(message) && !out.segments.some((s) => HAS_CAVEAT.test(s.text))) {
+      out.segments.push({ text: JUDGMENT_NOTE, basis: 'general', citations: [] });
+    }
+    const reply = renderReply(out.segments);
+    const at = new Date().toISOString();
+    const nextHistory = [...h.list, { role: 'user', content: message.trim(), thesisId, at },
+      { role: 'assistant', content: reply, citations: out.citations, thesisId, at, mode, source }].slice(-MAX_HISTORY);
+    return {
+      ok: true, mode, thesisId, reply, displayText: `${reply}\n\n${CHAT_DISCLAIMER}`,
+      segments: out.segments, citations: out.citations, followUps: out.followUps, insufficientEvidence: out.insufficientEvidence,
+      history: nextHistory, source, model: source === 'gemini' ? g.model : null, fallbackReason: source === 'fallback' ? chatFallbackCode(g.reason) : null,
+      droppedCitations: out.droppedCitations, removedClaims: out.removedClaims, disclaimer: CHAT_DISCLAIMER, error: null,
+    };
+  } catch (err) {
+    console.warn('[chat] failed:', err && err.message);
+    return fail('internal_error', 'Something went wrong. Nothing was changed; please try again.');
+  }
+}
+
 module.exports = {
   createThesis,
   matchNews,
@@ -1805,6 +2124,9 @@ module.exports = {
   matchNewsDetailed,
   handleThesisAction,
   SESSION_ACTIONS,
+  thesisChat,
+  // exposed for scripts/test-thesis-chat.js
+  _chat: { chatEvidence, chatThesisBlock, chatHistory, buildChatPrompt, validateChatReply, chatFallback, attributeEvidence, scrubEvidenceIds, UNSUPPORTED_LINE, CHAT_MAX_EVIDENCE, JUDGMENT_NOTE, JUDGMENT_Q },
   // exposed for scripts/test-thesis-draft.js
   _news: { thesisScope, normalizeNewsItems, linkOf, validateNewsMatches, safeUrl, NOTABLE_HOLDINGS, NEWS_BATCH },
   _draft: { validateUserAssumption, parseSelectionInput, validateDraftJson, internalTier, horizonNoteFor, templateAssumption, dropSafeClaims, CATEGORY_INFO, MAX_SELECTION },

@@ -7,7 +7,7 @@
     "start": "node server/index.js",
     "test:scoring": "node scripts/test-scoring.js",
     "test:endpoints": "node scripts/test-endpoints.js",
-    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment && npm run test:paper && npm run test:council && npm run test:onboarding && npm run test:draft && npm run test:news && npm run test:llm",
+    "test": "npm run test:scoring && npm run test:endpoints && npm run test:n8n && npm run test:sentiment && npm run test:paper && npm run test:council && npm run test:onboarding && npm run test:draft && npm run test:news && npm run test:llm && npm run test:chat",
     "test:paper": "node scripts/test-paper.js",
     "test:council": "node scripts/test-council.js",
     "test:n8n": "node scripts/test-n8n.js",
@@ -19,7 +19,9 @@
     "test:llm": "node scripts/test-llm.js",
     "test:news": "node scripts/test-news-matching.js",
     "test:session": "node scripts/test-thesis-session.js",
-    "demo:news": "node scripts/demo-news-matching.js"
+    "demo:news": "node scripts/demo-news-matching.js",
+    "test:chat": "node scripts/test-thesis-chat.js",
+    "demo:chat": "node scripts/chat-demo.js"
   },
   "engines": {
     "node": ">=18"
