@@ -422,8 +422,8 @@ n8n credentials, by name: "LOOP Alpaca" (custom auth with two headers), "LOOP Fi
 |---|---|
 | Taha Saiyed | Backend, n8n workflow, data, deploy |
 | Vamsi | Thesis engine (`server/thesis.js`, `prompts/thesis.md`) |
-| Anne | Feed UI |
-| Dianne | Portfolio and thesis pages, email template, deck |
+| Anne | Feed UI, UI/UX Design |
+| Dian Ping | Frontend Development, UI/UX Design, Paper Portfolio & Investment Thesis Pages, Interactive Features, Email Notification Templates, Hackathon Pitch Deck |
 
 The council design is adapted from `aiwithremy/claude-skills-llm-council`, whose methodology is based on Andrej Karpathy's LLM Council, with the skill authored by Ole Lehmann. Market data comes from Alpaca, Finnhub and SEC EDGAR. News sentiment, council text and thesis matching use Gemini.
 
