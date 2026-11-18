@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 250" width="1200" height="250" role="img" aria-label="1st Prize at Investly Roadmap. 3rd Place Overall at Ant.">
+  <title>1st Prize at Investly Roadmap. 3rd Place Overall at Ant.</title>
+  <defs>
+    <linearGradient id="card" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1c2220"/>
+      <stop offset="1" stop-color="#101412"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8e27c"/>
+      <stop offset="0.55" stop-color="#d7b94e"/>
+      <stop offset="1" stop-color="#a9872b"/>
+    </linearGradient>
+    <linearGradient id="bronze" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1b98a"/>
+      <stop offset="0.55" stop-color="#cd8a52"/>
+      <stop offset="1" stop-color="#94592b"/>
+    </linearGradient>
+    <linearGradient id="mint" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9be3bb"/>
+      <stop offset="1" stop-color="#3fa56e"/>
+    </linearGradient>
+    <linearGradient id="borderGold" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="580" y2="0">
+      <stop offset="0" stop-color="#303731"/>
+      <stop offset="0.35" stop-color="#303731"/>
+      <stop offset="0.5" stop-color="#f5d96c"/>
+      <stop offset="0.65" stop-color="#303731"/>
+      <stop offset="1" stop-color="#303731"/>
+      <animateTransform attributeName="gradientTransform" type="translate" from="-580 0" to="580 0" dur="5s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="borderMint" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="580" y2="0">
+      <stop offset="0" stop-color="#303731"/>
+      <stop offset="0.35" stop-color="#303731"/>
+      <stop offset="0.5" stop-color="#73c998"/>
+      <stop offset="0.65" stop-color="#303731"/>
+      <stop offset="1" stop-color="#303731"/>
+      <animateTransform attributeName="gradientTransform" type="translate" from="-580 0" to="580 0" dur="5s" begin="2.5s" repeatCount="indefinite"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fff" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#fff" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+    </linearGradient>
+    <clipPath id="clip"><rect width="580" height="200" rx="24"/></clipPath>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="6"/></filter>
+    <path id="spark" d="M0 -7 L1.6 -1.6 L7 0 L1.6 1.6 L0 7 L-1.6 1.6 L-7 0 L-1.6 -1.6 Z"/>
+  </defs>
+
+  <style>
+    text { font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .float1 { animation: float 5s ease-in-out infinite; }
+    .float2 { animation: float 5s ease-in-out -2.5s infinite; }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+    .shineA { animation: sweep 5.5s ease-in-out infinite; }
+    .shineB { animation: sweep 5.5s ease-in-out 2.7s infinite; }
+    @keyframes sweep { 0% { transform: translateX(-260px); } 45%,100% { transform: translateX(900px); } }
+    .draw { stroke-dasharray: 100; animation: draw 4.5s ease-in-out infinite; }
+    @keyframes draw { 0% { stroke-dashoffset: 100; } 35%,88% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 100; } }
+    .head { animation: head 4.5s ease-in-out infinite; }
+    @keyframes head { 0%,30% { opacity: 0; } 42%,88% { opacity: 1; } 100% { opacity: 0; } }
+    .halo { animation: halo 2.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes halo { 0%,100% { opacity: .25; transform: scale(1); } 50% { opacity: .7; transform: scale(1.35); } }
+    .twinkle { animation: twinkle 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+    @keyframes twinkle { 0%,100% { opacity: 0; transform: scale(.4); } 50% { opacity: 1; transform: scale(1); } }
+    .bar { transform-box: fill-box; transform-origin: left center; animation: bar 4.5s ease-in-out infinite; }
+    @keyframes bar { 0% { transform: scaleX(0); } 40%,90% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+    .bob { animation: bob 1.6s ease-in-out infinite; }
+    @keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  </style>
+
+  <!-- ================= Card 1: Investly Roadmap, 1st Prize ================= -->
+  <g transform="translate(10,15)">
+    <g class="float1">
+      <rect width="580" height="200" rx="24" fill="#d7b94e" opacity="0.10" filter="url(#soft)"/>
+      <rect width="580" height="200" rx="24" fill="url(#card)"/>
+      <rect x="1" y="1" width="578" height="198" rx="23" fill="none" stroke="url(#borderGold)" stroke-width="2"/>
+      <g clip-path="url(#clip)"><g class="shineA"><rect x="0" y="-20" width="140" height="240" fill="url(#shine)" transform="skewX(-20)"/></g></g>
+
+      <!-- Investly logo mark -->
+      <g transform="translate(36,30)">
+        <rect width="76" height="76" rx="20" fill="url(#gold)"/>
+        <rect x="3" y="3" width="70" height="70" rx="17" fill="none" stroke="#fff" stroke-opacity=".25"/>
+        <path class="draw" pathLength="100" d="M17 53 L32 38 L42 46 L58 26" fill="none" stroke="#111413" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        <path class="head" d="M46 24 H60 V38" fill="none" stroke="#111413" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <text x="130" y="82" font-size="50" font-weight="800" fill="#f4f1e8" letter-spacing="-1">Invest<tspan fill="#f5d96c">ly</tspan></text>
+      <rect x="132" y="96" width="210" height="4" rx="2" fill="#303731"/>
+      <rect class="bar" x="132" y="96" width="210" height="4" rx="2" fill="url(#gold)"/>
+
+      <line x1="36" y1="132" x2="544" y2="132" stroke="#303731"/>
+
+      <!-- medal -->
+      <g transform="translate(66,166)">
+        <circle class="halo" r="22" fill="#f5d96c"/>
+        <circle r="22" fill="url(#gold)"/>
+        <circle r="17" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>
+        <text y="8" text-anchor="middle" font-size="24" font-weight="800" fill="#2b2410">1</text>
+      </g>
+      <text x="104" y="165" font-size="26" font-weight="800" fill="#f5d96c" letter-spacing="3">1ST PRIZE</text>
+      <text x="105" y="188" font-size="17" fill="#a9b0a8" letter-spacing="1">Investly Roadmap</text>
+
+      <use href="#spark" x="520" y="52" fill="#f5d96c" class="twinkle"/>
+      <use href="#spark" x="548" y="92" fill="#f5d96c" class="twinkle" style="animation-delay:.8s"/>
+      <use href="#spark" x="500" y="162" fill="#f5d96c" class="twinkle" style="animation-delay:1.5s"/>
+    </g>
+  </g>
+
+  <!-- ================= Card 2: Ant, 3rd Place Overall ================= -->
+  <g transform="translate(610,15)">
+    <g class="float2">
+      <rect width="580" height="200" rx="24" fill="#73c998" opacity="0.08" filter="url(#soft)"/>
+      <rect width="580" height="200" rx="24" fill="url(#card)"/>
+      <rect x="1" y="1" width="578" height="198" rx="23" fill="none" stroke="url(#borderMint)" stroke-width="2"/>
+      <g clip-path="url(#clip)"><g class="shineB"><rect x="0" y="-20" width="140" height="240" fill="url(#shine)" transform="skewX(-20)"/></g></g>
+
+      <!-- Ant logo mark -->
+      <g transform="translate(36,30)">
+        <rect width="76" height="76" rx="20" fill="url(#mint)"/>
+        <rect x="3" y="3" width="70" height="70" rx="17" fill="none" stroke="#fff" stroke-opacity=".3"/>
+        <g class="bob" fill="#0f1312" stroke="#0f1312">
+          <g fill="none" stroke-width="3.2" stroke-linecap="round">
+            <path d="M36 44 L27 58"><animateTransform attributeName="transform" type="rotate" values="-9 36 44;9 36 44;-9 36 44" dur="1.2s" repeatCount="indefinite"/></path>
+            <path d="M40 44 L42 60"><animateTransform attributeName="transform" type="rotate" values="9 40 44;-9 40 44;9 40 44" dur="1.2s" repeatCount="indefinite"/></path>
+            <path d="M44 42 L55 56"><animateTransform attributeName="transform" type="rotate" values="-9 44 42;9 44 42;-9 44 42" dur="1.2s" repeatCount="indefinite"/></path>
+            <path d="M56 26 Q58 15 66 13"/>
+            <path d="M52 25 Q50 15 55 10"/>
+          </g>
+          <circle cx="22" cy="46" r="12" stroke="none"/>
+          <circle cx="40" cy="40" r="8" stroke="none"/>
+          <circle cx="54" cy="31" r="7" stroke="none"/>
+        </g>
+      </g>
+      <text x="130" y="82" font-size="50" font-weight="800" fill="#f4f1e8" letter-spacing="-1">A<tspan fill="#73c998">nt</tspan></text>
+      <rect x="132" y="96" width="120" height="4" rx="2" fill="#303731"/>
+      <rect class="bar" x="132" y="96" width="120" height="4" rx="2" fill="url(#mint)" style="animation-delay:.4s"/>
+
+      <line x1="36" y1="132" x2="544" y2="132" stroke="#303731"/>
+
+      <g transform="translate(66,166)">
+        <circle class="halo" r="22" fill="#e0a06a" style="animation-delay:1.2s"/>
+        <circle r="22" fill="url(#bronze)"/>
+        <circle r="17" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="1.5"/>
+        <text y="8" text-anchor="middle" font-size="24" font-weight="800" fill="#2b1608">3</text>
+      </g>
+      <text x="104" y="165" font-size="26" font-weight="800" fill="#e8a672" letter-spacing="3">3RD PLACE</text>
+      <text x="105" y="188" font-size="17" fill="#a9b0a8" letter-spacing="1">Overall at Ant</text>
+
+      <use href="#spark" x="520" y="52" fill="#73c998" class="twinkle" style="animation-delay:.4s"/>
+      <use href="#spark" x="548" y="92" fill="#73c998" class="twinkle" style="animation-delay:1.2s"/>
+      <use href="#spark" x="500" y="162" fill="#73c998" class="twinkle" style="animation-delay:1.9s"/>
+    </g>
+  </g>
+</svg>

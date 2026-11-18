@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" width="1200" height="300" role="img" aria-label="How THESIS works: market data, n8n daily run, sentiment, scoring, AI council, your feed.">
+  <title>How THESIS works</title>
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f8e27c"/><stop offset="1" stop-color="#b9972f"/></linearGradient>
+  </defs>
+  <style>
+    text { font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .node { fill: #181c1a; stroke: #303731; stroke-width: 2; animation: glow 9s ease-in-out infinite; }
+    @keyframes glow { 0%,18%,100% { stroke: #303731; fill: #181c1a; } 6%,12% { stroke: #f5d96c; fill: #232a24; } }
+    .d1 { animation-delay: 0s; } .d2 { animation-delay: 1.5s; } .d3 { animation-delay: 3s; }
+    .d4 { animation-delay: 4.5s; } .d5 { animation-delay: 6s; } .d6 { animation-delay: 7.5s; }
+    .flow { stroke: #73c998; stroke-width: 3; stroke-dasharray: 7 9; stroke-linecap: round; animation: dash 1s linear infinite; }
+    @keyframes dash { to { stroke-dashoffset: -16; } }
+    .title { font-size: 20px; font-weight: 700; fill: #f4f1e8; }
+    .step { font-size: 13px; font-weight: 800; fill: #d7b94e; letter-spacing: 2px; }
+    .cap { font-size: 14px; fill: #a9b0a8; }
+  </style>
+
+  <rect width="1200" height="300" rx="28" fill="#0f1312"/>
+  <rect x="1" y="1" width="1198" height="298" rx="27" fill="none" stroke="#303731" stroke-width="2"/>
+
+  <!-- connectors -->
+  <g>
+    <line class="flow" x1="185" y1="110" x2="225" y2="110"/>
+    <line class="flow" x1="385" y1="110" x2="425" y2="110"/>
+    <line class="flow" x1="585" y1="110" x2="625" y2="110"/>
+    <line class="flow" x1="785" y1="110" x2="825" y2="110"/>
+    <line class="flow" x1="985" y1="110" x2="1025" y2="110"/>
+  </g>
+  <circle r="5" fill="#f5d96c">
+    <animateMotion dur="9s" repeatCount="indefinite" path="M110 110 H1110"/>
+  </circle>
+
+  <!-- nodes -->
+  <g>
+    <rect class="node d1" x="35" y="65" width="150" height="90" rx="20"/>
+    <text class="step" x="110" y="95" text-anchor="middle">STEP 1</text>
+    <text class="title" x="110" y="126" text-anchor="middle">Market data</text>
+
+    <rect class="node d2" x="235" y="65" width="150" height="90" rx="20"/>
+    <text class="step" x="310" y="95" text-anchor="middle">STEP 2</text>
+    <text class="title" x="310" y="126" text-anchor="middle">n8n daily run</text>
+
+    <rect class="node d3" x="435" y="65" width="150" height="90" rx="20"/>
+    <text class="step" x="510" y="95" text-anchor="middle">STEP 3</text>
+    <text class="title" x="510" y="126" text-anchor="middle">Sentiment</text>
+
+    <rect class="node d4" x="635" y="65" width="150" height="90" rx="20"/>
+    <text class="step" x="710" y="95" text-anchor="middle">STEP 4</text>
+    <text class="title" x="710" y="126" text-anchor="middle">Scoring</text>
+
+    <rect class="node d5" x="835" y="65" width="150" height="90" rx="20"/>
+    <text class="step" x="910" y="95" text-anchor="middle">STEP 5</text>
+    <text class="title" x="910" y="126" text-anchor="middle">AI council</text>
+
+    <rect class="node d6" x="1035" y="65" width="150" height="90" rx="20"/>
+    <text class="step" x="1110" y="95" text-anchor="middle">STEP 6</text>
+    <text class="title" x="1110" y="126" text-anchor="middle">Your feed</text>
+  </g>
+
+  <!-- captions -->
+  <g class="cap" text-anchor="middle">
+    <text x="110" y="195">Prices, fundamentals,</text><text x="110" y="216">news and insider filings</text>
+    <text x="310" y="195">One automated daily run</text><text x="310" y="216">covers 60 stocks and ETFs</text>
+    <text x="510" y="195">Gemini rates the tone</text><text x="510" y="216">of every headline</text>
+    <text x="710" y="195">Transparent 0 to 100</text><text x="710" y="216">score, same math daily</text>
+    <text x="910" y="195">Bull case, bear case</text><text x="910" y="216">and an overall read</text>
+    <text x="1110" y="195">Top 10 per risk level,</text><text x="1110" y="216">plus thesis email alerts</text>
+  </g>
+  <text x="600" y="272" text-anchor="middle" font-size="14" fill="#6f7a71" letter-spacing="1">The score ranks. The council only explains.</text>
+</svg>

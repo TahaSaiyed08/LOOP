@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 330" width="760" height="330" role="img" aria-label="Sample match score breakdown: signal 11, risk fit 20, cost 20, quality 20, news 10, total 81 out of 100.">
+  <title>Sample match score: five parts, each 0 to 20, adding up to 81 out of 100</title>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#4fae7c"/><stop offset="1" stop-color="#8fe0b2"/></linearGradient>
+    <linearGradient id="y" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9972f"/><stop offset="1" stop-color="#f5d96c"/></linearGradient>
+    <linearGradient id="r" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d9685d"/><stop offset="1" stop-color="#f4a299"/></linearGradient>
+  </defs>
+  <style>
+    text { font-family: 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+    .lbl { font-size: 19px; font-weight: 700; fill: #f4f1e8; }
+    .sub { font-size: 13px; fill: #a9b0a8; }
+    .val { font-size: 19px; font-weight: 800; fill: #f4f1e8; }
+    .fill { transform-box: fill-box; transform-origin: left center; animation: grow 6s cubic-bezier(.2,.8,.2,1) infinite; }
+    .f2 { animation-delay: .15s; } .f3 { animation-delay: .3s; } .f4 { animation-delay: .45s; } .f5 { animation-delay: .6s; }
+    @keyframes grow { 0% { transform: scaleX(0); } 18%,88% { transform: scaleX(1); } 100% { transform: scaleX(0); } }
+  </style>
+  <rect width="760" height="330" rx="24" fill="#131715"/>
+  <rect x="1" y="1" width="758" height="328" rx="23" fill="none" stroke="#303731" stroke-width="2"/>
+
+  <g transform="translate(36,30)">
+    <text class="lbl" y="14">Signal</text><text class="sub" y="34">Market activity</text>
+    <rect x="200" y="2" width="400" height="14" rx="7" fill="#242b27"/>
+    <rect class="fill" x="200" y="2" width="220" height="14" rx="7" fill="url(#y)"/>
+    <text class="val" x="690" y="16" text-anchor="end">11/20</text>
+  </g>
+  <g transform="translate(36,84)">
+    <text class="lbl" y="14">Risk fit</text><text class="sub" y="34">Matches your profile</text>
+    <rect x="200" y="2" width="400" height="14" rx="7" fill="#242b27"/>
+    <rect class="fill f2" x="200" y="2" width="400" height="14" rx="7" fill="url(#g)"/>
+    <text class="val" x="690" y="16" text-anchor="end">20/20</text>
+  </g>
+  <g transform="translate(36,138)">
+    <text class="lbl" y="14">Cost</text><text class="sub" y="34">Fees and ownership costs</text>
+    <rect x="200" y="2" width="400" height="14" rx="7" fill="#242b27"/>
+    <rect class="fill f3" x="200" y="2" width="400" height="14" rx="7" fill="url(#g)"/>
+    <text class="val" x="690" y="16" text-anchor="end">20/20</text>
+  </g>
+  <g transform="translate(36,192)">
+    <text class="lbl" y="14">Quality</text><text class="sub" y="34">Durability of the business</text>
+    <rect x="200" y="2" width="400" height="14" rx="7" fill="#242b27"/>
+    <rect class="fill f4" x="200" y="2" width="400" height="14" rx="7" fill="url(#g)"/>
+    <text class="val" x="690" y="16" text-anchor="end">20/20</text>
+  </g>
+  <g transform="translate(36,246)">
+    <text class="lbl" y="14">News</text><text class="sub" y="34">Tone of recent headlines</text>
+    <rect x="200" y="2" width="400" height="14" rx="7" fill="#242b27"/>
+    <rect class="fill f5" x="200" y="2" width="200" height="14" rx="7" fill="url(#r)"/>
+    <text class="val" x="690" y="16" text-anchor="end">10/20</text>
+  </g>
+  <text x="724" y="318" text-anchor="end" font-size="13" fill="#a9b0a8" letter-spacing="1">Sample ETF: 81 out of 100</text>
+</svg>

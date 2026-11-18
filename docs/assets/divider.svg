@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 24" width="1200" height="24" role="presentation" aria-hidden="true">
+  <defs>
+    <linearGradient id="l" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#d7b94e" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#d7b94e" stop-opacity=".75"/>
+      <stop offset="1" stop-color="#73c998" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="b" x="-300%" y="-300%" width="700%" height="700%"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <rect x="40" y="11" width="1120" height="2" rx="1" fill="url(#l)"/>
+  <circle cy="12" r="6" fill="#f5d96c" filter="url(#b)">
+    <animate attributeName="cx" values="40;1160;40" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <circle cy="12" r="2.5" fill="#fff">
+    <animate attributeName="cx" values="40;1160;40" dur="7s" repeatCount="indefinite"/>
+  </circle>
+  <g transform="translate(600 12) rotate(45)"><rect x="-5" y="-5" width="10" height="10" fill="#0f1312" stroke="#d7b94e" stroke-width="1.5">
+    <animateTransform attributeName="transform" type="rotate" values="0;90;0" dur="7s" repeatCount="indefinite"/>
+  </rect></g>
+</svg>
