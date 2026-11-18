@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/assets/awards.svg" alt="1st Prize at Investly Roadmap. 3rd Place Overall at Ant." width="100%">
+<img src="docs/assets/awards.svg" alt="1st Prize at Investly Roadmap. 3rd Place Overall in n8n." width="100%">
 
 <img src="docs/assets/banner.svg" alt="THESIS. Read the news behind every pick. Daily research for first-time investors." width="100%">
 
@@ -23,7 +23,7 @@
 | | |
 |:--|:--|
 | 🥇 **1st Prize** | **Investly Roadmap** |
-| 🥉 **3rd Place Overall** | **Ant** |
+| 🥉 **3rd Place Overall** | **n8n** |
 
 THESIS (formerly TFSA Gold) was built at the LOOP Buildathon, November 14 to 15, 2026, on the n8n track.
 
